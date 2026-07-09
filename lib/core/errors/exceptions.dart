@@ -20,3 +20,10 @@ class PlatformDatasourceException extends AppException {
 class DatabaseException extends AppException {
   const DatabaseException(super.message);
 }
+
+/// Erro de comunicação com serviços remotos (API de licenças).
+class NetworkException extends AppException {
+  const NetworkException(super.message, {this.statusCode});
+
+  final int? statusCode;
+}

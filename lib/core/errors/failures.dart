@@ -40,6 +40,16 @@ class ValidationFailure extends Failure {
   const ValidationFailure(super.message);
 }
 
+/// Falha de comunicação com serviços remotos (API de licenças).
+class NetworkFailure extends Failure {
+  const NetworkFailure(super.message, {this.statusCode});
+
+  final int? statusCode;
+
+  @override
+  List<Object?> get props => [message, statusCode];
+}
+
 /// Falha inesperada não mapeada.
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure(super.message);

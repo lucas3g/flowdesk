@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
 import '../../../../core/widgets/ms_icon.dart';
+import '../../../licensing/presentation/widgets/license_section.dart';
 import '../../domain/entities/app_settings.dart';
 import '../cubits/settings_cubit.dart';
 import '../cubits/settings_state.dart';
@@ -65,6 +66,8 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 22),
+                  const LicenseSection(),
+                  const SizedBox(height: 18),
                   SettingsGroup(
                     title: 'GERAL',
                     children: [

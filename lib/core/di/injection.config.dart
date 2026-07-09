@@ -52,6 +52,26 @@ import 'package:flowdesk/features/layouts/domain/usecases/toggle_favorite_layout
     as _i734;
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart'
     as _i539;
+import 'package:flowdesk/features/licensing/data/datasources/license_local_datasource.dart'
+    as _i308;
+import 'package:flowdesk/features/licensing/data/datasources/license_remote_datasource.dart'
+    as _i243;
+import 'package:flowdesk/features/licensing/data/repositories/license_repository_impl.dart'
+    as _i922;
+import 'package:flowdesk/features/licensing/data/services/entitlement_verifier.dart'
+    as _i432;
+import 'package:flowdesk/features/licensing/domain/repositories/license_repository.dart'
+    as _i1063;
+import 'package:flowdesk/features/licensing/domain/usecases/activate_license.dart'
+    as _i948;
+import 'package:flowdesk/features/licensing/domain/usecases/deactivate_license.dart'
+    as _i1039;
+import 'package:flowdesk/features/licensing/domain/usecases/get_license.dart'
+    as _i726;
+import 'package:flowdesk/features/licensing/domain/usecases/refresh_license.dart'
+    as _i372;
+import 'package:flowdesk/features/licensing/presentation/cubits/license_cubit.dart'
+    as _i485;
 import 'package:flowdesk/features/monitors/data/datasources/monitor_profiles_local_datasource.dart'
     as _i320;
 import 'package:flowdesk/features/monitors/data/datasources/monitors_platform_datasource.dart'
@@ -185,6 +205,7 @@ import 'package:flowdesk/features/workspaces/domain/usecases/save_workspace.dart
 import 'package:flowdesk/features/workspaces/presentation/cubits/workspaces_cubit.dart'
     as _i422;
 import 'package:get_it/get_it.dart' as _i174;
+import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -196,7 +217,11 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
     gh.lazySingleton<_i110.AppDatabase>(() => registerModule.database);
+    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i351.NavigationCubit>(() => _i351.NavigationCubit());
+    gh.lazySingleton<_i432.EntitlementVerifier>(
+      () => _i432.EntitlementVerifier(),
+    );
     gh.lazySingleton<_i422.WindowPositionsLocalDatasource>(
       () => _i422.WindowPositionsLocalDatasourceImpl(gh<_i110.AppDatabase>()),
     );
@@ -217,6 +242,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i29.PlatformChannel>(
       () => registerModule.monitorsChannel,
       instanceName: 'monitorsChannel',
+    );
+    gh.lazySingleton<_i308.LicenseLocalDatasource>(
+      () => _i308.LicenseLocalDatasourceImpl(gh<_i110.AppDatabase>()),
     );
     gh.lazySingleton<_i417.LayoutsRepository>(
       () => _i822.LayoutsRepositoryImpl(gh<_i482.LayoutsLocalDatasource>()),
@@ -330,6 +358,9 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i336.MonitorsRepositoryImpl(gh<_i204.MonitorsPlatformDatasource>()),
     );
+    gh.lazySingleton<_i243.LicenseRemoteDatasource>(
+      () => _i243.LicenseRemoteDatasourceImpl(gh<_i519.Client>()),
+    );
     gh.lazySingleton<_i768.WorkspacesRepository>(
       () =>
           _i89.WorkspacesRepositoryImpl(gh<_i553.WorkspacesLocalDatasource>()),
@@ -346,6 +377,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i549.SystemIntegrationRepository>(
       () => _i788.SystemIntegrationRepositoryImpl(
         gh<_i574.SystemPlatformDatasource>(),
+      ),
+    );
+    gh.lazySingleton<_i1063.LicenseRepository>(
+      () => _i922.LicenseRepositoryImpl(
+        gh<_i308.LicenseLocalDatasource>(),
+        gh<_i243.LicenseRemoteDatasource>(),
+        gh<_i432.EntitlementVerifier>(),
       ),
     );
     gh.lazySingleton<_i335.SettingsRepository>(
@@ -462,6 +500,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i953.OpenPermissionSettings>(),
       ),
     );
+    gh.factory<_i948.ActivateLicense>(
+      () => _i948.ActivateLicense(gh<_i1063.LicenseRepository>()),
+    );
+    gh.factory<_i1039.DeactivateLicense>(
+      () => _i1039.DeactivateLicense(gh<_i1063.LicenseRepository>()),
+    );
+    gh.factory<_i726.GetLicense>(
+      () => _i726.GetLicense(gh<_i1063.LicenseRepository>()),
+    );
+    gh.factory<_i372.RefreshLicense>(
+      () => _i372.RefreshLicense(gh<_i1063.LicenseRepository>()),
+    );
     gh.lazySingleton<_i431.HistoryCubit>(
       () =>
           _i431.HistoryCubit(gh<_i618.GetHistory>(), gh<_i618.ClearHistory>()),
@@ -492,6 +542,14 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i651.WatchShortcutPresses>(
       () => _i651.WatchShortcutPresses(gh<_i831.ShortcutsRepository>()),
+    );
+    gh.lazySingleton<_i485.LicenseCubit>(
+      () => _i485.LicenseCubit(
+        gh<_i726.GetLicense>(),
+        gh<_i948.ActivateLicense>(),
+        gh<_i372.RefreshLicense>(),
+        gh<_i1039.DeactivateLicense>(),
+      ),
     );
     gh.lazySingleton<_i607.UndoRedoCubit>(
       () => _i607.UndoRedoCubit(

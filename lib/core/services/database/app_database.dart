@@ -18,6 +18,7 @@ part 'app_database.g.dart';
     HistoryEntries,
     WindowPositions,
     SettingsTable,
+    LicenseTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -27,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.withExecutor(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +45,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         await m.addColumn(layoutRegions, layoutRegions.appWindowTitle);
+      }
+      if (from < 6) {
+        await m.createTable(licenseTable);
       }
     },
     beforeOpen: (details) async {

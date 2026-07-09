@@ -17,6 +17,12 @@ import 'package:flowdesk/features/history/presentation/cubits/history_cubit.dart
 import 'package:flowdesk/features/layouts/domain/usecases/save_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/toggle_favorite_layout.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
+import 'package:flowdesk/features/licensing/domain/entities/license.dart';
+import 'package:flowdesk/features/licensing/domain/usecases/activate_license.dart';
+import 'package:flowdesk/features/licensing/domain/usecases/deactivate_license.dart';
+import 'package:flowdesk/features/licensing/domain/usecases/get_license.dart';
+import 'package:flowdesk/features/licensing/domain/usecases/refresh_license.dart';
+import 'package:flowdesk/features/licensing/presentation/cubits/license_cubit.dart';
 import 'package:flowdesk/features/monitors/domain/usecases/get_monitors.dart';
 import 'package:flowdesk/features/monitors/domain/usecases/monitor_profiles_usecases.dart';
 import 'package:flowdesk/features/monitors/domain/usecases/watch_monitors.dart';
@@ -124,6 +130,14 @@ class _MockExportBackup extends Mock implements ExportBackup {}
 class _MockImportBackup extends Mock implements ImportBackup {}
 
 class _MockClearHistory extends Mock implements ClearHistory {}
+
+class _MockGetLicense extends Mock implements GetLicense {}
+
+class _MockActivateLicense extends Mock implements ActivateLicense {}
+
+class _MockRefreshLicense extends Mock implements RefreshLicense {}
+
+class _MockDeactivateLicense extends Mock implements DeactivateLicense {}
 
 /// Item de navegação na sidebar (telas podem repetir o mesmo texto).
 Finder _sidebarItem(AppScreen screen) => find.descendant(
@@ -264,6 +278,17 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
       getPermissions,
       _MockRequestAccessibility(),
       _MockOpenPermissionSettings(),
+    ),
+  );
+
+  final getLicense = _MockGetLicense();
+  when(() => getLicense(any())).thenAnswer((_) async => right(License.free));
+  getIt.registerLazySingleton<LicenseCubit>(
+    () => LicenseCubit(
+      getLicense,
+      _MockActivateLicense(),
+      _MockRefreshLicense(),
+      _MockDeactivateLicense(),
     ),
   );
 

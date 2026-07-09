@@ -11,6 +11,7 @@ import 'core/services/status_bar_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell/app_shell.dart';
 import 'features/layouts/presentation/cubits/layouts_cubit.dart';
+import 'features/licensing/presentation/cubits/license_cubit.dart';
 import 'features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'features/monitors/presentation/cubits/monitor_profiles_cubit.dart';
 import 'features/permissions/presentation/cubits/permissions_cubit.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
 
   // Estado global inicial: preferências persistidas e permissões do sistema.
   await getIt<SettingsCubit>().load();
+  unawaited(getIt<LicenseCubit>().start());
   unawaited(getIt<PermissionsCubit>().startMonitoring());
   unawaited(getIt<MonitorsCubit>().start());
 

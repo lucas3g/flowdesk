@@ -1,3 +1,4 @@
+import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 
 import '../constants/app_constants.dart';
@@ -11,6 +12,9 @@ import '../services/database/app_database.dart';
 abstract class RegisterModule {
   @lazySingleton
   AppDatabase get database => AppDatabase();
+
+  @lazySingleton
+  http.Client get httpClient => http.Client();
 
   @Named('permissionsChannel')
   @lazySingleton

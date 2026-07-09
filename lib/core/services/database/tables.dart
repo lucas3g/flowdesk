@@ -134,6 +134,30 @@ class WindowPositions extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Licença premium (linha única, id fixo 0), criada na primeira consulta.
+///
+/// O entitlement é o payload assinado devolvido pela API de licenças;
+/// a assinatura é reverificada a cada leitura para impedir adulteração
+/// direta do banco.
+@DataClassName('LicenseRow')
+class LicenseTable extends Table {
+  IntColumn get id => integer().withDefault(const Constant(0))();
+
+  /// Identificador estável desta instalação, enviado na ativação.
+  TextColumn get deviceId => text()();
+  TextColumn get licenseKey => text().withDefault(const Constant(''))();
+
+  /// Payload do entitlement em base64 e sua assinatura Ed25519.
+  TextColumn get entitlementPayload => text().withDefault(const Constant(''))();
+  TextColumn get entitlementSignature =>
+      text().withDefault(const Constant(''))();
+
+  DateTimeColumn get lastValidatedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Preferências do app (linha única, id fixo 0).
 @DataClassName('SettingsRow')
 class SettingsTable extends Table {

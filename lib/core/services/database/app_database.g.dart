@@ -4992,6 +4992,435 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
   }
 }
 
+class $LicenseTableTable extends LicenseTable
+    with TableInfo<$LicenseTableTable, LicenseRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LicenseTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _licenseKeyMeta = const VerificationMeta(
+    'licenseKey',
+  );
+  @override
+  late final GeneratedColumn<String> licenseKey = GeneratedColumn<String>(
+    'license_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _entitlementPayloadMeta =
+      const VerificationMeta('entitlementPayload');
+  @override
+  late final GeneratedColumn<String> entitlementPayload =
+      GeneratedColumn<String>(
+        'entitlement_payload',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _entitlementSignatureMeta =
+      const VerificationMeta('entitlementSignature');
+  @override
+  late final GeneratedColumn<String> entitlementSignature =
+      GeneratedColumn<String>(
+        'entitlement_signature',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _lastValidatedAtMeta = const VerificationMeta(
+    'lastValidatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastValidatedAt =
+      GeneratedColumn<DateTime>(
+        'last_validated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    deviceId,
+    licenseKey,
+    entitlementPayload,
+    entitlementSignature,
+    lastValidatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'license_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LicenseRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('license_key')) {
+      context.handle(
+        _licenseKeyMeta,
+        licenseKey.isAcceptableOrUnknown(data['license_key']!, _licenseKeyMeta),
+      );
+    }
+    if (data.containsKey('entitlement_payload')) {
+      context.handle(
+        _entitlementPayloadMeta,
+        entitlementPayload.isAcceptableOrUnknown(
+          data['entitlement_payload']!,
+          _entitlementPayloadMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entitlement_signature')) {
+      context.handle(
+        _entitlementSignatureMeta,
+        entitlementSignature.isAcceptableOrUnknown(
+          data['entitlement_signature']!,
+          _entitlementSignatureMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_validated_at')) {
+      context.handle(
+        _lastValidatedAtMeta,
+        lastValidatedAt.isAcceptableOrUnknown(
+          data['last_validated_at']!,
+          _lastValidatedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LicenseRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LicenseRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      licenseKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}license_key'],
+      )!,
+      entitlementPayload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entitlement_payload'],
+      )!,
+      entitlementSignature: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entitlement_signature'],
+      )!,
+      lastValidatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_validated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LicenseTableTable createAlias(String alias) {
+    return $LicenseTableTable(attachedDatabase, alias);
+  }
+}
+
+class LicenseRow extends DataClass implements Insertable<LicenseRow> {
+  final int id;
+
+  /// Identificador estável desta instalação, enviado na ativação.
+  final String deviceId;
+  final String licenseKey;
+
+  /// Payload do entitlement em base64 e sua assinatura Ed25519.
+  final String entitlementPayload;
+  final String entitlementSignature;
+  final DateTime? lastValidatedAt;
+  const LicenseRow({
+    required this.id,
+    required this.deviceId,
+    required this.licenseKey,
+    required this.entitlementPayload,
+    required this.entitlementSignature,
+    this.lastValidatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['device_id'] = Variable<String>(deviceId);
+    map['license_key'] = Variable<String>(licenseKey);
+    map['entitlement_payload'] = Variable<String>(entitlementPayload);
+    map['entitlement_signature'] = Variable<String>(entitlementSignature);
+    if (!nullToAbsent || lastValidatedAt != null) {
+      map['last_validated_at'] = Variable<DateTime>(lastValidatedAt);
+    }
+    return map;
+  }
+
+  LicenseTableCompanion toCompanion(bool nullToAbsent) {
+    return LicenseTableCompanion(
+      id: Value(id),
+      deviceId: Value(deviceId),
+      licenseKey: Value(licenseKey),
+      entitlementPayload: Value(entitlementPayload),
+      entitlementSignature: Value(entitlementSignature),
+      lastValidatedAt: lastValidatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastValidatedAt),
+    );
+  }
+
+  factory LicenseRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LicenseRow(
+      id: serializer.fromJson<int>(json['id']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      licenseKey: serializer.fromJson<String>(json['licenseKey']),
+      entitlementPayload: serializer.fromJson<String>(
+        json['entitlementPayload'],
+      ),
+      entitlementSignature: serializer.fromJson<String>(
+        json['entitlementSignature'],
+      ),
+      lastValidatedAt: serializer.fromJson<DateTime?>(json['lastValidatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'licenseKey': serializer.toJson<String>(licenseKey),
+      'entitlementPayload': serializer.toJson<String>(entitlementPayload),
+      'entitlementSignature': serializer.toJson<String>(entitlementSignature),
+      'lastValidatedAt': serializer.toJson<DateTime?>(lastValidatedAt),
+    };
+  }
+
+  LicenseRow copyWith({
+    int? id,
+    String? deviceId,
+    String? licenseKey,
+    String? entitlementPayload,
+    String? entitlementSignature,
+    Value<DateTime?> lastValidatedAt = const Value.absent(),
+  }) => LicenseRow(
+    id: id ?? this.id,
+    deviceId: deviceId ?? this.deviceId,
+    licenseKey: licenseKey ?? this.licenseKey,
+    entitlementPayload: entitlementPayload ?? this.entitlementPayload,
+    entitlementSignature: entitlementSignature ?? this.entitlementSignature,
+    lastValidatedAt: lastValidatedAt.present
+        ? lastValidatedAt.value
+        : this.lastValidatedAt,
+  );
+  LicenseRow copyWithCompanion(LicenseTableCompanion data) {
+    return LicenseRow(
+      id: data.id.present ? data.id.value : this.id,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      licenseKey: data.licenseKey.present
+          ? data.licenseKey.value
+          : this.licenseKey,
+      entitlementPayload: data.entitlementPayload.present
+          ? data.entitlementPayload.value
+          : this.entitlementPayload,
+      entitlementSignature: data.entitlementSignature.present
+          ? data.entitlementSignature.value
+          : this.entitlementSignature,
+      lastValidatedAt: data.lastValidatedAt.present
+          ? data.lastValidatedAt.value
+          : this.lastValidatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LicenseRow(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('licenseKey: $licenseKey, ')
+          ..write('entitlementPayload: $entitlementPayload, ')
+          ..write('entitlementSignature: $entitlementSignature, ')
+          ..write('lastValidatedAt: $lastValidatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    deviceId,
+    licenseKey,
+    entitlementPayload,
+    entitlementSignature,
+    lastValidatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LicenseRow &&
+          other.id == this.id &&
+          other.deviceId == this.deviceId &&
+          other.licenseKey == this.licenseKey &&
+          other.entitlementPayload == this.entitlementPayload &&
+          other.entitlementSignature == this.entitlementSignature &&
+          other.lastValidatedAt == this.lastValidatedAt);
+}
+
+class LicenseTableCompanion extends UpdateCompanion<LicenseRow> {
+  final Value<int> id;
+  final Value<String> deviceId;
+  final Value<String> licenseKey;
+  final Value<String> entitlementPayload;
+  final Value<String> entitlementSignature;
+  final Value<DateTime?> lastValidatedAt;
+  const LicenseTableCompanion({
+    this.id = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.licenseKey = const Value.absent(),
+    this.entitlementPayload = const Value.absent(),
+    this.entitlementSignature = const Value.absent(),
+    this.lastValidatedAt = const Value.absent(),
+  });
+  LicenseTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String deviceId,
+    this.licenseKey = const Value.absent(),
+    this.entitlementPayload = const Value.absent(),
+    this.entitlementSignature = const Value.absent(),
+    this.lastValidatedAt = const Value.absent(),
+  }) : deviceId = Value(deviceId);
+  static Insertable<LicenseRow> custom({
+    Expression<int>? id,
+    Expression<String>? deviceId,
+    Expression<String>? licenseKey,
+    Expression<String>? entitlementPayload,
+    Expression<String>? entitlementSignature,
+    Expression<DateTime>? lastValidatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (deviceId != null) 'device_id': deviceId,
+      if (licenseKey != null) 'license_key': licenseKey,
+      if (entitlementPayload != null) 'entitlement_payload': entitlementPayload,
+      if (entitlementSignature != null)
+        'entitlement_signature': entitlementSignature,
+      if (lastValidatedAt != null) 'last_validated_at': lastValidatedAt,
+    });
+  }
+
+  LicenseTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? deviceId,
+    Value<String>? licenseKey,
+    Value<String>? entitlementPayload,
+    Value<String>? entitlementSignature,
+    Value<DateTime?>? lastValidatedAt,
+  }) {
+    return LicenseTableCompanion(
+      id: id ?? this.id,
+      deviceId: deviceId ?? this.deviceId,
+      licenseKey: licenseKey ?? this.licenseKey,
+      entitlementPayload: entitlementPayload ?? this.entitlementPayload,
+      entitlementSignature: entitlementSignature ?? this.entitlementSignature,
+      lastValidatedAt: lastValidatedAt ?? this.lastValidatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (licenseKey.present) {
+      map['license_key'] = Variable<String>(licenseKey.value);
+    }
+    if (entitlementPayload.present) {
+      map['entitlement_payload'] = Variable<String>(entitlementPayload.value);
+    }
+    if (entitlementSignature.present) {
+      map['entitlement_signature'] = Variable<String>(
+        entitlementSignature.value,
+      );
+    }
+    if (lastValidatedAt.present) {
+      map['last_validated_at'] = Variable<DateTime>(lastValidatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LicenseTableCompanion(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('licenseKey: $licenseKey, ')
+          ..write('entitlementPayload: $entitlementPayload, ')
+          ..write('entitlementSignature: $entitlementSignature, ')
+          ..write('lastValidatedAt: $lastValidatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5009,6 +5438,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $SettingsTableTable settingsTable = $SettingsTableTable(this);
+  late final $LicenseTableTable licenseTable = $LicenseTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5024,6 +5454,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     historyEntries,
     windowPositions,
     settingsTable,
+    licenseTable,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -8844,6 +9275,227 @@ typedef $$SettingsTableTableProcessedTableManager =
       SettingsRow,
       PrefetchHooks Function()
     >;
+typedef $$LicenseTableTableCreateCompanionBuilder =
+    LicenseTableCompanion Function({
+      Value<int> id,
+      required String deviceId,
+      Value<String> licenseKey,
+      Value<String> entitlementPayload,
+      Value<String> entitlementSignature,
+      Value<DateTime?> lastValidatedAt,
+    });
+typedef $$LicenseTableTableUpdateCompanionBuilder =
+    LicenseTableCompanion Function({
+      Value<int> id,
+      Value<String> deviceId,
+      Value<String> licenseKey,
+      Value<String> entitlementPayload,
+      Value<String> entitlementSignature,
+      Value<DateTime?> lastValidatedAt,
+    });
+
+class $$LicenseTableTableFilterComposer
+    extends Composer<_$AppDatabase, $LicenseTableTable> {
+  $$LicenseTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get licenseKey => $composableBuilder(
+    column: $table.licenseKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entitlementPayload => $composableBuilder(
+    column: $table.entitlementPayload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entitlementSignature => $composableBuilder(
+    column: $table.entitlementSignature,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastValidatedAt => $composableBuilder(
+    column: $table.lastValidatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LicenseTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $LicenseTableTable> {
+  $$LicenseTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get licenseKey => $composableBuilder(
+    column: $table.licenseKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entitlementPayload => $composableBuilder(
+    column: $table.entitlementPayload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entitlementSignature => $composableBuilder(
+    column: $table.entitlementSignature,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastValidatedAt => $composableBuilder(
+    column: $table.lastValidatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LicenseTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LicenseTableTable> {
+  $$LicenseTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get licenseKey => $composableBuilder(
+    column: $table.licenseKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entitlementPayload => $composableBuilder(
+    column: $table.entitlementPayload,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entitlementSignature => $composableBuilder(
+    column: $table.entitlementSignature,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastValidatedAt => $composableBuilder(
+    column: $table.lastValidatedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$LicenseTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LicenseTableTable,
+          LicenseRow,
+          $$LicenseTableTableFilterComposer,
+          $$LicenseTableTableOrderingComposer,
+          $$LicenseTableTableAnnotationComposer,
+          $$LicenseTableTableCreateCompanionBuilder,
+          $$LicenseTableTableUpdateCompanionBuilder,
+          (
+            LicenseRow,
+            BaseReferences<_$AppDatabase, $LicenseTableTable, LicenseRow>,
+          ),
+          LicenseRow,
+          PrefetchHooks Function()
+        > {
+  $$LicenseTableTableTableManager(_$AppDatabase db, $LicenseTableTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LicenseTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LicenseTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LicenseTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<String> licenseKey = const Value.absent(),
+                Value<String> entitlementPayload = const Value.absent(),
+                Value<String> entitlementSignature = const Value.absent(),
+                Value<DateTime?> lastValidatedAt = const Value.absent(),
+              }) => LicenseTableCompanion(
+                id: id,
+                deviceId: deviceId,
+                licenseKey: licenseKey,
+                entitlementPayload: entitlementPayload,
+                entitlementSignature: entitlementSignature,
+                lastValidatedAt: lastValidatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String deviceId,
+                Value<String> licenseKey = const Value.absent(),
+                Value<String> entitlementPayload = const Value.absent(),
+                Value<String> entitlementSignature = const Value.absent(),
+                Value<DateTime?> lastValidatedAt = const Value.absent(),
+              }) => LicenseTableCompanion.insert(
+                id: id,
+                deviceId: deviceId,
+                licenseKey: licenseKey,
+                entitlementPayload: entitlementPayload,
+                entitlementSignature: entitlementSignature,
+                lastValidatedAt: lastValidatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LicenseTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LicenseTableTable,
+      LicenseRow,
+      $$LicenseTableTableFilterComposer,
+      $$LicenseTableTableOrderingComposer,
+      $$LicenseTableTableAnnotationComposer,
+      $$LicenseTableTableCreateCompanionBuilder,
+      $$LicenseTableTableUpdateCompanionBuilder,
+      (
+        LicenseRow,
+        BaseReferences<_$AppDatabase, $LicenseTableTable, LicenseRow>,
+      ),
+      LicenseRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8868,4 +9520,6 @@ class $AppDatabaseManager {
       $$WindowPositionsTableTableManager(_db, _db.windowPositions);
   $$SettingsTableTableTableManager get settingsTable =>
       $$SettingsTableTableTableManager(_db, _db.settingsTable);
+  $$LicenseTableTableTableManager get licenseTable =>
+      $$LicenseTableTableTableManager(_db, _db.licenseTable);
 }

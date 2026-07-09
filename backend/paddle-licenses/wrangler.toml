@@ -1,0 +1,9 @@
+name = "flowdesk-licenses"
+main = "src/worker.js"
+compatibility_date = "2026-01-01"
+
+# Crie o namespace com `wrangler kv namespace create LICENSES`
+# e cole o id gerado abaixo.
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "SUBSTITUA_PELO_ID_DO_NAMESPACE"
