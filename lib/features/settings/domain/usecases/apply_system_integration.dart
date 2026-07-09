@@ -6,7 +6,8 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/app_settings.dart';
 import '../repositories/system_integration_repository.dart';
 
-/// Aplica no macOS os efeitos das preferências (login, Dock, menu bar).
+/// Aplica no macOS os efeitos das preferências (login, Dock, menu bar,
+/// encaixe magnético).
 ///
 /// Falhas individuais não interrompem as demais aplicações.
 @injectable
@@ -20,6 +21,7 @@ class ApplySystemIntegration implements UseCase<Unit, AppSettings> {
     await _repository.setLaunchAtLogin(params.launchAtLogin);
     await _repository.setDockVisible(params.showInDock);
     await _repository.setStatusBarVisible(params.showMenuBarIcon);
+    await _repository.setMagneticSnap(params.magneticSnap);
     return right(unit);
   }
 }

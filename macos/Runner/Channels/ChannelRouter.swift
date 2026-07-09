@@ -10,6 +10,7 @@ final class ChannelRouter {
   private let shortcutManager = ShortcutManager()
   private let statusBarManager = StatusBarManager()
   private let launchAtLoginManager = LaunchAtLoginManager()
+  private let snapManager = SnapManager()
 
   func register(with messenger: FlutterBinaryMessenger) {
     let permissionsChannel = FlutterMethodChannel(
@@ -70,16 +71,19 @@ final class ChannelRouter {
     )
     shortcutsEventsChannel.setStreamHandler(shortcutManager)
 
-    // Canal do app: menu bar/Dock (StatusBarManager) e login (LaunchAtLogin).
+    // Canal do app: menu bar/Dock (StatusBarManager), login (LaunchAtLogin)
+    // e encaixe magnético (SnapManager).
     let appChannel = FlutterMethodChannel(
       name: "flowdesk/app",
       binaryMessenger: messenger
     )
     appChannel.setMethodCallHandler {
-      [statusBarManager, launchAtLoginManager] call, result in
+      [statusBarManager, launchAtLoginManager, snapManager] call, result in
       switch call.method {
       case "setLaunchAtLogin":
         launchAtLoginManager.handle(call, result: result)
+      case "setMagneticSnap":
+        snapManager.handle(call, result: result)
       default:
         statusBarManager.handle(call, result: result)
       }

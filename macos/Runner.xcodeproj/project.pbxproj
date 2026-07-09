@@ -30,6 +30,7 @@
 		FD0000000000000000001B03 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A03 /* PermissionManager.swift */; };
 		FD0000000000000000001B04 /* MonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A04 /* MonitorManager.swift */; };
 		FD0000000000000000001B05 /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A05 /* WindowManager.swift */; };
+		FD0000000000000000002B01 /* SnapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000002A01 /* SnapManager.swift */; };
 		FD0000000000000000001B06 /* WorkspaceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A06 /* WorkspaceManager.swift */; };
 		FD0000000000000000001B07 /* ShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A07 /* ShortcutManager.swift */; };
 		FD0000000000000000001B08 /* StatusBarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0000000000000000001A08 /* StatusBarManager.swift */; };
@@ -87,6 +88,7 @@
 		FD0000000000000000001A03 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionManager.swift; sourceTree = "<group>"; };
 		FD0000000000000000001A04 /* MonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorManager.swift; sourceTree = "<group>"; };
 		FD0000000000000000001A05 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
+		FD0000000000000000002A01 /* SnapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapManager.swift; sourceTree = "<group>"; };
 		FD0000000000000000001A06 /* WorkspaceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceManager.swift; sourceTree = "<group>"; };
 		FD0000000000000000001A07 /* ShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutManager.swift; sourceTree = "<group>"; };
 		FD0000000000000000001A08 /* StatusBarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarManager.swift; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 				FD0000000000000000001A03 /* PermissionManager.swift */,
 				FD0000000000000000001A04 /* MonitorManager.swift */,
 				FD0000000000000000001A05 /* WindowManager.swift */,
+				FD0000000000000000002A01 /* SnapManager.swift */,
 				FD0000000000000000001A06 /* WorkspaceManager.swift */,
 				FD0000000000000000001A07 /* ShortcutManager.swift */,
 				FD0000000000000000001A08 /* StatusBarManager.swift */,
@@ -489,6 +492,7 @@
 				FD0000000000000000001B03 /* PermissionManager.swift in Sources */,
 				FD0000000000000000001B04 /* MonitorManager.swift in Sources */,
 				FD0000000000000000001B05 /* WindowManager.swift in Sources */,
+				FD0000000000000000002B01 /* SnapManager.swift in Sources */,
 				FD0000000000000000001B06 /* WorkspaceManager.swift in Sources */,
 				FD0000000000000000001B07 /* ShortcutManager.swift in Sources */,
 				FD0000000000000000001B08 /* StatusBarManager.swift in Sources */,

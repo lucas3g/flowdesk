@@ -53,7 +53,8 @@ class SettingsCubit extends Cubit<SettingsState> {
     final integrationChanged =
         previous.launchAtLogin != updated.launchAtLogin ||
         previous.showInDock != updated.showInDock ||
-        previous.showMenuBarIcon != updated.showMenuBarIcon;
+        previous.showMenuBarIcon != updated.showMenuBarIcon ||
+        previous.magneticSnap != updated.magneticSnap;
     if (integrationChanged) {
       await _applyIntegration(updated);
     }

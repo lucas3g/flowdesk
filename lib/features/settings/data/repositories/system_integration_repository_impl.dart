@@ -27,6 +27,11 @@ class SystemIntegrationRepositoryImpl implements SystemIntegrationRepository {
     return _invoke(() => _datasource.setStatusBarVisible(visible));
   }
 
+  @override
+  Future<Either<Failure, Unit>> setMagneticSnap(bool enabled) {
+    return _invoke(() => _datasource.setMagneticSnap(enabled));
+  }
+
   Future<Either<Failure, Unit>> _invoke(Future<void> Function() action) async {
     try {
       await action();
