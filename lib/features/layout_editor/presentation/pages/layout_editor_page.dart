@@ -81,6 +81,8 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                                   height: height,
                                 ),
                             onCreate: _cubit.addRegionAt,
+                            onBringToFront: _cubit.bringRegionToFront,
+                            onSendToBack: _cubit.sendRegionToBack,
                           ),
                         ),
                       ),

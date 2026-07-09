@@ -176,6 +176,13 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
     );
   }
 
+  /// Traz a região para a frente (fim da lista, desenhada por último).
+  void bringRegionToFront(int index) =>
+      _moveRegion(index, state.layout.regions.length - 1);
+
+  /// Envia a região para trás (início da lista, desenhada primeiro).
+  void sendRegionToBack(int index) => _moveRegion(index, 0);
+
   void deleteRegion(int index) {
     if (_regionAt(index) == null) return;
     final regions = [...state.layout.regions]..removeAt(index);
@@ -222,6 +229,24 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
       index >= 0 && index < state.layout.regions.length
       ? state.layout.regions[index]
       : null;
+
+  /// Move a região para outra posição da lista, reatribuindo os
+  /// [LayoutRegion.sortOrder] (a ordem da lista é a ordem de desenho).
+  void _moveRegion(int index, int newIndex) {
+    final region = _regionAt(index);
+    if (region == null || index == newIndex) return;
+
+    final regions = [...state.layout.regions]
+      ..removeAt(index)
+      ..insert(newIndex, region);
+    _updateRegions(
+      [
+        for (var i = 0; i < regions.length; i++)
+          regions[i].copyWith(sortOrder: i),
+      ],
+      selectIndex: newIndex,
+    );
+  }
 
   void _replaceRegion(int index, LayoutRegion region) {
     final regions = [...state.layout.regions];

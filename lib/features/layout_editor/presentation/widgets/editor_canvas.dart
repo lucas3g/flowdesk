@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/ms_icon.dart';
 import '../../../layouts/domain/entities/layout.dart';
 import '../../../layouts/presentation/widgets/layout_preview.dart';
 import '../cubits/layout_editor_state.dart';
@@ -58,6 +59,8 @@ class EditorCanvas extends StatefulWidget {
     required this.onSelect,
     required this.onSetFrame,
     required this.onCreate,
+    required this.onBringToFront,
+    required this.onSendToBack,
   });
 
   final LayoutEditorState state;
@@ -65,6 +68,8 @@ class EditorCanvas extends StatefulWidget {
   final void Function(int index, double x, double y, double width, double height)
   onSetFrame;
   final void Function(double x, double y, double width, double height) onCreate;
+  final ValueChanged<int> onBringToFront;
+  final ValueChanged<int> onSendToBack;
 
   /// Espessura (px) das zonas de redimensionamento nas bordas.
   static const double edgeGrip = 7;
@@ -191,12 +196,14 @@ class _EditorCanvasState extends State<EditorCanvas> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Corpo da região: selecionar e mover.
+          // Corpo da região: selecionar, mover e menu de contexto.
           Positioned.fill(
             child: _dragZone(
               index: index,
               mode: _DragMode.move,
               canvasSize: canvasSize,
+              onSecondaryTapDown: (details) =>
+                  _showRegionMenu(index, details.globalPosition),
               child: Container(
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.22),
@@ -380,6 +387,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
     required int index,
     required _DragMode mode,
     required Size canvasSize,
+    GestureTapDownCallback? onSecondaryTapDown,
     Widget? child,
   }) {
     return MouseRegion(
@@ -387,6 +395,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: (_) => widget.onSelect(index),
+        onSecondaryTapDown: onSecondaryTapDown,
         onPanStart: (_) {
           _gestureOrigin = widget.state.layout.regions[index];
           _gestureDelta = Offset.zero;
@@ -402,6 +411,54 @@ class _EditorCanvasState extends State<EditorCanvas> {
         child: child ?? const SizedBox.expand(),
       ),
     );
+  }
+
+  /// Menu de contexto da região: alterar a ordem de empilhamento quando
+  /// há regiões sobrepostas.
+  Future<void> _showRegionMenu(int index, Offset globalPosition) async {
+    widget.onSelect(index);
+    final colors = context.colors;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        globalPosition & Size.zero,
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'front',
+          height: 36,
+          child: Row(
+            children: [
+              MsIcon('flip_to_front', size: 15, color: colors.text2),
+              const SizedBox(width: 8),
+              const Text('Trazer para frente', style: TextStyle(fontSize: 12.5)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'back',
+          height: 36,
+          child: Row(
+            children: [
+              MsIcon('flip_to_back', size: 15, color: colors.text2),
+              const SizedBox(width: 8),
+              const Text('Enviar para trás', style: TextStyle(fontSize: 12.5)),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    switch (action) {
+      case 'front':
+        widget.onBringToFront(index);
+      case 'back':
+        widget.onSendToBack(index);
+    }
   }
 
   /// Converte o delta acumulado em um novo frame conforme o modo.

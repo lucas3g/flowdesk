@@ -156,6 +156,48 @@ void main() {
     expect(cubit.state.selected!.appName, 'VS Code');
   });
 
+  group('ordem de empilhamento', () {
+    test('bringRegionToFront move a região para o fim da lista', () {
+      final cubit = buildCubit()
+        ..addRegion() // Região 1
+        ..addRegion() // Região 2
+        ..addRegion() // Região 3
+        ..bringRegionToFront(0);
+
+      final names = cubit.state.layout.regions.map((r) => r.name).toList();
+      expect(names, ['Região 2', 'Região 3', 'Região 1']);
+      expect(
+        cubit.state.layout.regions.map((r) => r.sortOrder).toList(),
+        [0, 1, 2],
+      );
+      // A seleção acompanha a região movida.
+      expect(cubit.state.selected!.name, 'Região 1');
+      expect(cubit.state.isDirty, isTrue);
+    });
+
+    test('sendRegionToBack move a região para o início da lista', () {
+      final cubit = buildCubit()
+        ..addRegion()
+        ..addRegion()
+        ..addRegion()
+        ..sendRegionToBack(2);
+
+      final names = cubit.state.layout.regions.map((r) => r.name).toList();
+      expect(names, ['Região 3', 'Região 1', 'Região 2']);
+      expect(cubit.state.selectedIndex, 0);
+    });
+
+    test('mover para a posição atual não marca dirty', () {
+      final cubit = buildCubit()..loadForEdit(_preset);
+
+      cubit.bringRegionToFront(1);
+      expect(cubit.state.isDirty, isFalse);
+
+      cubit.sendRegionToBack(0);
+      expect(cubit.state.isDirty, isFalse);
+    });
+  });
+
   test('deleteRegion remove e limpa a seleção', () {
     final cubit = buildCubit()
       ..addRegion()
