@@ -27,8 +27,9 @@ std::string StringArg(const EncodableMap& map, const char* key) {
 }
 
 std::string LowerAscii(std::string value) {
-  std::transform(value.begin(), value.end(), value.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
+  std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) {
+    return static_cast<char>(std::tolower(c));
+  });
   return value;
 }
 

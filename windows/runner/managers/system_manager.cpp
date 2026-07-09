@@ -5,7 +5,7 @@
 #include <cstring>
 #include <functional>
 
-#include "resource.h"
+#include "../resource.h"
 #include "string_utils.h"
 
 using flutter::EncodableList;

@@ -1,5 +1,9 @@
 #include "permission_manager.h"
 
+// windows.h precisa vir antes de shellapi.h (que depende dos tipos base
+// Win32 e não os inclui sozinho).
+#include <windows.h>
+
 #include <shellapi.h>
 
 using flutter::EncodableMap;
