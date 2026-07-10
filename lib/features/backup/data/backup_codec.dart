@@ -95,6 +95,14 @@ abstract final class BackupCodec {
           'windowGap': data.settings!.windowGap,
           'screenMargin': data.settings!.screenMargin,
           'barTransparency': data.settings!.barTransparency,
+          'snapToLayoutRegions': data.settings!.snapToLayoutRegions,
+          // Exclusões por instância ficam de fora: o id da janela só vale
+          // na sessão em que foi capturado.
+          'snapExcludedApps': [
+            for (final app in data.settings!.snapExcludedApps)
+              if (app.windowId == null)
+                {'bundleId': app.bundleId, 'appName': app.appName},
+          ],
         },
     });
   }
@@ -192,6 +200,16 @@ abstract final class BackupCodec {
         windowGap: (rawSettings['windowGap'] as num?)?.toDouble() ?? 8,
         screenMargin: (rawSettings['screenMargin'] as num?)?.toDouble() ?? 8,
         barTransparency: rawSettings['barTransparency'] != false,
+        snapToLayoutRegions: rawSettings['snapToLayoutRegions'] == true,
+        snapExcludedApps: [
+          if (rawSettings['snapExcludedApps'] is List)
+            for (final entry in rawSettings['snapExcludedApps'] as List)
+              if (entry is Map && entry['bundleId'] is String)
+                SnapExcludedApp(
+                  bundleId: entry['bundleId'] as String,
+                  appName: '${entry['appName'] ?? ''}',
+                ),
+        ],
       );
     }
 

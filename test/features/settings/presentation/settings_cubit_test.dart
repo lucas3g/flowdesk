@@ -124,6 +124,61 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
+      'setSnapToLayoutRegions persiste a preferência',
+      build: buildCubit,
+      act: (cubit) => cubit.setSnapToLayoutRegions(true),
+      expect: () => [
+        isA<SettingsState>().having(
+          (s) => s.settings.snapToLayoutRegions,
+          'snapToLayoutRegions',
+          isTrue,
+        ),
+      ],
+      verify: (_) => verify(() => saveSettings(any())).called(1),
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'setLastAppliedLayout registra o layout e o monitor',
+      build: buildCubit,
+      act: (cubit) => cubit.setLastAppliedLayout(42, 2),
+      expect: () => [
+        isA<SettingsState>()
+            .having(
+              (s) => s.settings.lastAppliedLayoutId,
+              'lastAppliedLayoutId',
+              42,
+            )
+            .having(
+              (s) => s.settings.lastAppliedMonitorId,
+              'lastAppliedMonitorId',
+              2,
+            ),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'setSnapExcludedApps persiste e reaplica a integração',
+      build: buildCubit,
+      act: (cubit) => cubit.setSnapExcludedApps(
+        const [SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail')],
+      ),
+      expect: () => [
+        isA<SettingsState>().having(
+          (s) => s.settings.snapExcludedApps,
+          'snapExcludedApps',
+          const [SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail')],
+        ),
+      ],
+      verify: (_) {
+        verify(() => saveSettings(any())).called(1);
+        final applied =
+            verify(() => applyIntegration(captureAny())).captured.single
+                as AppSettings;
+        expect(applied.snapExcludedApps.single.bundleId, 'com.apple.mail');
+      },
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
       'emite error quando a persistência falha',
       setUp: () => when(() => saveSettings(any())).thenAnswer(
         (_) async => left(const DatabaseFailure('sem espaço')),

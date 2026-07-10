@@ -243,6 +243,66 @@ void main() {
       ).called(1);
     });
 
+    test(
+      'instância extra de app configurado não preenche região livre',
+      () async {
+        const layout = Layout(
+          id: 1,
+          name: 'Duplo Chrome',
+          regions: [
+            LayoutRegion(
+              name: 'Esquerda',
+              x: 0,
+              y: 0,
+              width: 50,
+              height: 100,
+              appBundleId: 'com.chrome',
+              appName: 'Chrome',
+              appWindowTitle: 'facebook',
+            ),
+            LayoutRegion(
+              name: 'Livre',
+              x: 50,
+              y: 0,
+              width: 50,
+              height: 100,
+              sortOrder: 1,
+            ),
+          ],
+        );
+        // Duas janelas do Chrome: a do Facebook vai para a região com app;
+        // a página aleatória NÃO deve ocupar a região livre.
+        final windows = [
+          _window(1, bundleId: 'com.chrome', title: 'facebook'),
+          _window(2, bundleId: 'com.chrome', title: 'página aleatória'),
+        ];
+
+        final result = await ApplyLayout(repository)(
+          ApplyLayoutParams(layout: layout, monitor: _monitor, windows: windows),
+        );
+
+        expect(result.getOrElse((_) => 0), 1);
+        verify(
+          () => repository.setWindowFrame(
+            windows[0],
+            x: 0,
+            y: 25,
+            width: 1000,
+            height: 1000,
+          ),
+        ).called(1);
+        verifyNever(
+          () => repository.setWindowFrame(
+            windows[1],
+            x: any(named: 'x'),
+            y: any(named: 'y'),
+            width: any(named: 'width'),
+            height: any(named: 'height'),
+          ),
+        );
+      },
+    );
+
     test('app associado fechado libera a região para a ordem normal', () async {
       const layout = Layout(
         id: 1,

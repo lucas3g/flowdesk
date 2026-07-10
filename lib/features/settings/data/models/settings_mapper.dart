@@ -1,7 +1,46 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../../../core/services/database/app_database.dart';
 import '../../domain/entities/app_settings.dart';
+
+/// Decodifica o JSON persistido de apps excluídos do encaixe; conteúdo
+/// inválido resulta em lista vazia.
+List<SnapExcludedApp> decodeSnapExcludedApps(String json) {
+  try {
+    final decoded = jsonDecode(json);
+    if (decoded is! List) return const [];
+    return [
+      for (final entry in decoded)
+        if (entry is Map && entry['bundleId'] is String)
+          SnapExcludedApp(
+            bundleId: entry['bundleId'] as String,
+            appName: '${entry['appName'] ?? ''}',
+            windowId: entry['windowId'] is num
+                ? (entry['windowId'] as num).toInt()
+                : null,
+            windowTitle: entry['windowTitle'] is String
+                ? entry['windowTitle'] as String
+                : null,
+          ),
+    ];
+  } on FormatException {
+    return const [];
+  }
+}
+
+String encodeSnapExcludedApps(List<SnapExcludedApp> apps) {
+  return jsonEncode([
+    for (final app in apps)
+      {
+        'bundleId': app.bundleId,
+        'appName': app.appName,
+        if (app.windowId != null) 'windowId': app.windowId,
+        if (app.windowTitle != null) 'windowTitle': app.windowTitle,
+      },
+  ]);
+}
 
 /// Conversões entre a linha do banco e a entidade de domínio.
 extension SettingsRowMapper on SettingsRow {
@@ -23,6 +62,10 @@ extension SettingsRowMapper on SettingsRow {
       barTransparency: barTransparency,
       onboardingDone: onboardingDone,
       userName: userName,
+      snapToLayoutRegions: snapToLayoutRegions,
+      lastAppliedLayoutId: lastAppliedLayoutId,
+      lastAppliedMonitorId: lastAppliedMonitorId,
+      snapExcludedApps: decodeSnapExcludedApps(snapExcludedApps),
     );
   }
 }
@@ -44,6 +87,10 @@ extension AppSettingsMapper on AppSettings {
       barTransparency: Value(barTransparency),
       onboardingDone: Value(onboardingDone),
       userName: Value(userName),
+      snapToLayoutRegions: Value(snapToLayoutRegions),
+      lastAppliedLayoutId: Value(lastAppliedLayoutId),
+      lastAppliedMonitorId: Value(lastAppliedMonitorId),
+      snapExcludedApps: Value(encodeSnapExcludedApps(snapExcludedApps)),
     );
   }
 }

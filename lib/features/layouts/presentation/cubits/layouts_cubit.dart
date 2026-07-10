@@ -145,6 +145,9 @@ class LayoutsCubit extends Cubit<LayoutsState> {
         await result.fold(
           (failure) async => emit(state.copyWith(feedback: failure.message)),
           (applied) async {
+            // Registra como último layout aplicado — o SnapRegionsService
+            // reage à mudança e atualiza as zonas de encaixe no nativo.
+            await _settingsCubit.setLastAppliedLayout(layout.id, monitor.id);
             await _addHistoryEntry(
               AddHistoryParams(
                 type: HistoryEntryType.layout,

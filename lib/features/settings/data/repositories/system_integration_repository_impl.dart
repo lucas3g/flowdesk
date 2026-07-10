@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
+import '../../domain/entities/app_settings.dart';
 import '../../domain/repositories/system_integration_repository.dart';
 import '../datasources/system_platform_datasource.dart';
 
@@ -30,6 +31,27 @@ class SystemIntegrationRepositoryImpl implements SystemIntegrationRepository {
   @override
   Future<Either<Failure, Unit>> setMagneticSnap(bool enabled) {
     return _invoke(() => _datasource.setMagneticSnap(enabled));
+  }
+
+  @override
+  Future<Either<Failure, Unit>> setLayoutSnapRegions({
+    required bool enabled,
+    required List<({double x, double y, double width, double height})>
+        regions,
+  }) {
+    return _invoke(
+      () => _datasource.setLayoutSnapRegions(
+        enabled: enabled,
+        regions: regions,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Unit>> setSnapExcludedApps(
+    List<SnapExcludedApp> apps,
+  ) {
+    return _invoke(() => _datasource.setSnapExcludedApps(apps));
   }
 
   Future<Either<Failure, Unit>> _invoke(Future<void> Function() action) async {

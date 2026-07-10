@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.withExecutor(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,6 +48,16 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {
         await m.createTable(licenseTable);
+      }
+      if (from < 7) {
+        await m.addColumn(settingsTable, settingsTable.snapToLayoutRegions);
+        await m.addColumn(settingsTable, settingsTable.lastAppliedLayoutId);
+      }
+      if (from < 8) {
+        await m.addColumn(settingsTable, settingsTable.lastAppliedMonitorId);
+      }
+      if (from < 9) {
+        await m.addColumn(settingsTable, settingsTable.snapExcludedApps);
       }
     },
     beforeOpen: (details) async {

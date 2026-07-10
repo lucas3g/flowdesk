@@ -22,6 +22,7 @@ class ApplySystemIntegration implements UseCase<Unit, AppSettings> {
     await _repository.setDockVisible(params.showInDock);
     await _repository.setStatusBarVisible(params.showMenuBarIcon);
     await _repository.setMagneticSnap(params.magneticSnap);
+    await _repository.setSnapExcludedApps(params.snapExcludedApps);
     return right(unit);
   }
 }

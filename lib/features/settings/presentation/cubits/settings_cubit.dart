@@ -54,7 +54,8 @@ class SettingsCubit extends Cubit<SettingsState> {
         previous.launchAtLogin != updated.launchAtLogin ||
         previous.showInDock != updated.showInDock ||
         previous.showMenuBarIcon != updated.showMenuBarIcon ||
-        previous.magneticSnap != updated.magneticSnap;
+        previous.magneticSnap != updated.magneticSnap ||
+        previous.snapExcludedApps != updated.snapExcludedApps;
     if (integrationChanged) {
       await _applyIntegration(updated);
     }
@@ -84,6 +85,22 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future<void> setMagneticSnap(bool value) =>
       _update((s) => s.copyWith(magneticSnap: value));
+
+  Future<void> setSnapToLayoutRegions(bool value) =>
+      _update((s) => s.copyWith(snapToLayoutRegions: value));
+
+  /// Substitui a lista de apps excluídos do encaixe ao arrastar.
+  Future<void> setSnapExcludedApps(List<SnapExcludedApp> apps) =>
+      _update((s) => s.copyWith(snapExcludedApps: apps));
+
+  /// Registra o último layout aplicado e em qual monitor (fonte das zonas
+  /// de encaixe — elas só aparecem nesse monitor).
+  Future<void> setLastAppliedLayout(int layoutId, int monitorId) => _update(
+    (s) => s.copyWith(
+      lastAppliedLayoutId: () => layoutId,
+      lastAppliedMonitorId: () => monitorId,
+    ),
+  );
 
   Future<void> setAnimateTransitions(bool value) =>
       _update((s) => s.copyWith(animateTransitions: value));

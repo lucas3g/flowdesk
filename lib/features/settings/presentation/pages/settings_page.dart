@@ -10,6 +10,7 @@ import '../../domain/entities/app_settings.dart';
 import '../cubits/settings_cubit.dart';
 import '../cubits/settings_state.dart';
 import '../widgets/settings_group.dart';
+import '../widgets/snap_excluded_apps_row.dart';
 
 /// Tela de Configurações: grupos Geral, Comportamento e Aparência.
 class SettingsPage extends StatelessWidget {
@@ -115,6 +116,19 @@ class SettingsPage extends StatelessWidget {
                             'Sugerir regiões ao aproximar janelas das bordas',
                         value: settings.magneticSnap,
                         onChanged: _cubit.setMagneticSnap,
+                      ),
+                      SettingsToggleRow(
+                        icon: 'grid_view',
+                        label: 'Encaixar nas regiões do layout',
+                        subtitle:
+                            'Ao arrastar uma janela, mostra as regiões do '
+                            'último layout aplicado e encaixa ao soltar',
+                        value: settings.snapToLayoutRegions,
+                        onChanged: _cubit.setSnapToLayoutRegions,
+                      ),
+                      SnapExcludedAppsRow(
+                        apps: settings.snapExcludedApps,
+                        onChanged: _cubit.setSnapExcludedApps,
                       ),
                       SettingsToggleRow(
                         icon: 'animation',

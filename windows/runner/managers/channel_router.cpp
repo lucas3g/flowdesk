@@ -56,10 +56,16 @@ void ChannelRouter::Register(flutter::BinaryMessenger* messenger, HWND hwnd) {
   EventChannel workspace_events(messenger, "flowdesk/workspace/events", &codec);
   workspace_events.SetStreamHandler(workspace_manager_.CreateStreamHandler());
 
-  // Canal do app: login (LaunchAtLogin) e bandeja/taskbar (SystemManager).
+  // Canal do app: login/bandeja/taskbar (SystemManager) e encaixe por
+  // regiões do layout (SnapManager).
   app_channel_ =
       std::make_unique<MethodChannel>(messenger, "flowdesk/app", &codec);
   app_channel_->SetMethodCallHandler([this](const auto& call, auto result) {
+    if (call.method_name() == "setLayoutSnapRegions" ||
+        call.method_name() == "setSnapExcludedApps") {
+      snap_manager_.HandleMethodCall(call, std::move(result));
+      return;
+    }
     system_manager_.HandleMethodCall(call, std::move(result));
   });
 

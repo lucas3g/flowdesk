@@ -82,7 +82,7 @@ final class ChannelRouter {
       switch call.method {
       case "setLaunchAtLogin":
         launchAtLoginManager.handle(call, result: result)
-      case "setMagneticSnap":
+      case "setMagneticSnap", "setLayoutSnapRegions", "setSnapExcludedApps":
         snapManager.handle(call, result: result)
       default:
         statusBarManager.handle(call, result: result)

@@ -84,7 +84,21 @@ void main() {
       ),
     );
     await source.settings.saveSettings(
-      const AppSettings(themePreference: ThemePreference.dark, windowGap: 16),
+      const AppSettings(
+        themePreference: ThemePreference.dark,
+        windowGap: 16,
+        snapToLayoutRegions: true,
+        snapExcludedApps: [
+          SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail'),
+          // Exclusão por instância (windowId) não entra no backup.
+          SnapExcludedApp(
+            bundleId: 'com.google.chrome',
+            appName: 'Chrome',
+            windowId: 4321,
+            windowTitle: 'YouTube',
+          ),
+        ],
+      ),
     );
 
     final json = (await ExportBackup(
@@ -132,6 +146,9 @@ void main() {
     );
     expect(settings.themePreference, ThemePreference.dark);
     expect(settings.windowGap, 16);
+    expect(settings.snapToLayoutRegions, isTrue);
+    expect(settings.snapExcludedApps.single.bundleId, 'com.apple.mail');
+    expect(settings.snapExcludedApps.single.windowId, isNull);
 
     await source.db.close();
     await target.db.close();

@@ -188,6 +188,22 @@ class SettingsTable extends Table {
   /// Nome do usuário, informado no onboarding (adicionada no schema v4).
   TextColumn get userName => text().withDefault(const Constant(''))();
 
+  /// Encaixe por regiões do último layout aplicado (adicionada no schema v7).
+  BoolColumn get snapToLayoutRegions =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Id do último layout aplicado, fonte das regiões de encaixe
+  /// (adicionada no schema v7).
+  IntColumn get lastAppliedLayoutId => integer().nullable()();
+
+  /// Monitor em que o último layout foi aplicado — as zonas de encaixe só
+  /// aparecem nele (adicionada no schema v8).
+  IntColumn get lastAppliedMonitorId => integer().nullable()();
+
+  /// Apps excluídos do encaixe ao arrastar, como JSON array de
+  /// `{bundleId, appName}` (adicionada no schema v9).
+  TextColumn get snapExcludedApps => text().withDefault(const Constant('[]'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

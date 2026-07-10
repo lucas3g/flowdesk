@@ -12,6 +12,7 @@
 #include "monitor_manager.h"
 #include "permission_manager.h"
 #include "shortcut_manager.h"
+#include "snap_manager.h"
 #include "system_manager.h"
 #include "window_manager.h"
 #include "workspace_manager.h"
@@ -35,6 +36,7 @@ class ChannelRouter {
   ShortcutManager shortcut_manager_;
   WorkspaceManager workspace_manager_;
   SystemManager system_manager_;
+  SnapManager snap_manager_;
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       windows_channel_;

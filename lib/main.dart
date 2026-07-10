@@ -7,6 +7,7 @@ import 'package:window_manager/window_manager.dart';
 import 'core/constants/app_constants.dart';
 import 'core/di/injection.dart';
 import 'core/services/auto_restore_service.dart';
+import 'core/services/snap_regions_service.dart';
 import 'core/services/status_bar_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell/app_shell.dart';
@@ -40,6 +41,7 @@ Future<void> main() async {
   unawaited(getIt<RulesCubit>().start());
   unawaited(getIt<MonitorProfilesCubit>().start());
   getIt<AutoRestoreService>().start();
+  unawaited(getIt<SnapRegionsService>().start());
 
   const windowOptions = WindowOptions(
     size: Size(1440, 900),

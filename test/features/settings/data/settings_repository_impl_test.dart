@@ -48,6 +48,17 @@ void main() {
       launchAtLogin: true,
       windowGap: 16,
       magneticSnap: false,
+      snapToLayoutRegions: true,
+      lastAppliedLayoutId: 7,
+      snapExcludedApps: [
+        SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail'),
+        SnapExcludedApp(
+          bundleId: 'com.google.chrome',
+          appName: 'Chrome',
+          windowId: 4321,
+          windowTitle: 'YouTube',
+        ),
+      ],
     );
 
     final saveResult = await repository.saveSettings(updated);

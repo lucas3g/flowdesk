@@ -312,9 +312,7 @@ final class WindowManager {
 
     // 2. Traz o app e a janela para frente (janelas atrás de outras
     // precisam ser levantadas para o reposicionamento ser visível).
-    NSRunningApplication(processIdentifier: pid)?
-      .activate(options: [.activateIgnoringOtherApps])
-    AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+    raiseWindow(window, pid: pid)
 
     var position = frame.origin
     var size = CGSize(width: frame.width, height: frame.height)
@@ -353,17 +351,93 @@ final class WindowManager {
       AXUIElementSetAttributeValue(
         window, kAXPositionAttribute as CFString, positionValue)
     }
+
+    // 5. Apps com sidebar/drawer (ex.: Mail) clampam o salto direto para o
+    // tamanho final; a redução em passos imita o arrasto manual e dá ao app
+    // a chance de recolher o drawer. Reaplica também após a acomodação
+    // interna, que pode reverter o tamanho instantes depois.
+    let reapplyIfNeeded = { [weak self] in
+      guard let self, let current = self.axFrame(of: window),
+        abs(current.origin.x - frame.origin.x) > 2
+          || abs(current.origin.y - frame.origin.y) > 2
+          || abs(current.width - frame.width) > 2
+          || abs(current.height - frame.height) > 2
+      else { return }
+      self.stepResize(to: size, window: window)
+      AXUIElementSetAttributeValue(
+        window, kAXSizeAttribute as CFString, sizeValue)
+      AXUIElementSetAttributeValue(
+        window, kAXPositionAttribute as CFString, positionValue)
+    }
+    reapplyIfNeeded()
+    for delay in [0.25, 0.6] {
+      DispatchQueue.main.asyncAfter(
+        deadline: .now() + delay, execute: reapplyIfNeeded)
+    }
     return status == .success
+  }
+
+  /// Redimensiona em passos de ~120px até o tamanho alvo. Apps com sidebar
+  /// colapsável só aceitam larguras menores depois de recolhê-la — o que só
+  /// acontece com reduções graduais, como num arrasto manual da borda.
+  private func stepResize(to target: CGSize, window: AXUIElement) {
+    guard var current = axFrame(of: window)?.size else { return }
+
+    for _ in 0..<40 {
+      let doneWidth = abs(current.width - target.width) <= 2
+      let doneHeight = abs(current.height - target.height) <= 2
+      if doneWidth && doneHeight { return }
+
+      let step: CGFloat = 120
+      var next = CGSize(
+        width: current.width > target.width
+          ? max(target.width, current.width - step)
+          : min(target.width, current.width + step),
+        height: current.height > target.height
+          ? max(target.height, current.height - step)
+          : min(target.height, current.height + step)
+      )
+      guard let value = AXValueCreate(.cgSize, &next) else { return }
+      AXUIElementSetAttributeValue(
+        window, kAXSizeAttribute as CFString, value)
+
+      guard let updated = axFrame(of: window)?.size else { return }
+      // Sem progresso: o app atingiu o mínimo real — não insiste.
+      if abs(updated.width - current.width) < 1
+        && abs(updated.height - current.height) < 1 {
+        return
+      }
+      current = updated
+    }
   }
 
   private func focus(pid: pid_t, windowId: Int) -> Bool {
     guard let window = axWindow(pid: pid, windowId: windowId) else {
       return false
     }
-    AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+    raiseWindow(window, pid: pid)
+    return true
+  }
+
+  /// Traz a janela para frente de forma confiável mesmo quando outra
+  /// instância do mesmo app está por cima: promove a janela a
+  /// principal/focada, eleva, ativa o app e REAPLICA a promoção depois que a
+  /// ativação (assíncrona) conclui — ao ativar, o app tende a restaurar a
+  /// antiga janela key por cima da janela alvo.
+  private func raiseWindow(_ window: AXUIElement, pid: pid_t) {
+    let promote = {
+      AXUIElementSetAttributeValue(
+        window, kAXMainAttribute as CFString, kCFBooleanTrue)
+      AXUIElementSetAttributeValue(
+        window, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+      AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+    }
+    promote()
     NSRunningApplication(processIdentifier: pid)?
       .activate(options: [.activateIgnoringOtherApps])
-    return true
+    // Dois reforços cobrem ativações lentas sem atraso perceptível.
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: promote)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: promote)
   }
 
   /// Localiza o AXUIElement da janela pelo CGWindowID (confiável, inclusive

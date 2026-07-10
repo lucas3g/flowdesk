@@ -60,7 +60,8 @@ class ApplyLayoutParams extends Equatable {
 ///
 /// Regiões com app associado recebem a janela daquele app (a maior, quando
 /// houver várias); as demais são preenchidas na ordem com as janelas
-/// restantes. Retorna quantas janelas foram posicionadas com sucesso.
+/// restantes. Instâncias extras de apps já vinculados a regiões não são
+/// redimensionadas. Retorna quantas janelas foram posicionadas com sucesso.
 @injectable
 class ApplyLayout implements UseCase<int, ApplyLayoutParams> {
   const ApplyLayout(this._windowsRepository);
@@ -91,11 +92,21 @@ class ApplyLayout implements UseCase<int, ApplyLayoutParams> {
     }
 
     // 2ª passada: regiões livres (ou cujo app não está aberto) recebem as
-    // janelas restantes na ordem.
+    // janelas restantes na ordem. Instâncias extras de apps já vinculados a
+    // alguma região ficam de fora: se o app foi configurado, só as janelas
+    // escolhidas na 1ª passada são posicionadas — as demais não são tocadas.
+    final configuredBundleIds = regions
+        .where((r) => r.hasApp)
+        .map((r) => r.appBundleId)
+        .toSet();
+    final fillable = remaining
+        .where((window) => !configuredBundleIds.contains(window.bundleId))
+        .toList();
+
     final assignedRegions = assignments.map((a) => a.$1).toSet();
     for (final region in regions) {
-      if (assignedRegions.contains(region) || remaining.isEmpty) continue;
-      assignments.add((region, remaining.removeAt(0)));
+      if (assignedRegions.contains(region) || fillable.isEmpty) continue;
+      assignments.add((region, fillable.removeAt(0)));
     }
 
     Failure? lastFailure;

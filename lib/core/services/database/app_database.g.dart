@@ -4343,6 +4343,52 @@ class $SettingsTableTable extends SettingsTable
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _snapToLayoutRegionsMeta =
+      const VerificationMeta('snapToLayoutRegions');
+  @override
+  late final GeneratedColumn<bool> snapToLayoutRegions = GeneratedColumn<bool>(
+    'snap_to_layout_regions',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("snap_to_layout_regions" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lastAppliedLayoutIdMeta =
+      const VerificationMeta('lastAppliedLayoutId');
+  @override
+  late final GeneratedColumn<int> lastAppliedLayoutId = GeneratedColumn<int>(
+    'last_applied_layout_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastAppliedMonitorIdMeta =
+      const VerificationMeta('lastAppliedMonitorId');
+  @override
+  late final GeneratedColumn<int> lastAppliedMonitorId = GeneratedColumn<int>(
+    'last_applied_monitor_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _snapExcludedAppsMeta = const VerificationMeta(
+    'snapExcludedApps',
+  );
+  @override
+  late final GeneratedColumn<String> snapExcludedApps = GeneratedColumn<String>(
+    'snap_excluded_apps',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4359,6 +4405,10 @@ class $SettingsTableTable extends SettingsTable
     barTransparency,
     onboardingDone,
     userName,
+    snapToLayoutRegions,
+    lastAppliedLayoutId,
+    lastAppliedMonitorId,
+    snapExcludedApps,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4483,6 +4533,42 @@ class $SettingsTableTable extends SettingsTable
         userName.isAcceptableOrUnknown(data['user_name']!, _userNameMeta),
       );
     }
+    if (data.containsKey('snap_to_layout_regions')) {
+      context.handle(
+        _snapToLayoutRegionsMeta,
+        snapToLayoutRegions.isAcceptableOrUnknown(
+          data['snap_to_layout_regions']!,
+          _snapToLayoutRegionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_applied_layout_id')) {
+      context.handle(
+        _lastAppliedLayoutIdMeta,
+        lastAppliedLayoutId.isAcceptableOrUnknown(
+          data['last_applied_layout_id']!,
+          _lastAppliedLayoutIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_applied_monitor_id')) {
+      context.handle(
+        _lastAppliedMonitorIdMeta,
+        lastAppliedMonitorId.isAcceptableOrUnknown(
+          data['last_applied_monitor_id']!,
+          _lastAppliedMonitorIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('snap_excluded_apps')) {
+      context.handle(
+        _snapExcludedAppsMeta,
+        snapExcludedApps.isAcceptableOrUnknown(
+          data['snap_excluded_apps']!,
+          _snapExcludedAppsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4548,6 +4634,22 @@ class $SettingsTableTable extends SettingsTable
         DriftSqlType.string,
         data['${effectivePrefix}user_name'],
       )!,
+      snapToLayoutRegions: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}snap_to_layout_regions'],
+      )!,
+      lastAppliedLayoutId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_applied_layout_id'],
+      ),
+      lastAppliedMonitorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_applied_monitor_id'],
+      ),
+      snapExcludedApps: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snap_excluded_apps'],
+      )!,
     );
   }
 
@@ -4578,6 +4680,21 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
 
   /// Nome do usuário, informado no onboarding (adicionada no schema v4).
   final String userName;
+
+  /// Encaixe por regiões do último layout aplicado (adicionada no schema v7).
+  final bool snapToLayoutRegions;
+
+  /// Id do último layout aplicado, fonte das regiões de encaixe
+  /// (adicionada no schema v7).
+  final int? lastAppliedLayoutId;
+
+  /// Monitor em que o último layout foi aplicado — as zonas de encaixe só
+  /// aparecem nele (adicionada no schema v8).
+  final int? lastAppliedMonitorId;
+
+  /// Apps excluídos do encaixe ao arrastar, como JSON array de
+  /// `{bundleId, appName}` (adicionada no schema v9).
+  final String snapExcludedApps;
   const SettingsRow({
     required this.id,
     required this.themePreference,
@@ -4593,6 +4710,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     required this.barTransparency,
     required this.onboardingDone,
     required this.userName,
+    required this.snapToLayoutRegions,
+    this.lastAppliedLayoutId,
+    this.lastAppliedMonitorId,
+    required this.snapExcludedApps,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4611,6 +4732,14 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     map['bar_transparency'] = Variable<bool>(barTransparency);
     map['onboarding_done'] = Variable<bool>(onboardingDone);
     map['user_name'] = Variable<String>(userName);
+    map['snap_to_layout_regions'] = Variable<bool>(snapToLayoutRegions);
+    if (!nullToAbsent || lastAppliedLayoutId != null) {
+      map['last_applied_layout_id'] = Variable<int>(lastAppliedLayoutId);
+    }
+    if (!nullToAbsent || lastAppliedMonitorId != null) {
+      map['last_applied_monitor_id'] = Variable<int>(lastAppliedMonitorId);
+    }
+    map['snap_excluded_apps'] = Variable<String>(snapExcludedApps);
     return map;
   }
 
@@ -4630,6 +4759,14 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       barTransparency: Value(barTransparency),
       onboardingDone: Value(onboardingDone),
       userName: Value(userName),
+      snapToLayoutRegions: Value(snapToLayoutRegions),
+      lastAppliedLayoutId: lastAppliedLayoutId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAppliedLayoutId),
+      lastAppliedMonitorId: lastAppliedMonitorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAppliedMonitorId),
+      snapExcludedApps: Value(snapExcludedApps),
     );
   }
 
@@ -4655,6 +4792,16 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       barTransparency: serializer.fromJson<bool>(json['barTransparency']),
       onboardingDone: serializer.fromJson<bool>(json['onboardingDone']),
       userName: serializer.fromJson<String>(json['userName']),
+      snapToLayoutRegions: serializer.fromJson<bool>(
+        json['snapToLayoutRegions'],
+      ),
+      lastAppliedLayoutId: serializer.fromJson<int?>(
+        json['lastAppliedLayoutId'],
+      ),
+      lastAppliedMonitorId: serializer.fromJson<int?>(
+        json['lastAppliedMonitorId'],
+      ),
+      snapExcludedApps: serializer.fromJson<String>(json['snapExcludedApps']),
     );
   }
   @override
@@ -4675,6 +4822,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       'barTransparency': serializer.toJson<bool>(barTransparency),
       'onboardingDone': serializer.toJson<bool>(onboardingDone),
       'userName': serializer.toJson<String>(userName),
+      'snapToLayoutRegions': serializer.toJson<bool>(snapToLayoutRegions),
+      'lastAppliedLayoutId': serializer.toJson<int?>(lastAppliedLayoutId),
+      'lastAppliedMonitorId': serializer.toJson<int?>(lastAppliedMonitorId),
+      'snapExcludedApps': serializer.toJson<String>(snapExcludedApps),
     };
   }
 
@@ -4693,6 +4844,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     bool? barTransparency,
     bool? onboardingDone,
     String? userName,
+    bool? snapToLayoutRegions,
+    Value<int?> lastAppliedLayoutId = const Value.absent(),
+    Value<int?> lastAppliedMonitorId = const Value.absent(),
+    String? snapExcludedApps,
   }) => SettingsRow(
     id: id ?? this.id,
     themePreference: themePreference ?? this.themePreference,
@@ -4708,6 +4863,14 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     barTransparency: barTransparency ?? this.barTransparency,
     onboardingDone: onboardingDone ?? this.onboardingDone,
     userName: userName ?? this.userName,
+    snapToLayoutRegions: snapToLayoutRegions ?? this.snapToLayoutRegions,
+    lastAppliedLayoutId: lastAppliedLayoutId.present
+        ? lastAppliedLayoutId.value
+        : this.lastAppliedLayoutId,
+    lastAppliedMonitorId: lastAppliedMonitorId.present
+        ? lastAppliedMonitorId.value
+        : this.lastAppliedMonitorId,
+    snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
   );
   SettingsRow copyWithCompanion(SettingsTableCompanion data) {
     return SettingsRow(
@@ -4745,6 +4908,18 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ? data.onboardingDone.value
           : this.onboardingDone,
       userName: data.userName.present ? data.userName.value : this.userName,
+      snapToLayoutRegions: data.snapToLayoutRegions.present
+          ? data.snapToLayoutRegions.value
+          : this.snapToLayoutRegions,
+      lastAppliedLayoutId: data.lastAppliedLayoutId.present
+          ? data.lastAppliedLayoutId.value
+          : this.lastAppliedLayoutId,
+      lastAppliedMonitorId: data.lastAppliedMonitorId.present
+          ? data.lastAppliedMonitorId.value
+          : this.lastAppliedMonitorId,
+      snapExcludedApps: data.snapExcludedApps.present
+          ? data.snapExcludedApps.value
+          : this.snapExcludedApps,
     );
   }
 
@@ -4764,7 +4939,11 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ..write('screenMargin: $screenMargin, ')
           ..write('barTransparency: $barTransparency, ')
           ..write('onboardingDone: $onboardingDone, ')
-          ..write('userName: $userName')
+          ..write('userName: $userName, ')
+          ..write('snapToLayoutRegions: $snapToLayoutRegions, ')
+          ..write('lastAppliedLayoutId: $lastAppliedLayoutId, ')
+          ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
+          ..write('snapExcludedApps: $snapExcludedApps')
           ..write(')'))
         .toString();
   }
@@ -4785,6 +4964,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     barTransparency,
     onboardingDone,
     userName,
+    snapToLayoutRegions,
+    lastAppliedLayoutId,
+    lastAppliedMonitorId,
+    snapExcludedApps,
   );
   @override
   bool operator ==(Object other) =>
@@ -4803,7 +4986,11 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           other.screenMargin == this.screenMargin &&
           other.barTransparency == this.barTransparency &&
           other.onboardingDone == this.onboardingDone &&
-          other.userName == this.userName);
+          other.userName == this.userName &&
+          other.snapToLayoutRegions == this.snapToLayoutRegions &&
+          other.lastAppliedLayoutId == this.lastAppliedLayoutId &&
+          other.lastAppliedMonitorId == this.lastAppliedMonitorId &&
+          other.snapExcludedApps == this.snapExcludedApps);
 }
 
 class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
@@ -4821,6 +5008,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
   final Value<bool> barTransparency;
   final Value<bool> onboardingDone;
   final Value<String> userName;
+  final Value<bool> snapToLayoutRegions;
+  final Value<int?> lastAppliedLayoutId;
+  final Value<int?> lastAppliedMonitorId;
+  final Value<String> snapExcludedApps;
   const SettingsTableCompanion({
     this.id = const Value.absent(),
     this.themePreference = const Value.absent(),
@@ -4836,6 +5027,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.barTransparency = const Value.absent(),
     this.onboardingDone = const Value.absent(),
     this.userName = const Value.absent(),
+    this.snapToLayoutRegions = const Value.absent(),
+    this.lastAppliedLayoutId = const Value.absent(),
+    this.lastAppliedMonitorId = const Value.absent(),
+    this.snapExcludedApps = const Value.absent(),
   });
   SettingsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -4852,6 +5047,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.barTransparency = const Value.absent(),
     this.onboardingDone = const Value.absent(),
     this.userName = const Value.absent(),
+    this.snapToLayoutRegions = const Value.absent(),
+    this.lastAppliedLayoutId = const Value.absent(),
+    this.lastAppliedMonitorId = const Value.absent(),
+    this.snapExcludedApps = const Value.absent(),
   });
   static Insertable<SettingsRow> custom({
     Expression<int>? id,
@@ -4868,6 +5067,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Expression<bool>? barTransparency,
     Expression<bool>? onboardingDone,
     Expression<String>? userName,
+    Expression<bool>? snapToLayoutRegions,
+    Expression<int>? lastAppliedLayoutId,
+    Expression<int>? lastAppliedMonitorId,
+    Expression<String>? snapExcludedApps,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4885,6 +5088,13 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       if (barTransparency != null) 'bar_transparency': barTransparency,
       if (onboardingDone != null) 'onboarding_done': onboardingDone,
       if (userName != null) 'user_name': userName,
+      if (snapToLayoutRegions != null)
+        'snap_to_layout_regions': snapToLayoutRegions,
+      if (lastAppliedLayoutId != null)
+        'last_applied_layout_id': lastAppliedLayoutId,
+      if (lastAppliedMonitorId != null)
+        'last_applied_monitor_id': lastAppliedMonitorId,
+      if (snapExcludedApps != null) 'snap_excluded_apps': snapExcludedApps,
     });
   }
 
@@ -4903,6 +5113,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Value<bool>? barTransparency,
     Value<bool>? onboardingDone,
     Value<String>? userName,
+    Value<bool>? snapToLayoutRegions,
+    Value<int?>? lastAppliedLayoutId,
+    Value<int?>? lastAppliedMonitorId,
+    Value<String>? snapExcludedApps,
   }) {
     return SettingsTableCompanion(
       id: id ?? this.id,
@@ -4919,6 +5133,10 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       barTransparency: barTransparency ?? this.barTransparency,
       onboardingDone: onboardingDone ?? this.onboardingDone,
       userName: userName ?? this.userName,
+      snapToLayoutRegions: snapToLayoutRegions ?? this.snapToLayoutRegions,
+      lastAppliedLayoutId: lastAppliedLayoutId ?? this.lastAppliedLayoutId,
+      lastAppliedMonitorId: lastAppliedMonitorId ?? this.lastAppliedMonitorId,
+      snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
     );
   }
 
@@ -4967,6 +5185,20 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     if (userName.present) {
       map['user_name'] = Variable<String>(userName.value);
     }
+    if (snapToLayoutRegions.present) {
+      map['snap_to_layout_regions'] = Variable<bool>(snapToLayoutRegions.value);
+    }
+    if (lastAppliedLayoutId.present) {
+      map['last_applied_layout_id'] = Variable<int>(lastAppliedLayoutId.value);
+    }
+    if (lastAppliedMonitorId.present) {
+      map['last_applied_monitor_id'] = Variable<int>(
+        lastAppliedMonitorId.value,
+      );
+    }
+    if (snapExcludedApps.present) {
+      map['snap_excluded_apps'] = Variable<String>(snapExcludedApps.value);
+    }
     return map;
   }
 
@@ -4986,7 +5218,11 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
           ..write('screenMargin: $screenMargin, ')
           ..write('barTransparency: $barTransparency, ')
           ..write('onboardingDone: $onboardingDone, ')
-          ..write('userName: $userName')
+          ..write('userName: $userName, ')
+          ..write('snapToLayoutRegions: $snapToLayoutRegions, ')
+          ..write('lastAppliedLayoutId: $lastAppliedLayoutId, ')
+          ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
+          ..write('snapExcludedApps: $snapExcludedApps')
           ..write(')'))
         .toString();
   }
@@ -8906,6 +9142,10 @@ typedef $$SettingsTableTableCreateCompanionBuilder =
       Value<bool> barTransparency,
       Value<bool> onboardingDone,
       Value<String> userName,
+      Value<bool> snapToLayoutRegions,
+      Value<int?> lastAppliedLayoutId,
+      Value<int?> lastAppliedMonitorId,
+      Value<String> snapExcludedApps,
     });
 typedef $$SettingsTableTableUpdateCompanionBuilder =
     SettingsTableCompanion Function({
@@ -8923,6 +9163,10 @@ typedef $$SettingsTableTableUpdateCompanionBuilder =
       Value<bool> barTransparency,
       Value<bool> onboardingDone,
       Value<String> userName,
+      Value<bool> snapToLayoutRegions,
+      Value<int?> lastAppliedLayoutId,
+      Value<int?> lastAppliedMonitorId,
+      Value<String> snapExcludedApps,
     });
 
 class $$SettingsTableTableFilterComposer
@@ -9001,6 +9245,26 @@ class $$SettingsTableTableFilterComposer
 
   ColumnFilters<String> get userName => $composableBuilder(
     column: $table.userName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get snapToLayoutRegions => $composableBuilder(
+    column: $table.snapToLayoutRegions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastAppliedLayoutId => $composableBuilder(
+    column: $table.lastAppliedLayoutId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastAppliedMonitorId => $composableBuilder(
+    column: $table.lastAppliedMonitorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapExcludedApps => $composableBuilder(
+    column: $table.snapExcludedApps,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9083,6 +9347,26 @@ class $$SettingsTableTableOrderingComposer
     column: $table.userName,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get snapToLayoutRegions => $composableBuilder(
+    column: $table.snapToLayoutRegions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastAppliedLayoutId => $composableBuilder(
+    column: $table.lastAppliedLayoutId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastAppliedMonitorId => $composableBuilder(
+    column: $table.lastAppliedMonitorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapExcludedApps => $composableBuilder(
+    column: $table.snapExcludedApps,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableTableAnnotationComposer
@@ -9155,6 +9439,26 @@ class $$SettingsTableTableAnnotationComposer
 
   GeneratedColumn<String> get userName =>
       $composableBuilder(column: $table.userName, builder: (column) => column);
+
+  GeneratedColumn<bool> get snapToLayoutRegions => $composableBuilder(
+    column: $table.snapToLayoutRegions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastAppliedLayoutId => $composableBuilder(
+    column: $table.lastAppliedLayoutId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastAppliedMonitorId => $composableBuilder(
+    column: $table.lastAppliedMonitorId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapExcludedApps => $composableBuilder(
+    column: $table.snapExcludedApps,
+    builder: (column) => column,
+  );
 }
 
 class $$SettingsTableTableTableManager
@@ -9202,6 +9506,10 @@ class $$SettingsTableTableTableManager
                 Value<bool> barTransparency = const Value.absent(),
                 Value<bool> onboardingDone = const Value.absent(),
                 Value<String> userName = const Value.absent(),
+                Value<bool> snapToLayoutRegions = const Value.absent(),
+                Value<int?> lastAppliedLayoutId = const Value.absent(),
+                Value<int?> lastAppliedMonitorId = const Value.absent(),
+                Value<String> snapExcludedApps = const Value.absent(),
               }) => SettingsTableCompanion(
                 id: id,
                 themePreference: themePreference,
@@ -9217,6 +9525,10 @@ class $$SettingsTableTableTableManager
                 barTransparency: barTransparency,
                 onboardingDone: onboardingDone,
                 userName: userName,
+                snapToLayoutRegions: snapToLayoutRegions,
+                lastAppliedLayoutId: lastAppliedLayoutId,
+                lastAppliedMonitorId: lastAppliedMonitorId,
+                snapExcludedApps: snapExcludedApps,
               ),
           createCompanionCallback:
               ({
@@ -9234,6 +9546,10 @@ class $$SettingsTableTableTableManager
                 Value<bool> barTransparency = const Value.absent(),
                 Value<bool> onboardingDone = const Value.absent(),
                 Value<String> userName = const Value.absent(),
+                Value<bool> snapToLayoutRegions = const Value.absent(),
+                Value<int?> lastAppliedLayoutId = const Value.absent(),
+                Value<int?> lastAppliedMonitorId = const Value.absent(),
+                Value<String> snapExcludedApps = const Value.absent(),
               }) => SettingsTableCompanion.insert(
                 id: id,
                 themePreference: themePreference,
@@ -9249,6 +9565,10 @@ class $$SettingsTableTableTableManager
                 barTransparency: barTransparency,
                 onboardingDone: onboardingDone,
                 userName: userName,
+                snapToLayoutRegions: snapToLayoutRegions,
+                lastAppliedLayoutId: lastAppliedLayoutId,
+                lastAppliedMonitorId: lastAppliedMonitorId,
+                snapExcludedApps: snapExcludedApps,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

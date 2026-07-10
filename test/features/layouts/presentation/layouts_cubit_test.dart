@@ -10,6 +10,7 @@ import 'package:flowdesk/features/layouts/presentation/cubits/layouts_state.dart
 import 'package:flowdesk/features/monitors/domain/entities/monitor.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_state.dart';
+import 'package:flowdesk/features/settings/domain/entities/app_settings.dart';
 import 'package:flowdesk/features/settings/domain/usecases/get_settings.dart';
 import 'package:flowdesk/features/settings/domain/usecases/save_settings.dart';
 import 'package:flowdesk/features/settings/presentation/cubits/settings_cubit.dart';
@@ -97,6 +98,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
+    registerFallbackValue(const AppSettings());
     registerFallbackValue(
       const ToggleFavoriteParams(layoutId: 0, isFavorite: false),
     );
@@ -117,9 +119,12 @@ void main() {
       const MonitorsState(status: MonitorsStatus.ready, monitors: [_monitor]),
     );
     when(() => monitorsCubit.refresh()).thenAnswer((_) async {});
+    // O apply registra o último layout aplicado nas preferências.
+    final saveSettings = _MockSaveSettings();
+    when(() => saveSettings(any())).thenAnswer((_) async => right(unit));
     settingsCubit = SettingsCubit(
       _MockGetSettings(),
-      _MockSaveSettings(),
+      saveSettings,
       FakeApplySystemIntegration(),
     );
 

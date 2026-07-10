@@ -4,6 +4,31 @@ import 'package:equatable/equatable.dart';
 /// o domínio desacoplado da camada de apresentação).
 enum ThemePreference { system, light, dark }
 
+/// App — ou uma instância específica dele — excluído do encaixe ao
+/// arrastar (nome e título são apenas para exibição).
+class SnapExcludedApp extends Equatable {
+  const SnapExcludedApp({
+    required this.bundleId,
+    required this.appName,
+    this.windowId,
+    this.windowTitle,
+  });
+
+  final String bundleId;
+  final String appName;
+
+  /// Id único da janela (CGWindowID no macOS, HWND no Windows) quando a
+  /// exclusão vale só para uma instância; null exclui o app inteiro.
+  /// O id vale enquanto a janela existir — fechá-la encerra a exclusão.
+  final int? windowId;
+
+  /// Título da janela no momento da exclusão (apenas exibição).
+  final String? windowTitle;
+
+  @override
+  List<Object?> get props => [bundleId, appName, windowId, windowTitle];
+}
+
 /// Preferências do aplicativo.
 class AppSettings extends Equatable {
   const AppSettings({
@@ -22,6 +47,10 @@ class AppSettings extends Equatable {
     // onboarding; o valor real vem da linha persistida (false no 1º uso).
     this.onboardingDone = true,
     this.userName = '',
+    this.snapToLayoutRegions = false,
+    this.lastAppliedLayoutId,
+    this.lastAppliedMonitorId,
+    this.snapExcludedApps = const [],
   });
 
   final ThemePreference themePreference;
@@ -44,6 +73,19 @@ class AppSettings extends Equatable {
   /// Nome exibido na sidebar e na saudação do dashboard.
   final String userName;
 
+  /// Usar as regiões do último layout aplicado como zonas de encaixe
+  /// ao arrastar janelas.
+  final bool snapToLayoutRegions;
+
+  /// Id do último layout aplicado (fonte das zonas de encaixe).
+  final int? lastAppliedLayoutId;
+
+  /// Monitor do último apply — as zonas de encaixe só aparecem nele.
+  final int? lastAppliedMonitorId;
+
+  /// Apps que não participam do encaixe ao arrastar (regiões e bordas).
+  final List<SnapExcludedApp> snapExcludedApps;
+
   AppSettings copyWith({
     ThemePreference? themePreference,
     String? language,
@@ -58,6 +100,10 @@ class AppSettings extends Equatable {
     bool? barTransparency,
     bool? onboardingDone,
     String? userName,
+    bool? snapToLayoutRegions,
+    int? Function()? lastAppliedLayoutId,
+    int? Function()? lastAppliedMonitorId,
+    List<SnapExcludedApp>? snapExcludedApps,
   }) {
     return AppSettings(
       themePreference: themePreference ?? this.themePreference,
@@ -73,6 +119,14 @@ class AppSettings extends Equatable {
       barTransparency: barTransparency ?? this.barTransparency,
       onboardingDone: onboardingDone ?? this.onboardingDone,
       userName: userName ?? this.userName,
+      snapToLayoutRegions: snapToLayoutRegions ?? this.snapToLayoutRegions,
+      lastAppliedLayoutId: lastAppliedLayoutId != null
+          ? lastAppliedLayoutId()
+          : this.lastAppliedLayoutId,
+      lastAppliedMonitorId: lastAppliedMonitorId != null
+          ? lastAppliedMonitorId()
+          : this.lastAppliedMonitorId,
+      snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
     );
   }
 
@@ -91,5 +145,9 @@ class AppSettings extends Equatable {
     barTransparency,
     onboardingDone,
     userName,
+    snapToLayoutRegions,
+    lastAppliedLayoutId,
+    lastAppliedMonitorId,
+    snapExcludedApps,
   ];
 }
