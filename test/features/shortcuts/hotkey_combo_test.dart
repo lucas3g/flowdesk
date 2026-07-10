@@ -31,6 +31,21 @@ void main() {
       expect(HotkeyCombo.tryParse('⌥12'), isNull); // duas teclas
     });
 
+    test('combos de ciclo de região usam setas com ⌘⌥ e Ctrl+Win', () {
+      const prev = HotkeyCombo.cycleRegionPrev;
+      expect(prev.keyCode, 123); // seta esquerda
+      expect(prev.modifiers, 0x0100 | 0x0800); // cmd + option (macOS)
+      expect(prev.key, 'left');
+      expect(prev.hasControl, isTrue); // Ctrl no Windows
+      expect(prev.hasWin, isTrue); // Win no Windows
+      expect(prev.hasOption, isFalse);
+
+      const next = HotkeyCombo.cycleRegionNext;
+      expect(next.keyCode, 124); // seta direita
+      expect(next.key, 'right');
+      expect(next.hasWin, isTrue);
+    });
+
     test('todas as opções oferecidas são parseáveis', () {
       for (final option in [
         ...HotkeyCombo.layoutOptions(),

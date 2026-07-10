@@ -86,17 +86,25 @@ void ShortcutManager::HandleMethodCall(
             const std::string key = StringArg(*map, "key");
             if (key.empty()) continue;
 
-            // ⌥ → Alt, ⌃/⌘ → Ctrl, ⇧ → Shift. NOREPEAT evita disparos
-            // contínuos ao segurar a tecla.
+            // ⌥ → Alt, ⌃/⌘ → Ctrl, ⇧ → Shift, win → tecla Windows.
+            // NOREPEAT evita disparos contínuos ao segurar a tecla.
             UINT mods = MOD_NOREPEAT;
             if (BoolArg(*map, "alt")) mods |= MOD_ALT;
             if (BoolArg(*map, "ctrl") || BoolArg(*map, "cmd")) {
               mods |= MOD_CONTROL;
             }
             if (BoolArg(*map, "shift")) mods |= MOD_SHIFT;
+            if (BoolArg(*map, "win")) mods |= MOD_WIN;
 
-            // Dígitos '0'..'9' → VK 0x30..0x39.
-            UINT vk = static_cast<UINT>(key[0]);
+            // Teclas nomeadas (setas) ou dígitos '0'..'9' → VK 0x30..0x39.
+            UINT vk;
+            if (key == "left") {
+              vk = VK_LEFT;
+            } else if (key == "right") {
+              vk = VK_RIGHT;
+            } else {
+              vk = static_cast<UINT>(key[0]);
+            }
 
             if (RegisterHotKey(hwnd_, id, mods, vk)) {
               registered_ids_.push_back(id);

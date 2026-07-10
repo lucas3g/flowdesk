@@ -3,7 +3,14 @@ import 'package:equatable/equatable.dart';
 import 'hotkey_combo.dart';
 
 /// Ação executada por um atalho global.
-enum ShortcutActionType { applyLayout, applyWorkspace }
+enum ShortcutActionType {
+  applyLayout,
+  applyWorkspace,
+
+  /// Move a janela focada para a região anterior/seguinte do layout aplicado.
+  cycleRegionPrev,
+  cycleRegionNext,
+}
 
 /// Vínculo entre um combo global e uma ação do FlowDesk.
 class ShortcutBinding extends Equatable {

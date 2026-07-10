@@ -93,8 +93,7 @@ class _ShortcutsPageState extends State<ShortcutsPage> {
                         children: [
                           for (final workspace in workspacesState.workspaces)
                             _ShortcutRow(
-                              label:
-                                  '${workspace.emoji} ${workspace.name}',
+                              label: '${workspace.emoji} ${workspace.name}',
                               combo: workspace.shortcut,
                               options: HotkeyCombo.workspaceOptions()
                                   .where(
@@ -117,10 +116,7 @@ class _ShortcutsPageState extends State<ShortcutsPage> {
                             label: 'Paleta de comandos',
                             combo: '⌘K',
                           ),
-                          _FixedShortcutRow(
-                            label: 'Preferências',
-                            combo: '⌘,',
-                          ),
+                          _FixedShortcutRow(label: 'Preferências', combo: '⌘,'),
                         ],
                       ),
                     ],

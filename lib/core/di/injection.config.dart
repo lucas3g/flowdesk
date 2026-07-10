@@ -15,6 +15,8 @@ import 'package:flowdesk/core/platform/platform_event_channel.dart' as _i649;
 import 'package:flowdesk/core/routing/navigation_cubit.dart' as _i351;
 import 'package:flowdesk/core/services/auto_restore_service.dart' as _i752;
 import 'package:flowdesk/core/services/database/app_database.dart' as _i110;
+import 'package:flowdesk/core/services/region_cycle_service.dart' as _i408;
+import 'package:flowdesk/core/services/snap_regions_service.dart' as _i108;
 import 'package:flowdesk/core/services/status_bar_service.dart' as _i900;
 import 'package:flowdesk/features/backup/domain/usecases/export_backup.dart'
     as _i472;
@@ -587,6 +589,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i607.UndoRedoCubit>(),
       ),
     );
+    gh.lazySingleton<_i408.RegionCycleService>(
+      () => _i408.RegionCycleService(
+        gh<_i731.SettingsCubit>(),
+        gh<_i935.MonitorsCubit>(),
+        gh<_i238.GetLayouts>(),
+        gh<_i271.WindowsRepository>(),
+      ),
+    );
     gh.lazySingleton<_i422.WorkspacesCubit>(
       () => _i422.WorkspacesCubit(
         gh<_i237.GetWorkspaces>(),
@@ -596,6 +606,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i935.MonitorsCubit>(),
         gh<_i731.SettingsCubit>(),
         gh<_i618.AddHistoryEntry>(),
+      ),
+    );
+    gh.lazySingleton<_i108.SnapRegionsService>(
+      () => _i108.SnapRegionsService(
+        gh<_i731.SettingsCubit>(),
+        gh<_i935.MonitorsCubit>(),
+        gh<_i238.GetLayouts>(),
+        gh<_i549.SystemIntegrationRepository>(),
       ),
     );
     gh.lazySingleton<_i539.LayoutsCubit>(
@@ -610,6 +628,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i731.SettingsCubit>(),
         gh<_i607.UndoRedoCubit>(),
         gh<_i618.AddHistoryEntry>(),
+      ),
+    );
+    gh.lazySingleton<_i420.ShortcutsCubit>(
+      () => _i420.ShortcutsCubit(
+        gh<_i69.RegisterShortcuts>(),
+        gh<_i651.WatchShortcutPresses>(),
+        gh<_i539.LayoutsCubit>(),
+        gh<_i422.WorkspacesCubit>(),
+        gh<_i731.SettingsCubit>(),
+        gh<_i408.RegionCycleService>(),
       ),
     );
     gh.lazySingleton<_i752.AutoRestoreService>(
@@ -630,14 +658,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i539.LayoutsCubit>(),
         gh<_i422.WorkspacesCubit>(),
         gh<_i351.NavigationCubit>(),
-      ),
-    );
-    gh.lazySingleton<_i420.ShortcutsCubit>(
-      () => _i420.ShortcutsCubit(
-        gh<_i69.RegisterShortcuts>(),
-        gh<_i651.WatchShortcutPresses>(),
-        gh<_i539.LayoutsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
       ),
     );
     gh.lazySingleton<_i588.MonitorProfilesCubit>(

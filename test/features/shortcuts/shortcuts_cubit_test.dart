@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flowdesk/core/services/region_cycle_service.dart';
 import 'package:flowdesk/features/layouts/domain/entities/layout.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_state.dart';
+import 'package:flowdesk/features/settings/domain/entities/app_settings.dart';
+import 'package:flowdesk/features/settings/presentation/cubits/settings_cubit.dart';
+import 'package:flowdesk/features/settings/presentation/cubits/settings_state.dart';
 import 'package:flowdesk/features/shortcuts/domain/entities/shortcut_binding.dart';
 import 'package:flowdesk/features/shortcuts/domain/usecases/register_shortcuts.dart';
 import 'package:flowdesk/features/shortcuts/domain/usecases/watch_shortcut_presses.dart';
@@ -26,6 +30,11 @@ class _MockLayoutsCubit extends MockCubit<LayoutsState>
 class _MockWorkspacesCubit extends MockCubit<WorkspacesState>
     implements WorkspacesCubit {}
 
+class _MockSettingsCubit extends MockCubit<SettingsState>
+    implements SettingsCubit {}
+
+class _MockRegionCycleService extends Mock implements RegionCycleService {}
+
 const _layout = Layout(
   id: 1,
   name: 'Código & Terminal',
@@ -40,12 +49,15 @@ void main() {
   late _MockWatchPresses watchPresses;
   late _MockLayoutsCubit layoutsCubit;
   late _MockWorkspacesCubit workspacesCubit;
+  late _MockSettingsCubit settingsCubit;
+  late _MockRegionCycleService regionCycleService;
   late StreamController<int> presses;
 
   setUpAll(() {
     registerFallbackValue(_layout);
     registerFallbackValue(_workspace);
     registerFallbackValue(const <ShortcutBinding>[]);
+    registerFallbackValue(CycleDirection.next);
   });
 
   setUp(() {
@@ -53,6 +65,8 @@ void main() {
     watchPresses = _MockWatchPresses();
     layoutsCubit = _MockLayoutsCubit();
     workspacesCubit = _MockWorkspacesCubit();
+    settingsCubit = _MockSettingsCubit();
+    regionCycleService = _MockRegionCycleService();
     presses = StreamController<int>.broadcast();
 
     when(() => registerShortcuts(any())).thenAnswer((_) async => right(unit));
@@ -61,7 +75,10 @@ void main() {
       const LayoutsState(
         status: LayoutsStatus.ready,
         // Layout sem atalho não deve gerar binding.
-        layouts: [_layout, Layout(id: 2, name: 'Sem atalho')],
+        layouts: [
+          _layout,
+          Layout(id: 2, name: 'Sem atalho'),
+        ],
       ),
     );
     when(() => workspacesCubit.state).thenReturn(
@@ -70,8 +87,15 @@ void main() {
         workspaces: [_workspace],
       ),
     );
+    when(() => settingsCubit.state).thenReturn(
+      const SettingsState(
+        status: SettingsStatus.ready,
+        settings: AppSettings(),
+      ),
+    );
     when(() => layoutsCubit.apply(any())).thenAnswer((_) async {});
     when(() => workspacesCubit.apply(any())).thenAnswer((_) async {});
+    when(() => regionCycleService.cycle(any())).thenAnswer((_) async {});
   });
 
   tearDown(() => presses.close());
@@ -81,7 +105,19 @@ void main() {
     watchPresses,
     layoutsCubit,
     workspacesCubit,
+    settingsCubit,
+    regionCycleService,
   );
+
+  /// Simula um layout com regiões aplicado (ativa os atalhos de ciclo).
+  void stubAppliedLayout() {
+    when(() => settingsCubit.state).thenReturn(
+      const SettingsState(
+        status: SettingsStatus.ready,
+        settings: AppSettings(lastAppliedLayoutId: 1, lastAppliedMonitorId: 1),
+      ),
+    );
+  }
 
   blocTest<ShortcutsCubit, ShortcutsState>(
     'sync registra apenas atalhos parseáveis (layout ⌥1 e workspace ⌃1)',
@@ -127,6 +163,58 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     },
     verify: (_) => verify(() => workspacesCubit.apply(_workspace)).called(1),
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'layout aplicado registra os atalhos de ciclo de região',
+    build: buildCubit,
+    setUp: stubAppliedLayout,
+    act: (cubit) => cubit.start(),
+    verify: (_) {
+      final registered =
+          verify(() => registerShortcuts(captureAny())).captured.single
+              as List<ShortcutBinding>;
+      expect(registered.length, 4);
+      expect(registered[2].type, ShortcutActionType.cycleRegionPrev);
+      expect(registered[2].combo.key, 'left');
+      expect(registered[3].type, ShortcutActionType.cycleRegionNext);
+      expect(registered[3].combo.key, 'right');
+    },
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'sem layout aplicado não registra atalhos de ciclo',
+    build: buildCubit,
+    act: (cubit) => cubit.start(),
+    verify: (_) {
+      final registered =
+          verify(() => registerShortcuts(captureAny())).captured.single
+              as List<ShortcutBinding>;
+      expect(
+        registered.any(
+          (b) =>
+              b.type == ShortcutActionType.cycleRegionPrev ||
+              b.type == ShortcutActionType.cycleRegionNext,
+        ),
+        isFalse,
+      );
+    },
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'acionamento das setas cicla a janela entre as regiões',
+    build: buildCubit,
+    setUp: stubAppliedLayout,
+    act: (cubit) async {
+      await cubit.start();
+      presses.add(3); // terceiro binding = região anterior
+      presses.add(4); // quarto binding = próxima região
+      await Future<void>.delayed(Duration.zero);
+    },
+    verify: (_) {
+      verify(() => regionCycleService.cycle(CycleDirection.previous)).called(1);
+      verify(() => regionCycleService.cycle(CycleDirection.next)).called(1);
+    },
   );
 
   blocTest<ShortcutsCubit, ShortcutsState>(

@@ -11,8 +11,9 @@ class HotkeyCombo extends Equatable {
     this.hasCmd,
     this.hasShift,
     this.hasOption,
-    this.hasControl,
-  );
+    this.hasControl, {
+    this.hasWin = false,
+  });
 
   final String display;
 
@@ -29,6 +30,9 @@ class HotkeyCombo extends Equatable {
   final bool hasShift;
   final bool hasOption;
   final bool hasControl;
+
+  /// Tecla Win no Windows (sem equivalente no macOS — lá valem [modifiers]).
+  final bool hasWin;
 
   // Modificadores do Carbon Event Manager.
   static const int _cmd = 0x0100;
@@ -90,6 +94,39 @@ class HotkeyCombo extends Equatable {
     );
   }
 
+  /// Key codes ANSI das setas horizontais.
+  static const int _leftArrowKeyCode = 123;
+  static const int _rightArrowKeyCode = 124;
+
+  /// ⌘⌥← — mover a janela focada para a região anterior do layout.
+  /// No Windows o combo é Ctrl+Win+← (os flags lógicos descrevem o Windows;
+  /// o macOS usa apenas [keyCode] e [modifiers]).
+  static const HotkeyCombo cycleRegionPrev = HotkeyCombo._(
+    '⌘⌥←',
+    _leftArrowKeyCode,
+    _cmd | _option,
+    'left',
+    false,
+    false,
+    false,
+    true,
+    hasWin: true,
+  );
+
+  /// ⌘⌥→ — mover a janela focada para a próxima região do layout.
+  /// No Windows o combo é Ctrl+Win+→.
+  static const HotkeyCombo cycleRegionNext = HotkeyCombo._(
+    '⌘⌥→',
+    _rightArrowKeyCode,
+    _cmd | _option,
+    'right',
+    false,
+    false,
+    false,
+    true,
+    hasWin: true,
+  );
+
   /// Combos oferecidos para layouts (⌥n e ⌥⌘n).
   static List<String> layoutOptions() => [
     for (var i = 1; i <= 9; i++) '⌥$i',
@@ -102,5 +139,5 @@ class HotkeyCombo extends Equatable {
   ];
 
   @override
-  List<Object?> get props => [display, keyCode, modifiers, key];
+  List<Object?> get props => [display, keyCode, modifiers, key, hasWin];
 }

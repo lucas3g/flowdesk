@@ -22,9 +22,7 @@ class ShortcutsPlatformDatasourceImpl implements ShortcutsPlatformDatasource {
 
   @override
   Future<void> registerShortcuts(List<Map<String, Object>> shortcuts) {
-    return _channel.invoke<void>('registerShortcuts', {
-      'shortcuts': shortcuts,
-    });
+    return _channel.invoke<void>('registerShortcuts', {'shortcuts': shortcuts});
   }
 
   @override

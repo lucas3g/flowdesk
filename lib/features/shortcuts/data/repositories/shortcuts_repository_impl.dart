@@ -31,6 +31,7 @@ class ShortcutsRepositoryImpl implements ShortcutsRepository {
             'shift': binding.combo.hasShift,
             'alt': binding.combo.hasOption,
             'ctrl': binding.combo.hasControl,
+            'win': binding.combo.hasWin,
           },
       ]);
       return right(unit);

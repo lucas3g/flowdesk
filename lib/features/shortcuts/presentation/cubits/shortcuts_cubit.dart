@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/services/region_cycle_service.dart';
 import '../../../layouts/presentation/cubits/layouts_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_state.dart';
+import '../../../settings/presentation/cubits/settings_cubit.dart';
+import '../../../settings/presentation/cubits/settings_state.dart';
 import '../../../workspaces/presentation/cubits/workspaces_cubit.dart';
 import '../../../workspaces/presentation/cubits/workspaces_state.dart';
 import '../../domain/entities/hotkey_combo.dart';
@@ -23,22 +26,29 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
     this._watchPresses,
     this._layoutsCubit,
     this._workspacesCubit,
+    this._settingsCubit,
+    this._regionCycleService,
   ) : super(const ShortcutsState());
 
   final RegisterShortcuts _registerShortcuts;
   final WatchShortcutPresses _watchPresses;
   final LayoutsCubit _layoutsCubit;
   final WorkspacesCubit _workspacesCubit;
+  final SettingsCubit _settingsCubit;
+  final RegionCycleService _regionCycleService;
 
   StreamSubscription<int>? _pressesSubscription;
   StreamSubscription<LayoutsState>? _layoutsSubscription;
   StreamSubscription<WorkspacesState>? _workspacesSubscription;
+  StreamSubscription<SettingsState>? _settingsSubscription;
 
-  /// Sincroniza agora e re-sincroniza quando layouts/workspaces mudarem.
+  /// Sincroniza agora e re-sincroniza quando layouts/workspaces/settings
+  /// mudarem (o último layout aplicado ativa os atalhos de ciclo de região).
   Future<void> start() async {
     _pressesSubscription ??= _watchPresses().listen(_onPressed);
     _layoutsSubscription ??= _layoutsCubit.stream.listen((_) => sync());
     _workspacesSubscription ??= _workspacesCubit.stream.listen((_) => sync());
+    _settingsSubscription ??= _settingsCubit.stream.listen((_) => sync());
     await sync();
   }
 
@@ -73,6 +83,35 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
           description: workspace.name,
         ),
       );
+    }
+
+    // Atalhos de ciclo de região (⌘⌥←/→, Ctrl+Win+←/→ no Windows) só ficam
+    // registrados enquanto há um layout aplicado com regiões — sem layout,
+    // os apps recebem essas combinações normalmente.
+    final appliedLayoutId = _settingsCubit.state.settings.lastAppliedLayoutId;
+    final appliedLayout = _layoutsCubit.state.layouts
+        .where((layout) => layout.id == appliedLayoutId)
+        .firstOrNull;
+    if (appliedLayout != null && appliedLayout.regions.isNotEmpty) {
+      bindings
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.cycleRegionPrev,
+            type: ShortcutActionType.cycleRegionPrev,
+            targetId: 0,
+            description: 'Mover janela para a região anterior',
+          ),
+        )
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.cycleRegionNext,
+            type: ShortcutActionType.cycleRegionNext,
+            targetId: 0,
+            description: 'Mover janela para a próxima região',
+          ),
+        );
     }
 
     if (_sameBindings(bindings, state.bindings)) return;
@@ -116,6 +155,10 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
             return;
           }
         }
+      case ShortcutActionType.cycleRegionPrev:
+        _regionCycleService.cycle(CycleDirection.previous);
+      case ShortcutActionType.cycleRegionNext:
+        _regionCycleService.cycle(CycleDirection.next);
     }
   }
 
@@ -136,6 +179,7 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
     await _pressesSubscription?.cancel();
     await _layoutsSubscription?.cancel();
     await _workspacesSubscription?.cancel();
+    await _settingsSubscription?.cancel();
     return super.close();
   }
 }
