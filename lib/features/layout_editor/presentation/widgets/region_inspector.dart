@@ -238,11 +238,13 @@ typedef _AppOption = ({
 /// entrada por instância, identificada pelo título da janela —, mantém a
 /// associação atual mesmo se o app não estiver aberto, e permite remover.
 class _RegionAppSelector extends StatelessWidget {
-  const _RegionAppSelector({required this.region, required this.onSetApp});
+  _RegionAppSelector({required this.region, required this.onSetApp});
 
   final LayoutRegion region;
   final void Function({String? bundleId, String? appName, String? windowTitle})
   onSetApp;
+
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
 
   @override
   Widget build(BuildContext context) {
@@ -372,7 +374,7 @@ class _RegionAppSelector extends StatelessWidget {
   /// do app ("qualquer janela"), um item por instância com o título dela.
   List<_AppOption> _buildOptions() {
     final windowsByApp = <String, (String, Uint8List?, List<String>)>{};
-    for (final window in getIt<WindowsCubit>().state.windows) {
+    for (final window in _windowsCubit.state.windows) {
       if (window.bundleId.isEmpty) continue;
       final entry = windowsByApp[window.bundleId];
       windowsByApp[window.bundleId] = (

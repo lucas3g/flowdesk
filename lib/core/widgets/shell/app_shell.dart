@@ -113,6 +113,8 @@ class _OnboardingGate extends StatefulWidget {
 }
 
 class _OnboardingGateState extends State<_OnboardingGate> {
+  final SettingsCubit _settingsCubit = getIt<SettingsCubit>();
+
   bool _checked = false;
 
   @override
@@ -128,15 +130,14 @@ class _OnboardingGateState extends State<_OnboardingGate> {
   /// Primeira execução: assistente (nome) e, na sequência, o tour guiado.
   /// Se o app fechou entre os dois, o tour retoma sozinho na próxima abertura.
   Future<void> _runFirstUseFlow() async {
-    final settingsCubit = getIt<SettingsCubit>();
-    if (!settingsCubit.state.settings.onboardingDone) {
+    if (!_settingsCubit.state.settings.onboardingDone) {
       await showOnboarding(context);
     }
     if (!mounted) return;
-    if (!settingsCubit.state.settings.featureTourDone) {
+    if (!_settingsCubit.state.settings.featureTourDone) {
       await showFeatureTour(
         context,
-        onFinished: () => settingsCubit.setFeatureTourDone(true),
+        onFinished: () => _settingsCubit.setFeatureTourDone(true),
       );
     }
   }
@@ -147,9 +148,11 @@ class _OnboardingGateState extends State<_OnboardingGate> {
 
 /// Atalhos do shell: ⌘K (paleta), ⌘Z (desfazer) e ⇧⌘Z (refazer).
 class _PaletteShortcut extends StatelessWidget {
-  const _PaletteShortcut({required this.child});
+  _PaletteShortcut({required this.child});
 
   final Widget child;
+
+  final UndoRedoCubit _undoRedoCubit = getIt<UndoRedoCubit>();
 
   @override
   Widget build(BuildContext context) {
@@ -158,13 +161,13 @@ class _PaletteShortcut extends StatelessWidget {
         const SingleActivator(LogicalKeyboardKey.keyK, meta: true): () =>
             showCommandPalette(context),
         const SingleActivator(LogicalKeyboardKey.keyZ, meta: true): () =>
-            getIt<UndoRedoCubit>().undo(),
+            _undoRedoCubit.undo(),
         const SingleActivator(
           LogicalKeyboardKey.keyZ,
           meta: true,
           shift: true,
         ): () =>
-            getIt<UndoRedoCubit>().redo(),
+            _undoRedoCubit.redo(),
       },
       child: Focus(autofocus: true, child: child),
     );

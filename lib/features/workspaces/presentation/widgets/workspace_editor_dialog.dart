@@ -41,13 +41,15 @@ class WorkspaceEditorDialog extends StatefulWidget {
 }
 
 class _WorkspaceEditorDialogState extends State<WorkspaceEditorDialog> {
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+
   late final TextEditingController _nameController;
   late final TextEditingController _emojiController;
   late List<WorkspaceApp> _apps;
   late int _gradientIndex;
   int? _layoutId;
 
-  List<Layout> get _layouts => getIt<LayoutsCubit>().state.layouts;
+  List<Layout> get _layouts => _layoutsCubit.state.layouts;
 
   @override
   void initState() {
@@ -280,15 +282,17 @@ class _WorkspaceEditorDialogState extends State<WorkspaceEditorDialog> {
 
 /// Popup com os apps atualmente em execução (com janelas abertas).
 class _AddRunningAppButton extends StatelessWidget {
-  const _AddRunningAppButton({required this.alreadyAdded, required this.onAdd});
+  _AddRunningAppButton({required this.alreadyAdded, required this.onAdd});
 
   final Set<String> alreadyAdded;
   final void Function(String bundleId, String appName) onAdd;
 
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final windows = getIt<WindowsCubit>().state.windows;
+    final windows = _windowsCubit.state.windows;
 
     final runningApps = <String, String>{};
     for (final window in windows) {

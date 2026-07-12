@@ -22,14 +22,16 @@ class WorkspacesPage extends StatefulWidget {
 
 class _WorkspacesPageState extends State<WorkspacesPage> {
   final WorkspacesCubit _cubit = getIt<WorkspacesCubit>();
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
 
   @override
   void initState() {
     super.initState();
     _cubit.load();
     // Layouts para o dropdown do editor e janelas para "Adicionar app".
-    getIt<LayoutsCubit>().load();
-    getIt<WindowsCubit>().refresh();
+    _layoutsCubit.load();
+    _windowsCubit.refresh();
   }
 
   @override
@@ -128,8 +130,7 @@ class _WorkspacesPageState extends State<WorkspacesPage> {
     }
 
     final layoutsById = {
-      for (final layout in getIt<LayoutsCubit>().state.layouts)
-        layout.id: layout.name,
+      for (final layout in _layoutsCubit.state.layouts) layout.id: layout.name,
     };
 
     return LayoutBuilder(

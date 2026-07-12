@@ -24,6 +24,10 @@ class RuleEditorDialog extends StatefulWidget {
 }
 
 class _RuleEditorDialogState extends State<RuleEditorDialog> {
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
+  final MonitorsCubit _monitorsCubit = getIt<MonitorsCubit>();
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+
   String? _bundleId;
   String? _appName;
   RuleActionType _actionType = RuleActionType.center;
@@ -33,7 +37,7 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
 
   Map<String, String> get _runningApps {
     final apps = <String, String>{};
-    for (final window in getIt<WindowsCubit>().state.windows) {
+    for (final window in _windowsCubit.state.windows) {
       if (window.bundleId.isNotEmpty) {
         apps[window.bundleId] = window.appName;
       }
@@ -44,8 +48,8 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final monitors = getIt<MonitorsCubit>().state.monitors;
-    final layouts = getIt<LayoutsCubit>().state.layouts;
+    final monitors = _monitorsCubit.state.monitors;
+    final layouts = _layoutsCubit.state.layouts;
     final selectedLayout = layouts
         .where((layout) => layout.id == _layoutId)
         .firstOrNull;

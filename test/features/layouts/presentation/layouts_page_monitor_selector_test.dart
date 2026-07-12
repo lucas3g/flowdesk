@@ -1,6 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flowdesk/core/di/injection.dart';
+import 'package:flowdesk/core/routing/navigation_cubit.dart';
 import 'package:flowdesk/core/theme/app_theme.dart';
+import 'package:flowdesk/features/layout_editor/presentation/cubits/layout_editor_cubit.dart';
+import 'package:flowdesk/features/layout_editor/presentation/cubits/layout_editor_state.dart';
 import 'package:flowdesk/features/layouts/domain/entities/layout.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
@@ -23,6 +26,9 @@ class _MockMonitorsCubit extends MockCubit<MonitorsState>
 
 class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
     implements AppliedLayoutsCubit {}
+
+class _MockLayoutEditorCubit extends MockCubit<LayoutEditorState>
+    implements LayoutEditorCubit {}
 
 const _monitor = Monitor(
   id: 1,
@@ -83,6 +89,9 @@ void main() {
     getIt.registerLazySingleton<LayoutsCubit>(() => layoutsCubit);
     getIt.registerLazySingleton<MonitorsCubit>(() => monitorsCubit);
     getIt.registerLazySingleton<AppliedLayoutsCubit>(() => appliedLayoutsCubit);
+    // Resolvidos como campos da página, mesmo sem uso nestes testes.
+    getIt.registerLazySingleton<LayoutEditorCubit>(_MockLayoutEditorCubit.new);
+    getIt.registerLazySingleton<NavigationCubit>(NavigationCubit.new);
   });
 
   tearDown(() async => getIt.reset());

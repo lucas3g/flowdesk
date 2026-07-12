@@ -116,6 +116,8 @@ class _FeatureTourOverlay extends StatefulWidget {
 
 class _FeatureTourOverlayState extends State<_FeatureTourOverlay>
     with WidgetsBindingObserver {
+  final NavigationCubit _navigationCubit = getIt<NavigationCubit>();
+
   int _index = -1;
 
   /// Retângulo do alvo atual em coordenadas globais; null = card central.
@@ -160,7 +162,7 @@ class _FeatureTourOverlayState extends State<_FeatureTourOverlay>
         final step = widget.steps[next];
 
         if (step.navigateTo != null) {
-          getIt<NavigationCubit>().navigate(step.navigateTo!);
+          _navigationCubit.navigate(step.navigateTo!);
           // Espera a transição de tela para o alvo montar e assentar.
           await Future<void>.delayed(
             AppDimens.transitionScreen + const Duration(milliseconds: 60),

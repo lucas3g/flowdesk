@@ -27,6 +27,8 @@ class LayoutsPage extends StatefulWidget {
 
 class _LayoutsPageState extends State<LayoutsPage> {
   final LayoutsCubit _cubit = getIt<LayoutsCubit>();
+  final LayoutEditorCubit _layoutEditorCubit = getIt<LayoutEditorCubit>();
+  final NavigationCubit _navigationCubit = getIt<NavigationCubit>();
 
   @override
   void initState() {
@@ -222,8 +224,8 @@ class _LayoutsPageState extends State<LayoutsPage> {
                   layout: layout,
                   onApply: () => _cubit.apply(layout),
                   onEdit: () {
-                    getIt<LayoutEditorCubit>().loadForEdit(layout);
-                    getIt<NavigationCubit>().navigate(AppScreen.layoutEditor);
+                    _layoutEditorCubit.loadForEdit(layout);
+                    _navigationCubit.navigate(AppScreen.layoutEditor);
                   },
                   onToggleFavorite: () => _cubit.toggleFavorite(layout),
                   onDelete: layout.isPreset
@@ -242,7 +244,7 @@ class _LayoutsPageState extends State<LayoutsPage> {
 /// remoção de telas via [MonitorsCubit] e mostra o layout aplicado em
 /// cada monitor, com opção de limpá-lo.
 class _MonitorSelector extends StatelessWidget {
-  const _MonitorSelector({
+  _MonitorSelector({
     super.key,
     required this.cubit,
     required this.targetMonitorId,
@@ -250,6 +252,9 @@ class _MonitorSelector extends StatelessWidget {
 
   final LayoutsCubit cubit;
   final int? targetMonitorId;
+
+  final MonitorsCubit _monitorsCubit = getIt<MonitorsCubit>();
+  final AppliedLayoutsCubit _appliedLayoutsCubit = getIt<AppliedLayoutsCubit>();
 
   /// Nome do layout aplicado no monitor, se houver.
   String? _appliedLayoutName(Monitor monitor, Map<String, int> applied) {
@@ -264,13 +269,12 @@ class _MonitorSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final appliedLayoutsCubit = getIt<AppliedLayoutsCubit>();
 
     return BlocBuilder<MonitorsCubit, MonitorsState>(
-      bloc: getIt<MonitorsCubit>(),
+      bloc: _monitorsCubit,
       builder: (context, monitorsState) {
         return BlocBuilder<AppliedLayoutsCubit, Map<String, int>>(
-          bloc: appliedLayoutsCubit,
+          bloc: _appliedLayoutsCubit,
           builder: (context, applied) {
             final monitors = monitorsState.monitors;
             final selected = monitors
@@ -341,7 +345,7 @@ class _MonitorSelector extends StatelessWidget {
                   if (applied.containsKey(monitorKey(monitor)))
                     PopupMenuItem<VoidCallback>(
                       value: () =>
-                          appliedLayoutsCubit.remove(monitorKey(monitor)),
+                          _appliedLayoutsCubit.remove(monitorKey(monitor)),
                       height: 34,
                       child: Row(
                         children: [

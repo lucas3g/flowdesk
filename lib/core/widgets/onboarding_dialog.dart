@@ -26,6 +26,7 @@ class OnboardingDialog extends StatefulWidget {
 }
 
 class _OnboardingDialogState extends State<OnboardingDialog> {
+  final SettingsCubit _settingsCubit = getIt<SettingsCubit>();
   final TextEditingController _nameController = TextEditingController();
 
   @override
@@ -147,7 +148,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
   Future<void> _finish() async {
     Navigator.of(context).pop();
     final name = _nameController.text.trim();
-    await getIt<SettingsCubit>().completeOnboarding(
+    await _settingsCubit.completeOnboarding(
       userName: name.isEmpty ? null : name,
     );
   }

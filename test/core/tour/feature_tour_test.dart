@@ -1,3 +1,5 @@
+import 'package:flowdesk/core/di/injection.dart';
+import 'package:flowdesk/core/routing/navigation_cubit.dart';
 import 'package:flowdesk/core/theme/app_theme.dart';
 import 'package:flowdesk/core/tour/feature_tour.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +19,11 @@ Widget _host(GlobalKey targetKey) {
 
 void main() {
   setUpAll(loadMaterialSymbolsFont);
+
+  // O overlay do tour resolve o NavigationCubit no escopo da classe.
+  setUp(() => getIt.registerLazySingleton<NavigationCubit>(NavigationCubit.new));
+
+  tearDown(() async => getIt.reset());
 
   testWidgets('exibe o balão do passo e conclui ao avançar', (tester) async {
     final targetKey = GlobalKey();

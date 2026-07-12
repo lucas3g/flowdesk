@@ -45,6 +45,8 @@ class _DashboardPageState extends State<DashboardPage> {
   final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
   final HistoryCubit _historyCubit = getIt<HistoryCubit>();
   final NavigationCubit _navigationCubit = getIt<NavigationCubit>();
+  final SettingsCubit _settingsCubit = getIt<SettingsCubit>();
+  final LayoutEditorCubit _layoutEditorCubit = getIt<LayoutEditorCubit>();
 
   static final NumberFormat _pxFormat = NumberFormat.decimalPattern('pt_BR');
 
@@ -129,7 +131,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         Builder(
                           builder: (context) {
-                            final name = getIt<SettingsCubit>()
+                            final name = _settingsCubit
                                 .state
                                 .settings
                                 .userName
@@ -159,7 +161,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     onPressed: () {
                       // Criar sempre parte de um layout em branco — sem isso,
                       // o editor (singleton) reabre o último layout editado.
-                      getIt<LayoutEditorCubit>().newLayout();
+                      _layoutEditorCubit.newLayout();
                       _navigationCubit.navigate(AppScreen.layoutEditor);
                     },
                     icon: const MsIcon('add', size: 15, color: Colors.white),
@@ -322,7 +324,7 @@ class _DashboardPageState extends State<DashboardPage> {
         DashboardCard(
           title: 'Layouts recentes',
           action: 'Ver todos',
-          onAction: () => getIt<NavigationCubit>().navigate(AppScreen.layouts),
+          onAction: () => _navigationCubit.navigate(AppScreen.layouts),
           child: Column(
             children: [
               for (final layout in recents)
@@ -330,7 +332,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: RecentLayoutRow(
                     layout: layout,
-                    onApply: () => getIt<LayoutsCubit>().apply(layout),
+                    onApply: () => _layoutsCubit.apply(layout),
                   ),
                 ),
               if (recents.isEmpty)
@@ -354,8 +356,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 onTap: () {
                   // Criar sempre parte de um layout em branco — sem isso,
                   // o editor (singleton) reabre o último layout editado.
-                  getIt<LayoutEditorCubit>().newLayout();
-                  getIt<NavigationCubit>().navigate(AppScreen.layoutEditor);
+                  _layoutEditorCubit.newLayout();
+                  _navigationCubit.navigate(AppScreen.layoutEditor);
                 },
               ),
               QuickActionChip(
@@ -367,13 +369,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: 'workspaces',
                 label: 'Workspaces',
                 onTap: () =>
-                    getIt<NavigationCubit>().navigate(AppScreen.workspaces),
+                    _navigationCubit.navigate(AppScreen.workspaces),
               ),
               QuickActionChip(
                 icon: 'keyboard_command_key',
                 label: 'Atalhos',
                 onTap: () =>
-                    getIt<NavigationCubit>().navigate(AppScreen.shortcuts),
+                    _navigationCubit.navigate(AppScreen.shortcuts),
               ),
             ],
           ),
@@ -395,7 +397,7 @@ class _DashboardPageState extends State<DashboardPage> {
           title: 'Favoritos',
           action: 'Ver todos',
           onAction: () =>
-              getIt<NavigationCubit>().navigate(AppScreen.favorites),
+              _navigationCubit.navigate(AppScreen.favorites),
           child: Column(
             children: [
               for (final layout in favorites)
@@ -404,7 +406,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: RecentLayoutRow(
                     layout: layout,
                     compact: true,
-                    onApply: () => getIt<LayoutsCubit>().apply(layout),
+                    onApply: () => _layoutsCubit.apply(layout),
                   ),
                 ),
               if (favorites.isEmpty)
@@ -419,14 +421,14 @@ class _DashboardPageState extends State<DashboardPage> {
         DashboardCard(
           title: 'Seus monitores',
           action: 'Detalhes',
-          onAction: () => getIt<NavigationCubit>().navigate(AppScreen.monitors),
+          onAction: () => _navigationCubit.navigate(AppScreen.monitors),
           child: MiniMonitors(monitors: monitorsState.monitors),
         ),
         const SizedBox(height: AppDimens.gridGap),
         DashboardCard(
           title: 'Atividade recente',
           action: 'Histórico',
-          onAction: () => getIt<NavigationCubit>().navigate(AppScreen.history),
+          onAction: () => _navigationCubit.navigate(AppScreen.history),
           child: Column(
             children: [
               for (final entry in historyState.entries.take(4))

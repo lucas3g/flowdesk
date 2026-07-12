@@ -23,14 +23,16 @@ class RulesPage extends StatefulWidget {
 
 class _RulesPageState extends State<RulesPage> {
   final RulesCubit _cubit = getIt<RulesCubit>();
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
 
   @override
   void initState() {
     super.initState();
     _cubit.load();
     // Dados usados pelo dialog de criação.
-    getIt<WindowsCubit>().refresh();
-    getIt<LayoutsCubit>().load();
+    _windowsCubit.refresh();
+    _layoutsCubit.load();
   }
 
   @override
@@ -152,18 +154,16 @@ class _RulesPageState extends State<RulesPage> {
 }
 
 class _RuleRow extends StatelessWidget {
-  const _RuleRow({
-    required this.rule,
-    required this.onToggle,
-    required this.onDelete,
-  });
+  _RuleRow({required this.rule, required this.onToggle, required this.onDelete});
 
   final Rule rule;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+
   String get _description {
-    final layouts = getIt<LayoutsCubit>().state.layouts;
+    final layouts = _layoutsCubit.state.layouts;
     switch (rule.actionType) {
       case RuleActionType.moveToMonitor:
         return 'Mover para o monitor ${rule.targetValue}';

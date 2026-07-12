@@ -125,7 +125,7 @@ class MonitorProfilesSection extends StatelessWidget {
 }
 
 class _ProfileRow extends StatelessWidget {
-  const _ProfileRow({
+  _ProfileRow({
     required this.cubit,
     required this.index,
     required this.isCurrent,
@@ -135,13 +135,16 @@ class _ProfileRow extends StatelessWidget {
   final int index;
   final bool isCurrent;
 
+  final WorkspacesCubit _workspacesCubit = getIt<WorkspacesCubit>();
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final profile = cubit.state.profiles[index];
 
-    final workspaces = getIt<WorkspacesCubit>().state.workspaces;
-    final layouts = getIt<LayoutsCubit>().state.layouts;
+    final workspaces = _workspacesCubit.state.workspaces;
+    final layouts = _layoutsCubit.state.layouts;
     String targetName = '—';
     if (profile.workspaceId != null) {
       for (final workspace in workspaces) {
@@ -263,6 +266,8 @@ class _SaveProfileDialog extends StatefulWidget {
 }
 
 class _SaveProfileDialogState extends State<_SaveProfileDialog> {
+  final WorkspacesCubit _workspacesCubit = getIt<WorkspacesCubit>();
+  final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
   final TextEditingController _nameController = TextEditingController();
 
   /// `w:id` para workspace, `l:id` para layout.
@@ -277,8 +282,8 @@ class _SaveProfileDialogState extends State<_SaveProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final workspaces = getIt<WorkspacesCubit>().state.workspaces;
-    final layouts = getIt<LayoutsCubit>().state.layouts;
+    final workspaces = _workspacesCubit.state.workspaces;
+    final layouts = _layoutsCubit.state.layouts;
 
     return Dialog(
       backgroundColor: colors.panel,

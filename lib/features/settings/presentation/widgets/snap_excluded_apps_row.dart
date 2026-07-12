@@ -50,14 +50,12 @@ String _instanceLabel(ManagedWindow window, int index) {
 /// arrastar: botão para adicionar (a partir dos apps em execução) e chips
 /// com remoção individual.
 class SnapExcludedAppsRow extends StatelessWidget {
-  const SnapExcludedAppsRow({
-    super.key,
-    required this.apps,
-    required this.onChanged,
-  });
+  SnapExcludedAppsRow({super.key, required this.apps, required this.onChanged});
 
   final List<SnapExcludedApp> apps;
   final ValueChanged<List<SnapExcludedApp>> onChanged;
+
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
 
   Future<void> _addApp(BuildContext context) async {
     final chosen = await _SnapExcludedAppPickerDialog.show(context, apps);
@@ -71,7 +69,7 @@ class SnapExcludedAppsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final running = _runningAppsById(getIt<WindowsCubit>().state.windows);
+    final running = _runningAppsById(_windowsCubit.state.windows);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
