@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
+import '../../../../core/widgets/ms_icon.dart';
 import '../../../layouts/presentation/cubits/layouts_cubit.dart';
 import '../../../monitors/presentation/cubits/monitors_cubit.dart';
 import '../../../windows/presentation/cubits/windows_cubit.dart';
@@ -35,11 +38,14 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
   int? _layoutId;
   int _regionIndex = 0;
 
-  Map<String, String> get _runningApps {
-    final apps = <String, String>{};
+  Map<String, ({String name, Uint8List? icon})> get _runningApps {
+    final apps = <String, ({String name, Uint8List? icon})>{};
     for (final window in _windowsCubit.state.windows) {
       if (window.bundleId.isNotEmpty) {
-        apps[window.bundleId] = window.appName;
+        apps[window.bundleId] = (
+          name: window.appName,
+          icon: apps[window.bundleId]?.icon ?? window.icon,
+        );
       }
     }
     return apps;
@@ -84,15 +90,25 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
                   for (final entry in _runningApps.entries)
                     DropdownMenuItem(
                       value: entry.key,
-                      child: Text(
-                        entry.value,
-                        style: const TextStyle(fontSize: 13),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _AppIcon(icon: entry.value.icon, size: 18),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              entry.value.name,
+                              style: const TextStyle(fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
                 onChanged: (value) => setState(() {
                   _bundleId = value;
-                  _appName = value != null ? _runningApps[value] : null;
+                  _appName = value != null ? _runningApps[value]?.name : null;
                 }),
                 decoration: _decoration(colors, 'Aplicativo (em execução)'),
                 dropdownColor: colors.panel2,
@@ -241,6 +257,34 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
         borderRadius: BorderRadius.circular(AppDimens.radiusIconButton),
         borderSide: BorderSide.none,
       ),
+    );
+  }
+}
+
+/// Ícone do app vindo do sistema, com fallback genérico.
+class _AppIcon extends StatelessWidget {
+  const _AppIcon({required this.icon, required this.size});
+
+  final Uint8List? icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    if (icon == null) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Center(
+          child: MsIcon('apps', size: size - 4, color: colors.text2),
+        ),
+      );
+    }
+    return Image.memory(
+      icon!,
+      width: size,
+      height: size,
+      gaplessPlayback: true,
     );
   }
 }
