@@ -15,14 +15,14 @@ import 'core/widgets/shell/app_shell.dart';
 import 'features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'features/licensing/presentation/cubits/license_cubit.dart';
-import 'features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'features/monitors/presentation/cubits/monitor_profiles_cubit.dart';
+import 'features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'features/permissions/presentation/cubits/permissions_cubit.dart';
 import 'features/rules/presentation/cubits/rules_cubit.dart';
-import 'features/shortcuts/presentation/cubits/shortcuts_cubit.dart';
-import 'features/workspaces/presentation/cubits/workspaces_cubit.dart';
 import 'features/settings/presentation/cubits/settings_cubit.dart';
 import 'features/settings/presentation/cubits/settings_state.dart';
+import 'features/shortcuts/presentation/cubits/shortcuts_cubit.dart';
+import 'features/workspaces/presentation/cubits/workspaces_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
