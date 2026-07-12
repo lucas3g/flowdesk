@@ -21,12 +21,13 @@ class LayoutEditorPage extends StatefulWidget {
 
 class _LayoutEditorPageState extends State<LayoutEditorPage> {
   final LayoutEditorCubit _cubit = getIt<LayoutEditorCubit>();
+  final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
 
   @override
   void initState() {
     super.initState();
     // Apps em execução para o seletor "App associado" do inspector.
-    getIt<WindowsCubit>().refresh();
+    _windowsCubit.refresh();
   }
 
   @override
@@ -213,24 +214,31 @@ class _Toolbar extends StatelessWidget {
 
     return Row(
       children: [
-        SizedBox(
-          width: 260,
-          height: 34,
-          child: _LayoutNameField(
-            // A key força reinicializar o controller quando outro layout
-            // é carregado no editor.
-            key: ValueKey('layout-name-${state.layout.id}'),
-            initialName: state.layout.name,
-            currentName: state.layout.name,
-            onChanged: cubit.setName,
-            colors: colors,
+        Flexible(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: SizedBox(
+              height: 34,
+              child: _LayoutNameField(
+                // A key força reinicializar o controller quando outro layout
+                // é carregado no editor.
+                key: ValueKey('layout-name-${state.layout.id}'),
+                initialName: state.layout.name,
+                currentName: state.layout.name,
+                onChanged: cubit.setName,
+                colors: colors,
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          '$regions ${regions == 1 ? 'região' : 'regiões'}'
-          '${state.isDirty ? ' · não salvo' : ''}',
-          style: TextStyle(fontSize: 12, color: colors.text3),
+        Flexible(
+          child: Text(
+            '$regions ${regions == 1 ? 'região' : 'regiões'}'
+            '${state.isDirty ? ' · não salvo' : ''}',
+            style: TextStyle(fontSize: 12, color: colors.text3),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const Spacer(),
         _ToolbarIcon(
@@ -274,10 +282,24 @@ class _Toolbar extends StatelessWidget {
           label: const Text('Adicionar região'),
         ),
         const SizedBox(width: 8),
-        FilledButton.icon(
+        OutlinedButton.icon(
           onPressed: cubit.save,
-          icon: const MsIcon('save', size: 15, color: Colors.white),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colors.text,
+            side: BorderSide(color: colors.cardBorder),
+            textStyle: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          icon: MsIcon('save', size: 15, color: colors.text2),
           label: const Text('Salvar'),
+        ),
+        const SizedBox(width: 8),
+        FilledButton.icon(
+          onPressed: cubit.saveAndApply,
+          icon: const MsIcon('play_arrow', size: 15, color: Colors.white),
+          label: const Text('Salvar e aplicar'),
         ),
       ],
     );

@@ -204,7 +204,12 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
     );
   }
 
-  Future<void> save() async {
+  Future<void> save() => _persist();
+
+  /// Salva o layout e, em seguida, aplica-o às janelas via [LayoutsCubit].
+  Future<void> saveAndApply() => _persist(applyAfter: true);
+
+  Future<void> _persist({bool applyAfter = false}) async {
     final result = await _saveLayout(state.layout);
     await result.fold(
       (failure) async => emit(state.copyWith(feedback: failure.message)),
@@ -213,10 +218,21 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
           state.copyWith(
             layout: saved,
             isDirty: false,
-            feedback: "Layout '${saved.name}' salvo.",
+            feedback: applyAfter ? null : "Layout '${saved.name}' salvo.",
           ),
         );
         await _layoutsCubit.load();
+
+        if (!applyAfter) return;
+
+        // A aplicação emite o resultado (sucesso ou erro) no estado do
+        // LayoutsCubit; o feedback é trazido para o editor.
+        await _layoutsCubit.apply(saved);
+        final feedback = _layoutsCubit.state.feedback;
+        if (feedback != null) {
+          _layoutsCubit.clearFeedback();
+          emit(state.copyWith(feedback: feedback));
+        }
       },
     );
   }

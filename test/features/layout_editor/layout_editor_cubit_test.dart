@@ -232,6 +232,64 @@ void main() {
   );
 
   blocTest<LayoutEditorCubit, LayoutEditorState>(
+    'saveAndApply persiste, aplica e traz o feedback da aplicação',
+    setUp: () {
+      final saved = _preset.copyWith(id: 42, isPreset: false);
+      when(
+        () => saveLayout(any()),
+      ).thenAnswer((_) async => right(saved));
+      when(() => layoutsCubit.apply(saved)).thenAnswer((_) async {});
+      when(() => layoutsCubit.state).thenReturn(
+        const LayoutsState(feedback: "Layout 'Metades' aplicado a 2 janelas."),
+      );
+      when(() => layoutsCubit.clearFeedback()).thenReturn(null);
+    },
+    build: buildCubit,
+    seed: () => LayoutEditorState(
+      layout: _preset.copyWith(id: 0, isPreset: false),
+      isDirty: true,
+    ),
+    act: (cubit) => cubit.saveAndApply(),
+    expect: () => [
+      isA<LayoutEditorState>()
+          .having((s) => s.layout.id, 'id', 42)
+          .having((s) => s.isDirty, 'isDirty', false)
+          .having((s) => s.feedback, 'feedback', isNull),
+      isA<LayoutEditorState>().having(
+        (s) => s.feedback,
+        'feedback',
+        contains('aplicado'),
+      ),
+    ],
+    verify: (_) {
+      verify(() => layoutsCubit.load()).called(1);
+      verify(
+        () => layoutsCubit.apply(_preset.copyWith(id: 42, isPreset: false)),
+      ).called(1);
+      verify(() => layoutsCubit.clearFeedback()).called(1);
+    },
+  );
+
+  blocTest<LayoutEditorCubit, LayoutEditorState>(
+    'saveAndApply com falha ao salvar não aplica',
+    setUp: () => when(() => saveLayout(any())).thenAnswer(
+      (_) async => left(
+        const ValidationFailure('O layout precisa de ao menos uma região.'),
+      ),
+    ),
+    build: buildCubit,
+    act: (cubit) => cubit.saveAndApply(),
+    expect: () => [
+      isA<LayoutEditorState>().having(
+        (s) => s.feedback,
+        'feedback',
+        contains('região'),
+      ),
+    ],
+    verify: (_) => verifyNever(() => layoutsCubit.apply(any())),
+  );
+
+  blocTest<LayoutEditorCubit, LayoutEditorState>(
     'save com falha de validação mostra feedback',
     setUp: () => when(() => saveLayout(any())).thenAnswer(
       (_) async => left(
