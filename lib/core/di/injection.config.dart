@@ -18,6 +18,7 @@ import 'package:flowdesk/core/services/database/app_database.dart' as _i110;
 import 'package:flowdesk/core/services/region_cycle_service.dart' as _i408;
 import 'package:flowdesk/core/services/snap_regions_service.dart' as _i108;
 import 'package:flowdesk/core/services/status_bar_service.dart' as _i900;
+import 'package:flowdesk/core/services/window_close_service.dart' as _i466;
 import 'package:flowdesk/features/backup/domain/usecases/export_backup.dart'
     as _i472;
 import 'package:flowdesk/features/backup/domain/usecases/import_backup.dart'
@@ -564,6 +565,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i33.GetMonitors>(),
         gh<_i288.WatchMonitors>(),
       ),
+    );
+    gh.lazySingleton<_i466.WindowCloseService>(
+      () => _i466.WindowCloseService(gh<_i731.SettingsCubit>()),
     );
     gh.lazySingleton<_i971.RulesCubit>(
       () => _i971.RulesCubit(

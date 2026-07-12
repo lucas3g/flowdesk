@@ -9,6 +9,7 @@ import 'core/di/injection.dart';
 import 'core/services/auto_restore_service.dart';
 import 'core/services/snap_regions_service.dart';
 import 'core/services/status_bar_service.dart';
+import 'core/services/window_close_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell/app_shell.dart';
 import 'features/layouts/presentation/cubits/layouts_cubit.dart';
@@ -54,6 +55,7 @@ Future<void> main() async {
     await windowManager.show();
     await windowManager.focus();
   });
+  await getIt<WindowCloseService>().start();
 
   runApp(FlowDeskApp());
 }

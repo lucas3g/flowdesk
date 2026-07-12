@@ -196,7 +196,9 @@ void SystemManager::ShowMenu() {
   } else if (cmd == kCmdPreferences) {
     Emit("openPreferences", 0);
   } else if (cmd == kCmdQuit) {
-    PostMessageW(hwnd_, WM_CLOSE, 0, 0);
+    // WM_CLOSE é interceptado pelo preventClose (window_manager) e apenas
+    // esconde a janela; destruir a janela encerra o app de verdade.
+    DestroyWindow(hwnd_);
   } else if (cmd >= kCmdLayoutBase && cmd < kCmdWorkspaceBase) {
     size_t index = cmd - kCmdLayoutBase;
     if (index < layouts_.size()) Emit("applyLayout", layouts_[index].id);
