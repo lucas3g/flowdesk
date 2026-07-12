@@ -22,10 +22,7 @@ void main() {
   late _MockRequestAccessibility requestAccessibility;
   late _MockOpenSettings openSettings;
 
-  const granted = PermissionsStatus(
-    accessibility: true,
-    screenRecording: true,
-  );
+  const granted = PermissionsStatus(accessibility: true, screenRecording: true);
   const missing = PermissionsStatus(
     accessibility: false,
     screenRecording: false,
@@ -61,9 +58,9 @@ void main() {
 
   blocTest<PermissionsCubit, PermissionsState>(
     'check emite error quando o canal falha',
-    setUp: () => when(() => getStatus(any())).thenAnswer(
-      (_) async => left(const PlatformFailure('sem canal')),
-    ),
+    setUp: () => when(
+      () => getStatus(any()),
+    ).thenAnswer((_) async => left(const PlatformFailure('sem canal'))),
     build: buildCubit,
     act: (cubit) => cubit.check(),
     expect: () => [

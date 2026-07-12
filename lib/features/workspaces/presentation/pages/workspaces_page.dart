@@ -161,10 +161,7 @@ class _WorkspacesPageState extends State<WorkspacesPage> {
     );
   }
 
-  Future<void> _openEditor(
-    BuildContext context, {
-    Workspace? workspace,
-  }) async {
+  Future<void> _openEditor(BuildContext context, {Workspace? workspace}) async {
     final result = await WorkspaceEditorDialog.show(
       context,
       workspace: workspace,

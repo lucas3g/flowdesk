@@ -119,9 +119,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   ),
                   const SizedBox(height: 20),
                   if (state.entries.isNotEmpty) ...[
-                    _StatsCard(
-                      stats: UsageStats.fromEntries(state.entries),
-                    ),
+                    _StatsCard(stats: UsageStats.fromEntries(state.entries)),
                     const SizedBox(height: AppDimens.gridGap),
                   ],
                   if (state.entries.isEmpty)

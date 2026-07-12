@@ -6,10 +6,13 @@ import '../../../../core/routing/app_screen.dart';
 import '../../../../core/routing/navigation_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
+import '../../../../core/tour/tour_targets.dart';
 import '../../../../core/widgets/ms_icon.dart';
 import '../../../layout_editor/presentation/cubits/layout_editor_cubit.dart';
+import '../../../monitors/domain/entities/monitor.dart';
 import '../../../monitors/presentation/cubits/monitors_cubit.dart';
 import '../../../monitors/presentation/cubits/monitors_state.dart';
+import '../cubits/applied_layouts_cubit.dart';
 import '../cubits/layouts_cubit.dart';
 import '../cubits/layouts_state.dart';
 import '../widgets/layout_card.dart';
@@ -130,7 +133,11 @@ class _LayoutsPageState extends State<LayoutsPage> {
           ),
         ),
         const SizedBox(width: 10),
-        _MonitorSelector(cubit: _cubit, targetMonitorId: state.targetMonitorId),
+        _MonitorSelector(
+          key: TourTargets.monitorSelector,
+          cubit: _cubit,
+          targetMonitorId: state.targetMonitorId,
+        ),
       ],
     );
   }
@@ -206,6 +213,10 @@ class _LayoutsPageState extends State<LayoutsPage> {
           children: [
             for (final layout in filtered)
               SizedBox(
+                // O primeiro card é alvo do tour de primeiro uso.
+                key: layout == filtered.first
+                    ? TourTargets.firstLayoutCard
+                    : null,
                 width: cardWidth,
                 child: LayoutCard(
                   layout: layout,
@@ -228,9 +239,11 @@ class _LayoutsPageState extends State<LayoutsPage> {
 }
 
 /// Seletor do monitor de destino ao aplicar layouts. Reage à conexão/
-/// remoção de telas via [MonitorsCubit]; some quando há apenas um monitor.
+/// remoção de telas via [MonitorsCubit] e mostra o layout aplicado em
+/// cada monitor, com opção de limpá-lo.
 class _MonitorSelector extends StatelessWidget {
   const _MonitorSelector({
+    super.key,
     required this.cubit,
     required this.targetMonitorId,
   });
@@ -238,86 +251,145 @@ class _MonitorSelector extends StatelessWidget {
   final LayoutsCubit cubit;
   final int? targetMonitorId;
 
+  /// Nome do layout aplicado no monitor, se houver.
+  String? _appliedLayoutName(Monitor monitor, Map<String, int> applied) {
+    final layoutId = applied[monitorKey(monitor)];
+    if (layoutId == null) return null;
+    return cubit.state.layouts
+        .where((layout) => layout.id == layoutId)
+        .firstOrNull
+        ?.name;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final appliedLayoutsCubit = getIt<AppliedLayoutsCubit>();
 
     return BlocBuilder<MonitorsCubit, MonitorsState>(
       bloc: getIt<MonitorsCubit>(),
       builder: (context, monitorsState) {
-        final monitors = monitorsState.monitors;
-        // Com um único monitor, o destino é sempre óbvio.
-        if (monitors.length < 2) return const SizedBox.shrink();
+        return BlocBuilder<AppliedLayoutsCubit, Map<String, int>>(
+          bloc: appliedLayoutsCubit,
+          builder: (context, applied) {
+            final monitors = monitorsState.monitors;
+            final selected = monitors
+                .where((m) => m.id == targetMonitorId)
+                .firstOrNull;
+            final label = selected?.name ?? 'Automático';
 
-        final selected = monitors
-            .where((m) => m.id == targetMonitorId)
-            .firstOrNull;
-        final label = selected?.name ?? 'Automático';
-
-        return PopupMenuButton<int?>(
-          tooltip: 'Monitor de destino',
-          initialValue: targetMonitorId,
-          color: colors.panel2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: colors.cardBorder),
-          ),
-          onSelected: cubit.setTargetMonitor,
-          itemBuilder: (context) => [
-            const PopupMenuItem<int?>(
-              value: null,
-              height: 34,
-              child: Text(
-                'Automático (janela em foco)',
-                style: TextStyle(fontSize: 12.5),
+            return PopupMenuButton<VoidCallback>(
+              tooltip: 'Monitor de destino',
+              color: colors.panel2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: colors.cardBorder),
               ),
-            ),
-            for (final monitor in monitors)
-              PopupMenuItem<int?>(
-                value: monitor.id,
-                height: 34,
-                child: Row(
-                  children: [
-                    Text(monitor.name, style: const TextStyle(fontSize: 13)),
-                    if (monitor.isPrimary) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        '· principal',
-                        style: TextStyle(fontSize: 11, color: colors.text3),
+              onSelected: (action) => action(),
+              itemBuilder: (context) => [
+                PopupMenuItem<VoidCallback>(
+                  value: () => cubit.setTargetMonitor(null),
+                  height: 34,
+                  child: const Text(
+                    'Automático (janela em foco)',
+                    style: TextStyle(fontSize: 12.5),
+                  ),
+                ),
+                for (final monitor in monitors)
+                  PopupMenuItem<VoidCallback>(
+                    value: () => cubit.setTargetMonitor(monitor.id),
+                    height: 44,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                monitor.name,
+                                style: const TextStyle(fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (monitor.isPrimary) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '· principal',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: colors.text3,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          switch (_appliedLayoutName(monitor, applied)) {
+                            final name? => 'Layout: $name',
+                            null => 'Nenhum layout aplicado',
+                          },
+                          style: TextStyle(fontSize: 11, color: colors.text3),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                // Limpar o layout aplicado remove as zonas de encaixe
+                // daquele monitor.
+                for (final monitor in monitors)
+                  if (applied.containsKey(monitorKey(monitor)))
+                    PopupMenuItem<VoidCallback>(
+                      value: () =>
+                          appliedLayoutsCubit.remove(monitorKey(monitor)),
+                      height: 34,
+                      child: Row(
+                        children: [
+                          MsIcon('close', size: 14, color: colors.text3),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Limpar layout de ${monitor.name}',
+                              style: const TextStyle(fontSize: 12.5),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+              ],
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: colors.hover,
+                  borderRadius: BorderRadius.circular(
+                    AppDimens.radiusIconButton,
+                  ),
+                  border: Border.all(
+                    color: selected != null ? colors.blue : colors.cardBorder,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MsIcon(
+                      'monitor',
+                      size: 15,
+                      color: selected != null ? colors.blue : colors.text3,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Aplicar em: $label',
+                      style: TextStyle(fontSize: 12.5, color: colors.text),
+                    ),
+                    const SizedBox(width: 4),
+                    MsIcon('unfold_more', size: 14, color: colors.text3),
                   ],
                 ),
               ),
-          ],
-          child: Container(
-            height: 34,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: colors.hover,
-              borderRadius: BorderRadius.circular(AppDimens.radiusIconButton),
-              border: Border.all(
-                color: selected != null ? colors.blue : colors.cardBorder,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                MsIcon(
-                  'monitor',
-                  size: 15,
-                  color: selected != null ? colors.blue : colors.text3,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Aplicar em: $label',
-                  style: TextStyle(fontSize: 12.5, color: colors.text),
-                ),
-                const SizedBox(width: 4),
-                MsIcon('unfold_more', size: 14, color: colors.text3),
-              ],
-            ),
-          ),
+            );
+          },
         );
       },
     );

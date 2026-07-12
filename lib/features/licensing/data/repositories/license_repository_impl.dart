@@ -88,10 +88,7 @@ class LicenseRepositoryImpl implements LicenseRepository {
       final row = await _local.getLicenseRow();
       if (row.licenseKey.isNotEmpty) {
         try {
-          await _remote.deactivate(
-            key: row.licenseKey,
-            deviceId: row.deviceId,
-          );
+          await _remote.deactivate(key: row.licenseKey, deviceId: row.deviceId);
         } on NetworkException {
           // Sem rede o seat fica pendente no servidor, mas a instalação
           // local volta ao plano grátis mesmo assim.

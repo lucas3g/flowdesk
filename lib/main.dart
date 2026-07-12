@@ -12,6 +12,7 @@ import 'core/services/status_bar_service.dart';
 import 'core/services/window_close_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/shell/app_shell.dart';
+import 'features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'features/licensing/presentation/cubits/license_cubit.dart';
 import 'features/monitors/presentation/cubits/monitors_cubit.dart';
@@ -36,6 +37,8 @@ Future<void> main() async {
 
   // Layouts/workspaces carregados no boot alimentam hotkeys e menu bar.
   await getIt<LayoutsCubit>().load();
+  // Layouts aplicados por monitor alimentam zonas de encaixe e ciclo.
+  await getIt<AppliedLayoutsCubit>().load();
   await getIt<WorkspacesCubit>().load();
   unawaited(getIt<ShortcutsCubit>().start());
   unawaited(getIt<StatusBarService>().start());

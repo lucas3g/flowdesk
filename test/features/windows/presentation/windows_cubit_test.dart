@@ -96,12 +96,12 @@ void main() {
       FakeApplySystemIntegration(),
     );
 
-    when(() => getWindows(any())).thenAnswer(
-      (_) async => right([_window(1), _window(2, monitorId: 2)]),
-    );
-    when(() => getMonitors(any())).thenAnswer(
-      (_) async => right([_monitor(1), _monitor(2)]),
-    );
+    when(
+      () => getWindows(any()),
+    ).thenAnswer((_) async => right([_window(1), _window(2, monitorId: 2)]));
+    when(
+      () => getMonitors(any()),
+    ).thenAnswer((_) async => right([_monitor(1), _monitor(2)]));
   });
 
   tearDown(() => settingsCubit.close());
@@ -166,9 +166,8 @@ void main() {
 
   blocTest<WindowsCubit, WindowsState>(
     'maximize usa a margem das preferências e recarrega',
-    setUp: () => when(
-      () => maximizeWindow(any()),
-    ).thenAnswer((_) async => right(true)),
+    setUp: () =>
+        when(() => maximizeWindow(any())).thenAnswer((_) async => right(true)),
     build: buildCubit,
     seed: () => WindowsState(
       status: WindowsStatus.ready,

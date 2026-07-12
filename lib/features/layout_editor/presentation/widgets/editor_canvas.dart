@@ -65,7 +65,13 @@ class EditorCanvas extends StatefulWidget {
 
   final LayoutEditorState state;
   final ValueChanged<int?> onSelect;
-  final void Function(int index, double x, double y, double width, double height)
+  final void Function(
+    int index,
+    double x,
+    double y,
+    double width,
+    double height,
+  )
   onSetFrame;
   final void Function(double x, double y, double width, double height) onCreate;
   final ValueChanged<int> onBringToFront;
@@ -292,7 +298,11 @@ class _EditorCanvasState extends State<EditorCanvas> {
         right: corner,
         top: 0,
         height: grip,
-        child: _dragZone(index: index, mode: _DragMode.top, canvasSize: canvasSize),
+        child: _dragZone(
+          index: index,
+          mode: _DragMode.top,
+          canvasSize: canvasSize,
+        ),
       ),
       Positioned(
         left: corner,
@@ -435,7 +445,10 @@ class _EditorCanvasState extends State<EditorCanvas> {
             children: [
               MsIcon('flip_to_front', size: 15, color: colors.text2),
               const SizedBox(width: 8),
-              const Text('Trazer para frente', style: TextStyle(fontSize: 12.5)),
+              const Text(
+                'Trazer para frente',
+                style: TextStyle(fontSize: 12.5),
+              ),
             ],
           ),
         ),

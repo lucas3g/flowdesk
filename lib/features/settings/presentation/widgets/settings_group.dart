@@ -190,3 +190,42 @@ class SettingsValueRow<T> extends StatelessWidget {
     );
   }
 }
+
+/// Linha com botão de ação, ex.: rever o tour guiado.
+class SettingsActionRow extends StatelessWidget {
+  const SettingsActionRow({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.buttonLabel,
+    required this.onPressed,
+    this.subtitle,
+  });
+
+  final String icon;
+  final String label;
+  final String? subtitle;
+  final String buttonLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return _SettingsRow(
+      icon: icon,
+      label: label,
+      subtitle: subtitle,
+      trailing: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: colors.cardBorder),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        ),
+        child: Text(
+          buttonLabel,
+          style: TextStyle(fontSize: 12.5, color: colors.text),
+        ),
+      ),
+    );
+  }
+}

@@ -47,20 +47,22 @@ class LayoutsState extends Equatable {
 
   List<Layout> get filtered {
     final lowerQuery = query.trim().toLowerCase();
-    return layouts.where((layout) {
-      final matchesFilter = switch (filter) {
-        LayoutsFilter.all => true,
-        LayoutsFilter.dev => layout.category == LayoutCategory.dev,
-        LayoutsFilter.design => layout.category == LayoutCategory.design,
-        LayoutsFilter.foco => layout.category == LayoutCategory.foco,
-        LayoutsFilter.ultrawide =>
-          layout.category == LayoutCategory.ultrawide,
-        LayoutsFilter.favorites => layout.isFavorite,
-      };
-      if (!matchesFilter) return false;
-      if (lowerQuery.isEmpty) return true;
-      return layout.name.toLowerCase().contains(lowerQuery);
-    }).toList(growable: false);
+    return layouts
+        .where((layout) {
+          final matchesFilter = switch (filter) {
+            LayoutsFilter.all => true,
+            LayoutsFilter.dev => layout.category == LayoutCategory.dev,
+            LayoutsFilter.design => layout.category == LayoutCategory.design,
+            LayoutsFilter.foco => layout.category == LayoutCategory.foco,
+            LayoutsFilter.ultrawide =>
+              layout.category == LayoutCategory.ultrawide,
+            LayoutsFilter.favorites => layout.isFavorite,
+          };
+          if (!matchesFilter) return false;
+          if (lowerQuery.isEmpty) return true;
+          return layout.name.toLowerCase().contains(lowerQuery);
+        })
+        .toList(growable: false);
   }
 
   LayoutsState copyWith({

@@ -63,9 +63,9 @@ extension SettingsRowMapper on SettingsRow {
       onboardingDone: onboardingDone,
       userName: userName,
       snapToLayoutRegions: snapToLayoutRegions,
-      lastAppliedLayoutId: lastAppliedLayoutId,
-      lastAppliedMonitorId: lastAppliedMonitorId,
       snapExcludedApps: decodeSnapExcludedApps(snapExcludedApps),
+      preferredMonitorId: preferredMonitorId,
+      featureTourDone: featureTourDone,
     );
   }
 }
@@ -88,9 +88,9 @@ extension AppSettingsMapper on AppSettings {
       onboardingDone: Value(onboardingDone),
       userName: Value(userName),
       snapToLayoutRegions: Value(snapToLayoutRegions),
-      lastAppliedLayoutId: Value(lastAppliedLayoutId),
-      lastAppliedMonitorId: Value(lastAppliedMonitorId),
       snapExcludedApps: Value(encodeSnapExcludedApps(snapExcludedApps)),
+      preferredMonitorId: Value(preferredMonitorId),
+      featureTourDone: Value(featureTourDone),
     );
   }
 }

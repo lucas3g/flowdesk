@@ -9,6 +9,7 @@ import 'package:flowdesk/features/backup/domain/usecases/export_backup.dart';
 import 'package:flowdesk/features/backup/domain/usecases/import_backup.dart';
 import 'package:flowdesk/features/backup/presentation/cubits/backup_cubit.dart';
 import 'package:flowdesk/features/layout_editor/presentation/cubits/layout_editor_cubit.dart';
+import 'package:flowdesk/features/layouts/domain/usecases/applied_layouts_usecases.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/apply_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/delete_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/get_layouts.dart';
@@ -16,6 +17,7 @@ import 'package:flowdesk/features/history/domain/usecases/history_usecases.dart'
 import 'package:flowdesk/features/history/presentation/cubits/history_cubit.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/save_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/toggle_favorite_layout.dart';
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'package:flowdesk/features/licensing/domain/entities/license.dart';
 import 'package:flowdesk/features/licensing/domain/usecases/activate_license.dart';
@@ -98,6 +100,12 @@ class _MockDeleteWorkspace extends Mock implements DeleteWorkspace {}
 
 class _MockApplyWorkspace extends Mock implements ApplyWorkspace {}
 
+class _MockGetAppliedLayouts extends Mock implements GetAppliedLayouts {}
+
+class _MockSetAppliedLayout extends Mock implements SetAppliedLayout {}
+
+class _MockRemoveAppliedLayout extends Mock implements RemoveAppliedLayout {}
+
 class _MockGetRules extends Mock implements GetRules {}
 
 class _MockSaveRule extends Mock implements SaveRule {}
@@ -112,8 +120,7 @@ class _MockGetMonitorProfiles extends Mock implements GetMonitorProfiles {}
 
 class _MockSaveMonitorProfile extends Mock implements SaveMonitorProfile {}
 
-class _MockDeleteMonitorProfile extends Mock
-    implements DeleteMonitorProfile {}
+class _MockDeleteMonitorProfile extends Mock implements DeleteMonitorProfile {}
 
 class _MockFocusWindow extends Mock implements FocusWindow {}
 
@@ -150,9 +157,9 @@ Finder _sidebarItem(AppScreen screen) => find.descendant(
 Future<void> _registerCubits({bool accessibilityGranted = true}) async {
   final getSettings = _MockGetSettings();
   final saveSettings = _MockSaveSettings();
-  when(() => getSettings(any())).thenAnswer(
-    (_) async => right(const AppSettings()),
-  );
+  when(
+    () => getSettings(any()),
+  ).thenAnswer((_) async => right(const AppSettings()));
   when(() => saveSettings(any())).thenAnswer((_) async => right(unit));
 
   final getPermissions = _MockGetPermissionsStatus();
@@ -179,6 +186,17 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
   );
   final getLayouts = _MockGetLayouts();
   when(() => getLayouts(any())).thenAnswer((_) async => right(const []));
+  final getAppliedLayouts = _MockGetAppliedLayouts();
+  when(
+    () => getAppliedLayouts(any()),
+  ).thenAnswer((_) async => right(const {}));
+  getIt.registerLazySingleton<AppliedLayoutsCubit>(
+    () => AppliedLayoutsCubit(
+      getAppliedLayouts,
+      _MockSetAppliedLayout(),
+      _MockRemoveAppliedLayout(),
+    ),
+  );
   getIt.registerLazySingleton<LayoutsCubit>(
     () => LayoutsCubit(
       getLayouts,
@@ -191,6 +209,7 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
       getIt<SettingsCubit>(),
       MockUndoRedoCubit(),
       FakeAddHistoryEntry(),
+      getIt<AppliedLayoutsCubit>(),
     ),
   );
   final getRules = _MockGetRules();
@@ -271,7 +290,8 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
     ),
   );
   getIt.registerLazySingleton<SettingsCubit>(
-    () => SettingsCubit(getSettings, saveSettings, FakeApplySystemIntegration()),
+    () =>
+        SettingsCubit(getSettings, saveSettings, FakeApplySystemIntegration()),
   );
   getIt.registerLazySingleton<PermissionsCubit>(
     () => PermissionsCubit(
@@ -341,9 +361,7 @@ void main() {
     expect(find.text('Importar dados'), findsOneWidget);
   });
 
-  testWidgets('Dashboard exibe stats e seções com dados reais', (
-    tester,
-  ) async {
+  testWidgets('Dashboard exibe stats e seções com dados reais', (tester) async {
     tester.view.physicalSize = const Size(1440, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -400,10 +418,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Nova regra'), findsOneWidget);
-    expect(
-      find.text('Nenhuma regra ainda — crie a primeira.'),
-      findsOneWidget,
-    );
+    expect(find.text('Nenhuma regra ainda — crie a primeira.'), findsOneWidget);
   });
 
   testWidgets('exibe a galeria de Layouts com filtros', (tester) async {

@@ -61,4 +61,42 @@ class LayoutsRepositoryImpl implements LayoutsRepository {
       return left(UnexpectedFailure('$e'));
     }
   }
+
+  @override
+  Future<Either<Failure, Map<String, int>>> getAppliedLayouts() async {
+    try {
+      return right(await _datasource.getAppliedLayouts());
+    } on DatabaseException catch (e) {
+      return left(DatabaseFailure(e.message));
+    } catch (e) {
+      return left(UnexpectedFailure('$e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> setAppliedLayout(
+    String monitorKey,
+    int layoutId,
+  ) async {
+    try {
+      await _datasource.setAppliedLayout(monitorKey, layoutId);
+      return right(unit);
+    } on DatabaseException catch (e) {
+      return left(DatabaseFailure(e.message));
+    } catch (e) {
+      return left(UnexpectedFailure('$e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> removeAppliedLayout(String monitorKey) async {
+    try {
+      await _datasource.removeAppliedLayout(monitorKey);
+      return right(unit);
+    } on DatabaseException catch (e) {
+      return left(DatabaseFailure(e.message));
+    } catch (e) {
+      return left(UnexpectedFailure('$e'));
+    }
+  }
 }

@@ -33,12 +33,8 @@ void main() {
     getSettings = _MockGetSettings();
     saveSettings = _MockSaveSettings();
     applyIntegration = _MockApplySystemIntegration();
-    when(
-      () => saveSettings(any()),
-    ).thenAnswer((_) async => right(unit));
-    when(
-      () => applyIntegration(any()),
-    ).thenAnswer((_) async => right(unit));
+    when(() => saveSettings(any())).thenAnswer((_) async => right(unit));
+    when(() => applyIntegration(any())).thenAnswer((_) async => right(unit));
   });
 
   SettingsCubit buildCubit() =>
@@ -63,9 +59,9 @@ void main() {
 
     blocTest<SettingsCubit, SettingsState>(
       'emite error quando o carregamento falha',
-      setUp: () => when(() => getSettings(any())).thenAnswer(
-        (_) async => left(const DatabaseFailure('erro')),
-      ),
+      setUp: () => when(
+        () => getSettings(any()),
+      ).thenAnswer((_) async => left(const DatabaseFailure('erro'))),
       build: buildCubit,
       act: (cubit) => cubit.load(),
       expect: () => [
@@ -138,30 +134,11 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
-      'setLastAppliedLayout registra o layout e o monitor',
-      build: buildCubit,
-      act: (cubit) => cubit.setLastAppliedLayout(42, 2),
-      expect: () => [
-        isA<SettingsState>()
-            .having(
-              (s) => s.settings.lastAppliedLayoutId,
-              'lastAppliedLayoutId',
-              42,
-            )
-            .having(
-              (s) => s.settings.lastAppliedMonitorId,
-              'lastAppliedMonitorId',
-              2,
-            ),
-      ],
-    );
-
-    blocTest<SettingsCubit, SettingsState>(
       'setSnapExcludedApps persiste e reaplica a integração',
       build: buildCubit,
-      act: (cubit) => cubit.setSnapExcludedApps(
-        const [SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail')],
-      ),
+      act: (cubit) => cubit.setSnapExcludedApps(const [
+        SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail'),
+      ]),
       expect: () => [
         isA<SettingsState>().having(
           (s) => s.settings.snapExcludedApps,
@@ -180,9 +157,9 @@ void main() {
 
     blocTest<SettingsCubit, SettingsState>(
       'emite error quando a persistência falha',
-      setUp: () => when(() => saveSettings(any())).thenAnswer(
-        (_) async => left(const DatabaseFailure('sem espaço')),
-      ),
+      setUp: () => when(
+        () => saveSettings(any()),
+      ).thenAnswer((_) async => left(const DatabaseFailure('sem espaço'))),
       build: buildCubit,
       act: (cubit) => cubit.setWindowGap(16),
       expect: () => [

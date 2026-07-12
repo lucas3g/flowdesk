@@ -59,7 +59,9 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
 
   void setName(String name) {
     if (name == state.layout.name) return;
-    emit(state.copyWith(layout: state.layout.copyWith(name: name), isDirty: true));
+    emit(
+      state.copyWith(layout: state.layout.copyWith(name: name), isDirty: true),
+    );
   }
 
   void toggleGrid() => emit(state.copyWith(gridVisible: !state.gridVisible));
@@ -239,13 +241,10 @@ class LayoutEditorCubit extends Cubit<LayoutEditorState> {
     final regions = [...state.layout.regions]
       ..removeAt(index)
       ..insert(newIndex, region);
-    _updateRegions(
-      [
-        for (var i = 0; i < regions.length; i++)
-          regions[i].copyWith(sortOrder: i),
-      ],
-      selectIndex: newIndex,
-    );
+    _updateRegions([
+      for (var i = 0; i < regions.length; i++)
+        regions[i].copyWith(sortOrder: i),
+    ], selectIndex: newIndex);
   }
 
   void _replaceRegion(int index, LayoutRegion region) {

@@ -29,9 +29,8 @@ class MonitorDetailCard extends StatelessWidget {
     return scale >= 2 ? '$formatted Retina' : formatted;
   }
 
-  String get _refreshLabel => monitor.refreshRate > 0
-      ? '${monitor.refreshRate.round()} Hz'
-      : '—';
+  String get _refreshLabel =>
+      monitor.refreshRate > 0 ? '${monitor.refreshRate.round()} Hz' : '—';
 
   @override
   Widget build(BuildContext context) {

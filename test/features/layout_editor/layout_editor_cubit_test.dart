@@ -88,7 +88,10 @@ void main() {
       final region = cubit.state.selected!;
       expect(region.x + region.width, lessThanOrEqualTo(100));
       expect(region.y + region.height, lessThanOrEqualTo(100));
-      expect(region.width, greaterThanOrEqualTo(LayoutEditorState.minRegionSize));
+      expect(
+        region.width,
+        greaterThanOrEqualTo(LayoutEditorState.minRegionSize),
+      );
     });
 
     test('sem snap mantém valores livres', () {
@@ -166,10 +169,11 @@ void main() {
 
       final names = cubit.state.layout.regions.map((r) => r.name).toList();
       expect(names, ['Região 2', 'Região 3', 'Região 1']);
-      expect(
-        cubit.state.layout.regions.map((r) => r.sortOrder).toList(),
-        [0, 1, 2],
-      );
+      expect(cubit.state.layout.regions.map((r) => r.sortOrder).toList(), [
+        0,
+        1,
+        2,
+      ]);
       // A seleção acompanha a região movida.
       expect(cubit.state.selected!.name, 'Região 1');
       expect(cubit.state.isDirty, isTrue);
@@ -209,9 +213,9 @@ void main() {
 
   blocTest<LayoutEditorCubit, LayoutEditorState>(
     'save persiste, limpa dirty e recarrega a galeria',
-    setUp: () => when(() => saveLayout(any())).thenAnswer(
-      (_) async => right(_preset.copyWith(id: 42, isPreset: false)),
-    ),
+    setUp: () => when(
+      () => saveLayout(any()),
+    ).thenAnswer((_) async => right(_preset.copyWith(id: 42, isPreset: false))),
     build: buildCubit,
     seed: () => LayoutEditorState(
       layout: _preset.copyWith(id: 0, isPreset: false),

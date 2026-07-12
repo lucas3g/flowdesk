@@ -9,6 +9,7 @@ import '../../di/injection.dart';
 import '../../routing/app_screen.dart';
 import '../../routing/navigation_cubit.dart';
 import '../../theme/app_colors.dart';
+import '../../tour/tour_targets.dart';
 import '../../theme/app_dimens.dart';
 import '../command_palette.dart';
 import '../ms_icon.dart';
@@ -76,7 +77,7 @@ class TitleBar extends StatelessWidget {
             const Spacer(),
             _UndoRedoButtons(),
             const SizedBox(width: 8),
-            const _SearchTrigger(),
+            _SearchTrigger(key: TourTargets.commandPalette),
             const SizedBox(width: 10),
             _TitleBarIconButton(
               icon: Theme.of(context).brightness == Brightness.dark
@@ -159,7 +160,7 @@ class _UndoRedoButtons extends StatelessWidget {
 
 /// Campo que abre a paleta de comandos (⌘K).
 class _SearchTrigger extends StatelessWidget {
-  const _SearchTrigger();
+  const _SearchTrigger({super.key});
 
   @override
   Widget build(BuildContext context) {

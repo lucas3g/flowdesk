@@ -18,7 +18,6 @@ class PermissionsBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocBuilder<PermissionsCubit, PermissionsState>(
       bloc: _cubit,
       buildWhen: (previous, current) =>

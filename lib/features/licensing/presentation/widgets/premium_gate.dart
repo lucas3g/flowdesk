@@ -25,8 +25,7 @@ class PremiumGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LicenseCubit, LicenseState>(
       bloc: _cubit,
-      buildWhen: (previous, current) =>
-          previous.isPremium != current.isPremium,
+      buildWhen: (previous, current) => previous.isPremium != current.isPremium,
       builder: (context, state) {
         if (state.isPremium) return child;
         return _UpsellCard(featureName: featureName);

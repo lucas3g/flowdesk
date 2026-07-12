@@ -36,9 +36,9 @@ void main() {
       targetValue: 'Dell 4K',
     );
 
-    final saved = (await repository.saveRule(rule)).getOrElse(
-      (f) => fail(f.message),
-    );
+    final saved = (await repository.saveRule(
+      rule,
+    )).getOrElse((f) => fail(f.message));
     expect(saved.id, greaterThan(0));
 
     final paused = (await repository.saveRule(

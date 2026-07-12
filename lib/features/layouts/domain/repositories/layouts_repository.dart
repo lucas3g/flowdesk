@@ -14,4 +14,14 @@ abstract interface class LayoutsRepository {
   Future<Either<Failure, Unit>> deleteLayout(int layoutId);
 
   Future<Either<Failure, Unit>> setFavorite(int layoutId, bool isFavorite);
+
+  /// Layout aplicado em cada monitor (chave estável → id do layout).
+  Future<Either<Failure, Map<String, int>>> getAppliedLayouts();
+
+  Future<Either<Failure, Unit>> setAppliedLayout(
+    String monitorKey,
+    int layoutId,
+  );
+
+  Future<Either<Failure, Unit>> removeAppliedLayout(String monitorKey);
 }

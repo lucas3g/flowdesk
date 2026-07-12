@@ -32,9 +32,9 @@ void main() {
   });
 
   test('getMonitors mapeia erro nativo em PlatformFailure', () async {
-    when(() => datasource.getMonitors()).thenThrow(
-      const PlatformDatasourceException('canal indisponível'),
-    );
+    when(
+      () => datasource.getMonitors(),
+    ).thenThrow(const PlatformDatasourceException('canal indisponível'));
 
     final result = await repository.getMonitors();
 

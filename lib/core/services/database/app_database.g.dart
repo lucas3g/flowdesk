@@ -1207,6 +1207,230 @@ class LayoutRegionsCompanion extends UpdateCompanion<LayoutRegionRow> {
   }
 }
 
+class $AppliedLayoutsTable extends AppliedLayouts
+    with TableInfo<$AppliedLayoutsTable, AppliedLayoutRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppliedLayoutsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _monitorKeyMeta = const VerificationMeta(
+    'monitorKey',
+  );
+  @override
+  late final GeneratedColumn<String> monitorKey = GeneratedColumn<String>(
+    'monitor_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _layoutIdMeta = const VerificationMeta(
+    'layoutId',
+  );
+  @override
+  late final GeneratedColumn<int> layoutId = GeneratedColumn<int>(
+    'layout_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES layouts (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [monitorKey, layoutId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'applied_layouts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppliedLayoutRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('monitor_key')) {
+      context.handle(
+        _monitorKeyMeta,
+        monitorKey.isAcceptableOrUnknown(data['monitor_key']!, _monitorKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_monitorKeyMeta);
+    }
+    if (data.containsKey('layout_id')) {
+      context.handle(
+        _layoutIdMeta,
+        layoutId.isAcceptableOrUnknown(data['layout_id']!, _layoutIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_layoutIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {monitorKey};
+  @override
+  AppliedLayoutRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppliedLayoutRow(
+      monitorKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}monitor_key'],
+      )!,
+      layoutId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}layout_id'],
+      )!,
+    );
+  }
+
+  @override
+  $AppliedLayoutsTable createAlias(String alias) {
+    return $AppliedLayoutsTable(attachedDatabase, alias);
+  }
+}
+
+class AppliedLayoutRow extends DataClass
+    implements Insertable<AppliedLayoutRow> {
+  final String monitorKey;
+  final int layoutId;
+  const AppliedLayoutRow({required this.monitorKey, required this.layoutId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['monitor_key'] = Variable<String>(monitorKey);
+    map['layout_id'] = Variable<int>(layoutId);
+    return map;
+  }
+
+  AppliedLayoutsCompanion toCompanion(bool nullToAbsent) {
+    return AppliedLayoutsCompanion(
+      monitorKey: Value(monitorKey),
+      layoutId: Value(layoutId),
+    );
+  }
+
+  factory AppliedLayoutRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppliedLayoutRow(
+      monitorKey: serializer.fromJson<String>(json['monitorKey']),
+      layoutId: serializer.fromJson<int>(json['layoutId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'monitorKey': serializer.toJson<String>(monitorKey),
+      'layoutId': serializer.toJson<int>(layoutId),
+    };
+  }
+
+  AppliedLayoutRow copyWith({String? monitorKey, int? layoutId}) =>
+      AppliedLayoutRow(
+        monitorKey: monitorKey ?? this.monitorKey,
+        layoutId: layoutId ?? this.layoutId,
+      );
+  AppliedLayoutRow copyWithCompanion(AppliedLayoutsCompanion data) {
+    return AppliedLayoutRow(
+      monitorKey: data.monitorKey.present
+          ? data.monitorKey.value
+          : this.monitorKey,
+      layoutId: data.layoutId.present ? data.layoutId.value : this.layoutId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppliedLayoutRow(')
+          ..write('monitorKey: $monitorKey, ')
+          ..write('layoutId: $layoutId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(monitorKey, layoutId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppliedLayoutRow &&
+          other.monitorKey == this.monitorKey &&
+          other.layoutId == this.layoutId);
+}
+
+class AppliedLayoutsCompanion extends UpdateCompanion<AppliedLayoutRow> {
+  final Value<String> monitorKey;
+  final Value<int> layoutId;
+  final Value<int> rowid;
+  const AppliedLayoutsCompanion({
+    this.monitorKey = const Value.absent(),
+    this.layoutId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppliedLayoutsCompanion.insert({
+    required String monitorKey,
+    required int layoutId,
+    this.rowid = const Value.absent(),
+  }) : monitorKey = Value(monitorKey),
+       layoutId = Value(layoutId);
+  static Insertable<AppliedLayoutRow> custom({
+    Expression<String>? monitorKey,
+    Expression<int>? layoutId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (monitorKey != null) 'monitor_key': monitorKey,
+      if (layoutId != null) 'layout_id': layoutId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppliedLayoutsCompanion copyWith({
+    Value<String>? monitorKey,
+    Value<int>? layoutId,
+    Value<int>? rowid,
+  }) {
+    return AppliedLayoutsCompanion(
+      monitorKey: monitorKey ?? this.monitorKey,
+      layoutId: layoutId ?? this.layoutId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (monitorKey.present) {
+      map['monitor_key'] = Variable<String>(monitorKey.value);
+    }
+    if (layoutId.present) {
+      map['layout_id'] = Variable<int>(layoutId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppliedLayoutsCompanion(')
+          ..write('monitorKey: $monitorKey, ')
+          ..write('layoutId: $layoutId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $WorkspacesTable extends Workspaces
     with TableInfo<$WorkspacesTable, WorkspaceRow> {
   @override
@@ -4389,6 +4613,31 @@ class $SettingsTableTable extends SettingsTable
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
+  static const VerificationMeta _preferredMonitorIdMeta =
+      const VerificationMeta('preferredMonitorId');
+  @override
+  late final GeneratedColumn<int> preferredMonitorId = GeneratedColumn<int>(
+    'preferred_monitor_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _featureTourDoneMeta = const VerificationMeta(
+    'featureTourDone',
+  );
+  @override
+  late final GeneratedColumn<bool> featureTourDone = GeneratedColumn<bool>(
+    'feature_tour_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("feature_tour_done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4409,6 +4658,8 @@ class $SettingsTableTable extends SettingsTable
     lastAppliedLayoutId,
     lastAppliedMonitorId,
     snapExcludedApps,
+    preferredMonitorId,
+    featureTourDone,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4569,6 +4820,24 @@ class $SettingsTableTable extends SettingsTable
         ),
       );
     }
+    if (data.containsKey('preferred_monitor_id')) {
+      context.handle(
+        _preferredMonitorIdMeta,
+        preferredMonitorId.isAcceptableOrUnknown(
+          data['preferred_monitor_id']!,
+          _preferredMonitorIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('feature_tour_done')) {
+      context.handle(
+        _featureTourDoneMeta,
+        featureTourDone.isAcceptableOrUnknown(
+          data['feature_tour_done']!,
+          _featureTourDoneMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4650,6 +4919,14 @@ class $SettingsTableTable extends SettingsTable
         DriftSqlType.string,
         data['${effectivePrefix}snap_excluded_apps'],
       )!,
+      preferredMonitorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}preferred_monitor_id'],
+      ),
+      featureTourDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}feature_tour_done'],
+      )!,
     );
   }
 
@@ -4695,6 +4972,13 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
   /// Apps excluídos do encaixe ao arrastar, como JSON array de
   /// `{bundleId, appName}` (adicionada no schema v9).
   final String snapExcludedApps;
+
+  /// Monitor padrão para aplicar layouts, escolhido no seletor da galeria;
+  /// null = automático, pela janela em foco (adicionada no schema v10).
+  final int? preferredMonitorId;
+
+  /// Tour guiado de primeiro uso já exibido (adicionada no schema v11).
+  final bool featureTourDone;
   const SettingsRow({
     required this.id,
     required this.themePreference,
@@ -4714,6 +4998,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     this.lastAppliedLayoutId,
     this.lastAppliedMonitorId,
     required this.snapExcludedApps,
+    this.preferredMonitorId,
+    required this.featureTourDone,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4740,6 +5026,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       map['last_applied_monitor_id'] = Variable<int>(lastAppliedMonitorId);
     }
     map['snap_excluded_apps'] = Variable<String>(snapExcludedApps);
+    if (!nullToAbsent || preferredMonitorId != null) {
+      map['preferred_monitor_id'] = Variable<int>(preferredMonitorId);
+    }
+    map['feature_tour_done'] = Variable<bool>(featureTourDone);
     return map;
   }
 
@@ -4767,6 +5057,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ? const Value.absent()
           : Value(lastAppliedMonitorId),
       snapExcludedApps: Value(snapExcludedApps),
+      preferredMonitorId: preferredMonitorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preferredMonitorId),
+      featureTourDone: Value(featureTourDone),
     );
   }
 
@@ -4802,6 +5096,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
         json['lastAppliedMonitorId'],
       ),
       snapExcludedApps: serializer.fromJson<String>(json['snapExcludedApps']),
+      preferredMonitorId: serializer.fromJson<int?>(json['preferredMonitorId']),
+      featureTourDone: serializer.fromJson<bool>(json['featureTourDone']),
     );
   }
   @override
@@ -4826,6 +5122,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       'lastAppliedLayoutId': serializer.toJson<int?>(lastAppliedLayoutId),
       'lastAppliedMonitorId': serializer.toJson<int?>(lastAppliedMonitorId),
       'snapExcludedApps': serializer.toJson<String>(snapExcludedApps),
+      'preferredMonitorId': serializer.toJson<int?>(preferredMonitorId),
+      'featureTourDone': serializer.toJson<bool>(featureTourDone),
     };
   }
 
@@ -4848,6 +5146,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     Value<int?> lastAppliedLayoutId = const Value.absent(),
     Value<int?> lastAppliedMonitorId = const Value.absent(),
     String? snapExcludedApps,
+    Value<int?> preferredMonitorId = const Value.absent(),
+    bool? featureTourDone,
   }) => SettingsRow(
     id: id ?? this.id,
     themePreference: themePreference ?? this.themePreference,
@@ -4871,6 +5171,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
         ? lastAppliedMonitorId.value
         : this.lastAppliedMonitorId,
     snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
+    preferredMonitorId: preferredMonitorId.present
+        ? preferredMonitorId.value
+        : this.preferredMonitorId,
+    featureTourDone: featureTourDone ?? this.featureTourDone,
   );
   SettingsRow copyWithCompanion(SettingsTableCompanion data) {
     return SettingsRow(
@@ -4920,6 +5224,12 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       snapExcludedApps: data.snapExcludedApps.present
           ? data.snapExcludedApps.value
           : this.snapExcludedApps,
+      preferredMonitorId: data.preferredMonitorId.present
+          ? data.preferredMonitorId.value
+          : this.preferredMonitorId,
+      featureTourDone: data.featureTourDone.present
+          ? data.featureTourDone.value
+          : this.featureTourDone,
     );
   }
 
@@ -4943,7 +5253,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ..write('snapToLayoutRegions: $snapToLayoutRegions, ')
           ..write('lastAppliedLayoutId: $lastAppliedLayoutId, ')
           ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
-          ..write('snapExcludedApps: $snapExcludedApps')
+          ..write('snapExcludedApps: $snapExcludedApps, ')
+          ..write('preferredMonitorId: $preferredMonitorId, ')
+          ..write('featureTourDone: $featureTourDone')
           ..write(')'))
         .toString();
   }
@@ -4968,6 +5280,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     lastAppliedLayoutId,
     lastAppliedMonitorId,
     snapExcludedApps,
+    preferredMonitorId,
+    featureTourDone,
   );
   @override
   bool operator ==(Object other) =>
@@ -4990,7 +5304,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           other.snapToLayoutRegions == this.snapToLayoutRegions &&
           other.lastAppliedLayoutId == this.lastAppliedLayoutId &&
           other.lastAppliedMonitorId == this.lastAppliedMonitorId &&
-          other.snapExcludedApps == this.snapExcludedApps);
+          other.snapExcludedApps == this.snapExcludedApps &&
+          other.preferredMonitorId == this.preferredMonitorId &&
+          other.featureTourDone == this.featureTourDone);
 }
 
 class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
@@ -5012,6 +5328,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
   final Value<int?> lastAppliedLayoutId;
   final Value<int?> lastAppliedMonitorId;
   final Value<String> snapExcludedApps;
+  final Value<int?> preferredMonitorId;
+  final Value<bool> featureTourDone;
   const SettingsTableCompanion({
     this.id = const Value.absent(),
     this.themePreference = const Value.absent(),
@@ -5031,6 +5349,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.lastAppliedLayoutId = const Value.absent(),
     this.lastAppliedMonitorId = const Value.absent(),
     this.snapExcludedApps = const Value.absent(),
+    this.preferredMonitorId = const Value.absent(),
+    this.featureTourDone = const Value.absent(),
   });
   SettingsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -5051,6 +5371,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.lastAppliedLayoutId = const Value.absent(),
     this.lastAppliedMonitorId = const Value.absent(),
     this.snapExcludedApps = const Value.absent(),
+    this.preferredMonitorId = const Value.absent(),
+    this.featureTourDone = const Value.absent(),
   });
   static Insertable<SettingsRow> custom({
     Expression<int>? id,
@@ -5071,6 +5393,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Expression<int>? lastAppliedLayoutId,
     Expression<int>? lastAppliedMonitorId,
     Expression<String>? snapExcludedApps,
+    Expression<int>? preferredMonitorId,
+    Expression<bool>? featureTourDone,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5095,6 +5419,9 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       if (lastAppliedMonitorId != null)
         'last_applied_monitor_id': lastAppliedMonitorId,
       if (snapExcludedApps != null) 'snap_excluded_apps': snapExcludedApps,
+      if (preferredMonitorId != null)
+        'preferred_monitor_id': preferredMonitorId,
+      if (featureTourDone != null) 'feature_tour_done': featureTourDone,
     });
   }
 
@@ -5117,6 +5444,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Value<int?>? lastAppliedLayoutId,
     Value<int?>? lastAppliedMonitorId,
     Value<String>? snapExcludedApps,
+    Value<int?>? preferredMonitorId,
+    Value<bool>? featureTourDone,
   }) {
     return SettingsTableCompanion(
       id: id ?? this.id,
@@ -5137,6 +5466,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       lastAppliedLayoutId: lastAppliedLayoutId ?? this.lastAppliedLayoutId,
       lastAppliedMonitorId: lastAppliedMonitorId ?? this.lastAppliedMonitorId,
       snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
+      preferredMonitorId: preferredMonitorId ?? this.preferredMonitorId,
+      featureTourDone: featureTourDone ?? this.featureTourDone,
     );
   }
 
@@ -5199,6 +5530,12 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     if (snapExcludedApps.present) {
       map['snap_excluded_apps'] = Variable<String>(snapExcludedApps.value);
     }
+    if (preferredMonitorId.present) {
+      map['preferred_monitor_id'] = Variable<int>(preferredMonitorId.value);
+    }
+    if (featureTourDone.present) {
+      map['feature_tour_done'] = Variable<bool>(featureTourDone.value);
+    }
     return map;
   }
 
@@ -5222,7 +5559,9 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
           ..write('snapToLayoutRegions: $snapToLayoutRegions, ')
           ..write('lastAppliedLayoutId: $lastAppliedLayoutId, ')
           ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
-          ..write('snapExcludedApps: $snapExcludedApps')
+          ..write('snapExcludedApps: $snapExcludedApps, ')
+          ..write('preferredMonitorId: $preferredMonitorId, ')
+          ..write('featureTourDone: $featureTourDone')
           ..write(')'))
         .toString();
   }
@@ -5662,6 +6001,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LayoutsTable layouts = $LayoutsTable(this);
   late final $LayoutRegionsTable layoutRegions = $LayoutRegionsTable(this);
+  late final $AppliedLayoutsTable appliedLayouts = $AppliedLayoutsTable(this);
   late final $WorkspacesTable workspaces = $WorkspacesTable(this);
   late final $WorkspaceAppsTable workspaceApps = $WorkspaceAppsTable(this);
   late final $MonitorProfilesTable monitorProfiles = $MonitorProfilesTable(
@@ -5682,6 +6022,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     layouts,
     layoutRegions,
+    appliedLayouts,
     workspaces,
     workspaceApps,
     monitorProfiles,
@@ -5700,6 +6041,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('layout_regions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'layouts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('applied_layouts', kind: UpdateKind.delete)],
     ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
@@ -5779,6 +6127,24 @@ final class $$LayoutsTableReferences
     ).filter((f) => f.layoutId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_layoutRegionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AppliedLayoutsTable, List<AppliedLayoutRow>>
+  _appliedLayoutsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.appliedLayouts,
+    aliasName: 'layouts__id__applied_layouts__layout_id',
+  );
+
+  $$AppliedLayoutsTableProcessedTableManager get appliedLayoutsRefs {
+    final manager = $$AppliedLayoutsTableTableManager(
+      $_db,
+      $_db.appliedLayouts,
+    ).filter((f) => f.layoutId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_appliedLayoutsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5888,6 +6254,31 @@ class $$LayoutsTableFilterComposer
           }) => $$LayoutRegionsTableFilterComposer(
             $db: $db,
             $table: $db.layoutRegions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> appliedLayoutsRefs(
+    Expression<bool> Function($$AppliedLayoutsTableFilterComposer f) f,
+  ) {
+    final $$AppliedLayoutsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.appliedLayouts,
+      getReferencedColumn: (t) => t.layoutId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AppliedLayoutsTableFilterComposer(
+            $db: $db,
+            $table: $db.appliedLayouts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6058,6 +6449,31 @@ class $$LayoutsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> appliedLayoutsRefs<T extends Object>(
+    Expression<T> Function($$AppliedLayoutsTableAnnotationComposer a) f,
+  ) {
+    final $$AppliedLayoutsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.appliedLayouts,
+      getReferencedColumn: (t) => t.layoutId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AppliedLayoutsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.appliedLayouts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> workspacesRefs<T extends Object>(
     Expression<T> Function($$WorkspacesTableAnnotationComposer a) f,
   ) {
@@ -6124,6 +6540,7 @@ class $$LayoutsTableTableManager
           LayoutRow,
           PrefetchHooks Function({
             bool layoutRegionsRefs,
+            bool appliedLayoutsRefs,
             bool workspacesRefs,
             bool monitorProfilesRefs,
           })
@@ -6190,6 +6607,7 @@ class $$LayoutsTableTableManager
           prefetchHooksCallback:
               ({
                 layoutRegionsRefs = false,
+                appliedLayoutsRefs = false,
                 workspacesRefs = false,
                 monitorProfilesRefs = false,
               }) {
@@ -6197,6 +6615,7 @@ class $$LayoutsTableTableManager
                   db: db,
                   explicitlyWatchedTables: [
                     if (layoutRegionsRefs) db.layoutRegions,
+                    if (appliedLayoutsRefs) db.appliedLayouts,
                     if (workspacesRefs) db.workspaces,
                     if (monitorProfilesRefs) db.monitorProfiles,
                   ],
@@ -6218,6 +6637,27 @@ class $$LayoutsTableTableManager
                                 table,
                                 p0,
                               ).layoutRegionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.layoutId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (appliedLayoutsRefs)
+                        await $_getPrefetchedData<
+                          LayoutRow,
+                          $LayoutsTable,
+                          AppliedLayoutRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$LayoutsTableReferences
+                              ._appliedLayoutsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$LayoutsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).appliedLayoutsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.layoutId == item.id,
@@ -6288,6 +6728,7 @@ typedef $$LayoutsTableProcessedTableManager =
       LayoutRow,
       PrefetchHooks Function({
         bool layoutRegionsRefs,
+        bool appliedLayoutsRefs,
         bool workspacesRefs,
         bool monitorProfilesRefs,
       })
@@ -6839,6 +7280,276 @@ typedef $$LayoutRegionsTableProcessedTableManager =
       (LayoutRegionRow, $$LayoutRegionsTableReferences),
       LayoutRegionRow,
       PrefetchHooks Function({bool layoutId, bool workspaceAppsRefs})
+    >;
+typedef $$AppliedLayoutsTableCreateCompanionBuilder =
+    AppliedLayoutsCompanion Function({
+      required String monitorKey,
+      required int layoutId,
+      Value<int> rowid,
+    });
+typedef $$AppliedLayoutsTableUpdateCompanionBuilder =
+    AppliedLayoutsCompanion Function({
+      Value<String> monitorKey,
+      Value<int> layoutId,
+      Value<int> rowid,
+    });
+
+final class $$AppliedLayoutsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $AppliedLayoutsTable, AppliedLayoutRow> {
+  $$AppliedLayoutsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $LayoutsTable _layoutIdTable(_$AppDatabase db) =>
+      db.layouts.createAlias('applied_layouts__layout_id__layouts__id');
+
+  $$LayoutsTableProcessedTableManager get layoutId {
+    final $_column = $_itemColumn<int>('layout_id')!;
+
+    final manager = $$LayoutsTableTableManager(
+      $_db,
+      $_db.layouts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_layoutIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AppliedLayoutsTableFilterComposer
+    extends Composer<_$AppDatabase, $AppliedLayoutsTable> {
+  $$AppliedLayoutsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get monitorKey => $composableBuilder(
+    column: $table.monitorKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$LayoutsTableFilterComposer get layoutId {
+    final $$LayoutsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.layoutId,
+      referencedTable: $db.layouts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LayoutsTableFilterComposer(
+            $db: $db,
+            $table: $db.layouts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppliedLayoutsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppliedLayoutsTable> {
+  $$AppliedLayoutsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get monitorKey => $composableBuilder(
+    column: $table.monitorKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$LayoutsTableOrderingComposer get layoutId {
+    final $$LayoutsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.layoutId,
+      referencedTable: $db.layouts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LayoutsTableOrderingComposer(
+            $db: $db,
+            $table: $db.layouts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppliedLayoutsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppliedLayoutsTable> {
+  $$AppliedLayoutsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get monitorKey => $composableBuilder(
+    column: $table.monitorKey,
+    builder: (column) => column,
+  );
+
+  $$LayoutsTableAnnotationComposer get layoutId {
+    final $$LayoutsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.layoutId,
+      referencedTable: $db.layouts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LayoutsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.layouts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppliedLayoutsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppliedLayoutsTable,
+          AppliedLayoutRow,
+          $$AppliedLayoutsTableFilterComposer,
+          $$AppliedLayoutsTableOrderingComposer,
+          $$AppliedLayoutsTableAnnotationComposer,
+          $$AppliedLayoutsTableCreateCompanionBuilder,
+          $$AppliedLayoutsTableUpdateCompanionBuilder,
+          (AppliedLayoutRow, $$AppliedLayoutsTableReferences),
+          AppliedLayoutRow,
+          PrefetchHooks Function({bool layoutId})
+        > {
+  $$AppliedLayoutsTableTableManager(
+    _$AppDatabase db,
+    $AppliedLayoutsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppliedLayoutsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppliedLayoutsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppliedLayoutsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> monitorKey = const Value.absent(),
+                Value<int> layoutId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppliedLayoutsCompanion(
+                monitorKey: monitorKey,
+                layoutId: layoutId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String monitorKey,
+                required int layoutId,
+                Value<int> rowid = const Value.absent(),
+              }) => AppliedLayoutsCompanion.insert(
+                monitorKey: monitorKey,
+                layoutId: layoutId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AppliedLayoutsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({layoutId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (layoutId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.layoutId,
+                                referencedTable: $$AppliedLayoutsTableReferences
+                                    ._layoutIdTable(db),
+                                referencedColumn:
+                                    $$AppliedLayoutsTableReferences
+                                        ._layoutIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AppliedLayoutsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppliedLayoutsTable,
+      AppliedLayoutRow,
+      $$AppliedLayoutsTableFilterComposer,
+      $$AppliedLayoutsTableOrderingComposer,
+      $$AppliedLayoutsTableAnnotationComposer,
+      $$AppliedLayoutsTableCreateCompanionBuilder,
+      $$AppliedLayoutsTableUpdateCompanionBuilder,
+      (AppliedLayoutRow, $$AppliedLayoutsTableReferences),
+      AppliedLayoutRow,
+      PrefetchHooks Function({bool layoutId})
     >;
 typedef $$WorkspacesTableCreateCompanionBuilder =
     WorkspacesCompanion Function({
@@ -9146,6 +9857,8 @@ typedef $$SettingsTableTableCreateCompanionBuilder =
       Value<int?> lastAppliedLayoutId,
       Value<int?> lastAppliedMonitorId,
       Value<String> snapExcludedApps,
+      Value<int?> preferredMonitorId,
+      Value<bool> featureTourDone,
     });
 typedef $$SettingsTableTableUpdateCompanionBuilder =
     SettingsTableCompanion Function({
@@ -9167,6 +9880,8 @@ typedef $$SettingsTableTableUpdateCompanionBuilder =
       Value<int?> lastAppliedLayoutId,
       Value<int?> lastAppliedMonitorId,
       Value<String> snapExcludedApps,
+      Value<int?> preferredMonitorId,
+      Value<bool> featureTourDone,
     });
 
 class $$SettingsTableTableFilterComposer
@@ -9265,6 +9980,16 @@ class $$SettingsTableTableFilterComposer
 
   ColumnFilters<String> get snapExcludedApps => $composableBuilder(
     column: $table.snapExcludedApps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get preferredMonitorId => $composableBuilder(
+    column: $table.preferredMonitorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get featureTourDone => $composableBuilder(
+    column: $table.featureTourDone,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9367,6 +10092,16 @@ class $$SettingsTableTableOrderingComposer
     column: $table.snapExcludedApps,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get preferredMonitorId => $composableBuilder(
+    column: $table.preferredMonitorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get featureTourDone => $composableBuilder(
+    column: $table.featureTourDone,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableTableAnnotationComposer
@@ -9459,6 +10194,16 @@ class $$SettingsTableTableAnnotationComposer
     column: $table.snapExcludedApps,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get preferredMonitorId => $composableBuilder(
+    column: $table.preferredMonitorId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get featureTourDone => $composableBuilder(
+    column: $table.featureTourDone,
+    builder: (column) => column,
+  );
 }
 
 class $$SettingsTableTableTableManager
@@ -9510,6 +10255,8 @@ class $$SettingsTableTableTableManager
                 Value<int?> lastAppliedLayoutId = const Value.absent(),
                 Value<int?> lastAppliedMonitorId = const Value.absent(),
                 Value<String> snapExcludedApps = const Value.absent(),
+                Value<int?> preferredMonitorId = const Value.absent(),
+                Value<bool> featureTourDone = const Value.absent(),
               }) => SettingsTableCompanion(
                 id: id,
                 themePreference: themePreference,
@@ -9529,6 +10276,8 @@ class $$SettingsTableTableTableManager
                 lastAppliedLayoutId: lastAppliedLayoutId,
                 lastAppliedMonitorId: lastAppliedMonitorId,
                 snapExcludedApps: snapExcludedApps,
+                preferredMonitorId: preferredMonitorId,
+                featureTourDone: featureTourDone,
               ),
           createCompanionCallback:
               ({
@@ -9550,6 +10299,8 @@ class $$SettingsTableTableTableManager
                 Value<int?> lastAppliedLayoutId = const Value.absent(),
                 Value<int?> lastAppliedMonitorId = const Value.absent(),
                 Value<String> snapExcludedApps = const Value.absent(),
+                Value<int?> preferredMonitorId = const Value.absent(),
+                Value<bool> featureTourDone = const Value.absent(),
               }) => SettingsTableCompanion.insert(
                 id: id,
                 themePreference: themePreference,
@@ -9569,6 +10320,8 @@ class $$SettingsTableTableTableManager
                 lastAppliedLayoutId: lastAppliedLayoutId,
                 lastAppliedMonitorId: lastAppliedMonitorId,
                 snapExcludedApps: snapExcludedApps,
+                preferredMonitorId: preferredMonitorId,
+                featureTourDone: featureTourDone,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -9824,6 +10577,8 @@ class $AppDatabaseManager {
       $$LayoutsTableTableManager(_db, _db.layouts);
   $$LayoutRegionsTableTableManager get layoutRegions =>
       $$LayoutRegionsTableTableManager(_db, _db.layoutRegions);
+  $$AppliedLayoutsTableTableManager get appliedLayouts =>
+      $$AppliedLayoutsTableTableManager(_db, _db.appliedLayouts);
   $$WorkspacesTableTableManager get workspaces =>
       $$WorkspacesTableTableManager(_db, _db.workspaces);
   $$WorkspaceAppsTableTableManager get workspaceApps =>

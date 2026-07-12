@@ -212,10 +212,7 @@ class _NumberField extends StatelessWidget {
         isDense: true,
         filled: true,
         fillColor: colors.hover,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 9,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusIconButton),
           borderSide: BorderSide.none,

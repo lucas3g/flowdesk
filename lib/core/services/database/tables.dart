@@ -37,6 +37,19 @@ class LayoutRegions extends Table {
   TextColumn get appWindowTitle => text().nullable()();
 }
 
+/// Layout aplicado em cada monitor, para zonas de encaixe e ciclo de
+/// regiões. A chave é estável entre sessões (`nome:LARGURAxALTURA` em
+/// pixels), diferente do id volátil do monitor.
+@DataClassName('AppliedLayoutRow')
+class AppliedLayouts extends Table {
+  TextColumn get monitorKey => text()();
+  IntColumn get layoutId =>
+      integer().references(Layouts, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column> get primaryKey => {monitorKey};
+}
+
 /// Workspaces (conjuntos de apps + layout associado).
 @DataClassName('WorkspaceRow')
 class Workspaces extends Table {
@@ -48,8 +61,11 @@ class Workspaces extends Table {
   TextColumn get gradientEndHex =>
       text().withDefault(const Constant('#40C8E0'))();
   TextColumn get shortcut => text().nullable()();
-  IntColumn get layoutId =>
-      integer().nullable().references(Layouts, #id, onDelete: KeyAction.setNull)();
+  IntColumn get layoutId => integer().nullable().references(
+    Layouts,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
   BoolColumn get isActive => boolean().withDefault(const Constant(false))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 }
@@ -62,9 +78,11 @@ class WorkspaceApps extends Table {
       integer().references(Workspaces, #id, onDelete: KeyAction.cascade)();
   TextColumn get bundleId => text()();
   TextColumn get appName => text()();
-  IntColumn get regionId => integer()
-      .nullable()
-      .references(LayoutRegions, #id, onDelete: KeyAction.setNull)();
+  IntColumn get regionId => integer().nullable().references(
+    LayoutRegions,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
   TextColumn get monitorRef => text().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 }
@@ -76,11 +94,16 @@ class MonitorProfiles extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 80)();
   TextColumn get fingerprint => text().unique()();
-  IntColumn get workspaceId => integer()
-      .nullable()
-      .references(Workspaces, #id, onDelete: KeyAction.setNull)();
-  IntColumn get layoutId =>
-      integer().nullable().references(Layouts, #id, onDelete: KeyAction.setNull)();
+  IntColumn get workspaceId => integer().nullable().references(
+    Workspaces,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+  IntColumn get layoutId => integer().nullable().references(
+    Layouts,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
   BoolColumn get autoApply => boolean().withDefault(const Constant(true))();
 }
 
@@ -167,7 +190,8 @@ class SettingsTable extends Table {
   TextColumn get themePreference =>
       text().withDefault(const Constant('system'))();
   TextColumn get language => text().withDefault(const Constant('pt_BR'))();
-  BoolColumn get launchAtLogin => boolean().withDefault(const Constant(false))();
+  BoolColumn get launchAtLogin =>
+      boolean().withDefault(const Constant(false))();
   BoolColumn get showMenuBarIcon =>
       boolean().withDefault(const Constant(true))();
   BoolColumn get showInDock => boolean().withDefault(const Constant(true))();
@@ -203,6 +227,14 @@ class SettingsTable extends Table {
   /// Apps excluídos do encaixe ao arrastar, como JSON array de
   /// `{bundleId, appName}` (adicionada no schema v9).
   TextColumn get snapExcludedApps => text().withDefault(const Constant('[]'))();
+
+  /// Monitor padrão para aplicar layouts, escolhido no seletor da galeria;
+  /// null = automático, pela janela em foco (adicionada no schema v10).
+  IntColumn get preferredMonitorId => integer().nullable()();
+
+  /// Tour guiado de primeiro uso já exibido (adicionada no schema v11).
+  BoolColumn get featureTourDone =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};

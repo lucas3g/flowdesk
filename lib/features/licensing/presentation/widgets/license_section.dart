@@ -107,8 +107,7 @@ class _LicenseSectionState extends State<LicenseSection> {
             )
           else
             FilledButton(
-              onPressed: () =>
-                  launchUrl(Uri.parse(AppConstants.checkoutUrl)),
+              onPressed: () => launchUrl(Uri.parse(AppConstants.checkoutUrl)),
               child: const Text('Assinar', style: TextStyle(fontSize: 12.5)),
             ),
         ],
@@ -160,8 +159,7 @@ class _LicenseSectionState extends State<LicenseSection> {
               ),
             ],
           ),
-          if (state.status == LicenseStatus.error &&
-              state.errorMessage != null)
+          if (state.status == LicenseStatus.error && state.errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(

@@ -87,9 +87,9 @@ class UndoRedoCubit extends Cubit<UndoRedoState> {
     final group = from.removeLast();
 
     // Guarda os frames atuais para permitir a operação inversa.
-    final current = (await _getWindows(const NoParams())).getOrElse(
-      (_) => const [],
-    );
+    final current = (await _getWindows(
+      const NoParams(),
+    )).getOrElse((_) => const []);
     final inverse = <WindowSnapshot>[];
     for (final snapshot in group) {
       final live = current
@@ -115,10 +115,7 @@ class UndoRedoCubit extends Cubit<UndoRedoState> {
 
   void _emitDepths() {
     emit(
-      UndoRedoState(
-        undoDepth: _undoStack.length,
-        redoDepth: _redoStack.length,
-      ),
+      UndoRedoState(undoDepth: _undoStack.length, redoDepth: _redoStack.length),
     );
   }
 }

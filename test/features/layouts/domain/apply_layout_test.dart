@@ -33,25 +33,30 @@ ManagedWindow _window(
   String bundleId = '',
   double width = 500,
   String title = '',
-}) =>
-    ManagedWindow(
-      id: id,
-      pid: id,
-      appName: 'App $id',
-      bundleId: bundleId,
-      title: title,
-      x: 0,
-      y: 0,
-      width: width,
-      height: 500,
-      monitorId: 1,
-      isFocused: false,
-    );
+}) => ManagedWindow(
+  id: id,
+  pid: id,
+  appName: 'App $id',
+  bundleId: bundleId,
+  title: title,
+  x: 0,
+  y: 0,
+  width: width,
+  height: 500,
+  monitorId: 1,
+  isFocused: false,
+);
 
 void main() {
   group('regionFrameOnMonitor', () {
     test('sem gap/margem ocupa a fração exata da área útil', () {
-      const region = LayoutRegion(name: 'Meia', x: 50, y: 0, width: 50, height: 100);
+      const region = LayoutRegion(
+        name: 'Meia',
+        x: 50,
+        y: 0,
+        width: 50,
+        height: 100,
+      );
 
       final frame = regionFrameOnMonitor(region, _monitor);
 
@@ -62,7 +67,13 @@ void main() {
     });
 
     test('aplica margem externa e metade do gap em cada lado', () {
-      const region = LayoutRegion(name: 'Cheia', x: 0, y: 0, width: 100, height: 100);
+      const region = LayoutRegion(
+        name: 'Cheia',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+      );
 
       final frame = regionFrameOnMonitor(region, _monitor, gap: 8, margin: 10);
 
@@ -96,8 +107,22 @@ void main() {
         id: 1,
         name: 'Metades',
         regions: [
-          LayoutRegion(name: 'Direita', x: 50, y: 0, width: 50, height: 100, sortOrder: 1),
-          LayoutRegion(name: 'Esquerda', x: 0, y: 0, width: 50, height: 100, sortOrder: 0),
+          LayoutRegion(
+            name: 'Direita',
+            x: 50,
+            y: 0,
+            width: 50,
+            height: 100,
+            sortOrder: 1,
+          ),
+          LayoutRegion(
+            name: 'Esquerda',
+            x: 0,
+            y: 0,
+            width: 50,
+            height: 100,
+            sortOrder: 0,
+          ),
         ],
       );
       final windows = [_window(1), _window(2), _window(3)];
@@ -159,7 +184,12 @@ void main() {
         );
         // A instância desejada NÃO é a maior janela do app.
         final windows = [
-          _window(1, bundleId: 'com.vscode', width: 1200, title: 'outro-projeto'),
+          _window(
+            1,
+            bundleId: 'com.vscode',
+            width: 1200,
+            title: 'outro-projeto',
+          ),
           _window(2, bundleId: 'com.vscode', width: 300, title: 'flowdesk'),
         ];
 
@@ -278,7 +308,11 @@ void main() {
         ];
 
         final result = await ApplyLayout(repository)(
-          ApplyLayoutParams(layout: layout, monitor: _monitor, windows: windows),
+          ApplyLayoutParams(
+            layout: layout,
+            monitor: _monitor,
+            windows: windows,
+          ),
         );
 
         expect(result.getOrElse((_) => 0), 1);

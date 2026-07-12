@@ -27,7 +27,10 @@ class BackupData {
 abstract final class BackupCodec {
   static const int version = 1;
 
-  static String encode(BackupData data, {required Map<int, String> layoutNames}) {
+  static String encode(
+    BackupData data, {
+    required Map<int, String> layoutNames,
+  }) {
     return const JsonEncoder.withIndent('  ').convert({
       'app': 'FlowDesk',
       'version': version,
@@ -110,8 +113,9 @@ abstract final class BackupCodec {
   /// Decodifica; lança [FormatException] para conteúdo inválido.
   /// Retorna também o nome do layout de cada workspace (resolvido para
   /// id no momento da importação).
-  static ({BackupData data, Map<String, String?> workspaceLayoutNames})
-  decode(String json) {
+  static ({BackupData data, Map<String, String?> workspaceLayoutNames}) decode(
+    String json,
+  ) {
     final root = jsonDecode(json);
     if (root is! Map<String, dynamic> || root['app'] != 'FlowDesk') {
       throw const FormatException('Arquivo não é um backup do FlowDesk.');

@@ -1,5 +1,12 @@
 import 'package:equatable/equatable.dart';
 
+/// Chave estável de um monitor entre sessões (`nome:LARGURAxALTURA` em
+/// pixels), já que [Monitor.id] é volátil (CGDirectDisplayID/HMONITOR).
+/// Dois monitores idênticos de mesmo nome colidem — limitação aceita,
+/// igual ao fingerprint de combinação de telas.
+String monitorKey(Monitor monitor) =>
+    '${monitor.name}:${monitor.pixelWidth}x${monitor.pixelHeight}';
+
 /// Monitor físico conectado ao Mac.
 ///
 /// Posição e tamanho estão em pontos (coordenadas do macOS);

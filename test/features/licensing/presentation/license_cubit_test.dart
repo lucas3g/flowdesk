@@ -135,8 +135,9 @@ void main() {
       'chave inválida emite erro com a mensagem da falha',
       setUp: () {
         when(() => activateLicense('invalida')).thenAnswer(
-          (_) async =>
-              left(const NetworkFailure('Chave não encontrada', statusCode: 404)),
+          (_) async => left(
+            const NetworkFailure('Chave não encontrada', statusCode: 404),
+          ),
         );
       },
       build: buildCubit,

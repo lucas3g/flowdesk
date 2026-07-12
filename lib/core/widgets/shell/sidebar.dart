@@ -8,6 +8,7 @@ import '../../routing/app_screen.dart';
 import '../../routing/navigation_cubit.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_dimens.dart';
+import '../../tour/tour_targets.dart';
 import '../ms_icon.dart';
 
 /// Sidebar de navegação (228px) com seções, badges e rodapé de perfil.
@@ -58,6 +59,8 @@ class Sidebar extends StatelessWidget {
                   for (final screen in AppScreen.values)
                     if (screen.section == section)
                       _NavRow(
+                        // Itens essenciais são alvos do tour de primeiro uso.
+                        key: TourTargets.sidebarItems[screen],
                         screen: screen,
                         active: screen == current,
                         badge: _badges[screen],
@@ -91,6 +94,7 @@ class _SectionHeader extends StatelessWidget {
 
 class _NavRow extends StatelessWidget {
   const _NavRow({
+    super.key,
     required this.screen,
     required this.active,
     required this.onTap,

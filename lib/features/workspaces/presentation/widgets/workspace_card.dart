@@ -170,11 +170,7 @@ class WorkspaceCard extends StatelessWidget {
                       ),
               ),
               const SizedBox(width: 6),
-              _IconAction(
-                icon: 'edit',
-                tooltip: 'Editar',
-                onPressed: onEdit,
-              ),
+              _IconAction(icon: 'edit', tooltip: 'Editar', onPressed: onEdit),
               _IconAction(
                 icon: 'delete',
                 tooltip: 'Excluir',

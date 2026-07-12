@@ -11,6 +11,7 @@ import '../../../../core/widgets/command_palette.dart';
 import '../../../../core/widgets/ms_icon.dart';
 import '../../../history/domain/entities/history_entry.dart';
 import '../../../history/presentation/cubits/history_cubit.dart';
+import '../../../layout_editor/presentation/cubits/layout_editor_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_state.dart';
 import '../../../monitors/presentation/cubits/monitors_cubit.dart';
@@ -133,8 +134,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                 .settings
                                 .userName
                                 .trim();
-                            final greeting =
-                                greetingForHour(DateTime.now().hour);
+                            final greeting = greetingForHour(
+                              DateTime.now().hour,
+                            );
                             return Text(
                               name.isEmpty ? greeting : '$greeting, $name',
                               style: TextStyle(
@@ -154,8 +156,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                   FilledButton.icon(
-                    onPressed: () =>
-                        _navigationCubit.navigate(AppScreen.layoutEditor),
+                    onPressed: () {
+                      // Criar sempre parte de um layout em branco — sem isso,
+                      // o editor (singleton) reabre o último layout editado.
+                      getIt<LayoutEditorCubit>().newLayout();
+                      _navigationCubit.navigate(AppScreen.layoutEditor);
+                    },
                     icon: const MsIcon('add', size: 15, color: Colors.white),
                     label: const Text('Criar Layout'),
                   ),
@@ -345,8 +351,12 @@ class _DashboardPageState extends State<DashboardPage> {
               QuickActionChip(
                 icon: 'add_box',
                 label: 'Criar Layout',
-                onTap: () =>
-                    getIt<NavigationCubit>().navigate(AppScreen.layoutEditor),
+                onTap: () {
+                  // Criar sempre parte de um layout em branco — sem isso,
+                  // o editor (singleton) reabre o último layout editado.
+                  getIt<LayoutEditorCubit>().newLayout();
+                  getIt<NavigationCubit>().navigate(AppScreen.layoutEditor);
+                },
               ),
               QuickActionChip(
                 icon: 'bolt',

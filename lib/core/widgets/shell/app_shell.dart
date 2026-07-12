@@ -20,6 +20,7 @@ import '../../di/injection.dart';
 import '../../routing/app_screen.dart';
 import '../../routing/navigation_cubit.dart';
 import '../../theme/app_colors.dart';
+import '../../tour/feature_tour.dart';
 import '../../theme/app_dimens.dart';
 import '../../../features/settings/presentation/cubits/settings_cubit.dart';
 import '../command_palette.dart';
@@ -67,32 +68,32 @@ class AppShell extends StatelessWidget {
       body: _OnboardingGate(
         child: _PaletteShortcut(
           child: Column(
-        children: [
-          TitleBar(),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Sidebar(),
-                Expanded(
-                  child: ColoredBox(
-                    color: colors.content,
-                    child: Column(
-                      children: [
-                        PermissionsBanner(),
-                        Expanded(
-                          child: _ScreenSwitcher(
-                            screen: screen,
-                            child: _pageFor(screen),
-                          ),
+            children: [
+              TitleBar(),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Sidebar(),
+                    Expanded(
+                      child: ColoredBox(
+                        color: colors.content,
+                        child: Column(
+                          children: [
+                            PermissionsBanner(),
+                            Expanded(
+                              child: _ScreenSwitcher(
+                                screen: screen,
+                                child: _pageFor(screen),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
             ],
           ),
         ),
@@ -120,9 +121,24 @@ class _OnboardingGateState extends State<_OnboardingGate> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_checked || !mounted) return;
       _checked = true;
-      final settings = getIt<SettingsCubit>().state.settings;
-      if (!settings.onboardingDone) showOnboarding(context);
+      _runFirstUseFlow();
     });
+  }
+
+  /// Primeira execução: assistente (nome) e, na sequência, o tour guiado.
+  /// Se o app fechou entre os dois, o tour retoma sozinho na próxima abertura.
+  Future<void> _runFirstUseFlow() async {
+    final settingsCubit = getIt<SettingsCubit>();
+    if (!settingsCubit.state.settings.onboardingDone) {
+      await showOnboarding(context);
+    }
+    if (!mounted) return;
+    if (!settingsCubit.state.settings.featureTourDone) {
+      await showFeatureTour(
+        context,
+        onFinished: () => settingsCubit.setFeatureTourDone(true),
+      );
+    }
   }
 
   @override
@@ -147,7 +163,8 @@ class _PaletteShortcut extends StatelessWidget {
           LogicalKeyboardKey.keyZ,
           meta: true,
           shift: true,
-        ): () => getIt<UndoRedoCubit>().redo(),
+        ): () =>
+            getIt<UndoRedoCubit>().redo(),
       },
       child: Focus(autofocus: true, child: child),
     );

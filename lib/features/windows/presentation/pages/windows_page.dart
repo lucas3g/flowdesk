@@ -175,8 +175,7 @@ class _WindowsPageState extends State<WindowsPage> {
 
     final visibleMonitors = state.monitors
         .where(
-          (monitor) =>
-              filtered.any((window) => window.monitorId == monitor.id),
+          (monitor) => filtered.any((window) => window.monitorId == monitor.id),
         )
         .toList(growable: false);
     final knownIds = visibleMonitors.map((m) => m.id).toSet();
@@ -200,8 +199,7 @@ class _WindowsPageState extends State<WindowsPage> {
         ),
         const SizedBox(height: AppDimens.gridGap),
       ],
-      if (orphans.isNotEmpty)
-        _WindowsCard(windows: orphans, cubit: _cubit),
+      if (orphans.isNotEmpty) _WindowsCard(windows: orphans, cubit: _cubit),
     ];
   }
 

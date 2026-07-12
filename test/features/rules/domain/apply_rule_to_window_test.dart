@@ -74,7 +74,10 @@ void main() {
   late _MockMaximizeWindow maximize;
   late ApplyRuleToWindow usecase;
 
-  final monitors = [_monitor(1, 'MacBook', primary: true), _monitor(2, 'Dell 4K')];
+  final monitors = [
+    _monitor(1, 'MacBook', primary: true),
+    _monitor(2, 'Dell 4K'),
+  ];
 
   setUpAll(() {
     registerFallbackValue(_window);
@@ -181,7 +184,13 @@ void main() {
     // Região direita (50%) da área útil com margem 8:
     // área = 984×784 a partir de (8,8); x = 8 + 0.5*984 = 500.
     verify(
-      () => windows.setWindowFrame(_window, x: 500, y: 8, width: 492, height: 784),
+      () => windows.setWindowFrame(
+        _window,
+        x: 500,
+        y: 8,
+        width: 492,
+        height: 784,
+      ),
     ).called(1);
   });
 

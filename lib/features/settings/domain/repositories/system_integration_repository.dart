@@ -24,7 +24,5 @@ abstract interface class SystemIntegrationRepository {
 
   /// Apps (ou instâncias específicas, por título de janela) que não
   /// participam do encaixe ao arrastar.
-  Future<Either<Failure, Unit>> setSnapExcludedApps(
-    List<SnapExcludedApp> apps,
-  );
+  Future<Either<Failure, Unit>> setSnapExcludedApps(List<SnapExcludedApp> apps);
 }

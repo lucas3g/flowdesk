@@ -66,12 +66,11 @@ class WindowPositionsLocalDatasourceImpl
     required String monitorFingerprint,
   }) async {
     try {
-      return await (_db.select(_db.windowPositions)
-            ..where(
-              (t) =>
-                  t.bundleId.equals(bundleId) &
-                  t.monitorFingerprint.equals(monitorFingerprint),
-            ))
+      return await (_db.select(_db.windowPositions)..where(
+            (t) =>
+                t.bundleId.equals(bundleId) &
+                t.monitorFingerprint.equals(monitorFingerprint),
+          ))
           .getSingleOrNull();
     } catch (e) {
       throw DatabaseException('Falha ao consultar posição de janela: $e');

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flowdesk/core/services/region_cycle_service.dart';
 import 'package:flowdesk/features/layouts/domain/entities/layout.dart';
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_state.dart';
 import 'package:flowdesk/features/settings/domain/entities/app_settings.dart';
@@ -33,6 +34,9 @@ class _MockWorkspacesCubit extends MockCubit<WorkspacesState>
 class _MockSettingsCubit extends MockCubit<SettingsState>
     implements SettingsCubit {}
 
+class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
+    implements AppliedLayoutsCubit {}
+
 class _MockRegionCycleService extends Mock implements RegionCycleService {}
 
 const _layout = Layout(
@@ -50,6 +54,7 @@ void main() {
   late _MockLayoutsCubit layoutsCubit;
   late _MockWorkspacesCubit workspacesCubit;
   late _MockSettingsCubit settingsCubit;
+  late _MockAppliedLayoutsCubit appliedLayoutsCubit;
   late _MockRegionCycleService regionCycleService;
   late StreamController<int> presses;
 
@@ -66,8 +71,15 @@ void main() {
     layoutsCubit = _MockLayoutsCubit();
     workspacesCubit = _MockWorkspacesCubit();
     settingsCubit = _MockSettingsCubit();
+    appliedLayoutsCubit = _MockAppliedLayoutsCubit();
     regionCycleService = _MockRegionCycleService();
     presses = StreamController<int>.broadcast();
+
+    whenListen(
+      appliedLayoutsCubit,
+      const Stream<Map<String, int>>.empty(),
+      initialState: const <String, int>{},
+    );
 
     when(() => registerShortcuts(any())).thenAnswer((_) async => right(unit));
     when(() => watchPresses()).thenAnswer((_) => presses.stream);
@@ -106,16 +118,17 @@ void main() {
     layoutsCubit,
     workspacesCubit,
     settingsCubit,
+    appliedLayoutsCubit,
     regionCycleService,
   );
 
-  /// Simula um layout com regiões aplicado (ativa os atalhos de ciclo).
+  /// Simula um layout com regiões aplicado em um monitor (ativa os
+  /// atalhos de ciclo).
   void stubAppliedLayout() {
-    when(() => settingsCubit.state).thenReturn(
-      const SettingsState(
-        status: SettingsStatus.ready,
-        settings: AppSettings(lastAppliedLayoutId: 1, lastAppliedMonitorId: 1),
-      ),
+    whenListen(
+      appliedLayoutsCubit,
+      const Stream<Map<String, int>>.empty(),
+      initialState: const {'Principal:4000x2400': 1},
     );
   }
 

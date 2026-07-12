@@ -7,7 +7,10 @@ import '../../../../core/usecases/usecase.dart';
 import '../repositories/layouts_repository.dart';
 
 class ToggleFavoriteParams extends Equatable {
-  const ToggleFavoriteParams({required this.layoutId, required this.isFavorite});
+  const ToggleFavoriteParams({
+    required this.layoutId,
+    required this.isFavorite,
+  });
 
   final int layoutId;
   final bool isFavorite;

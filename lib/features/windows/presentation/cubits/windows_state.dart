@@ -30,15 +30,17 @@ class WindowsState extends Equatable {
   /// Janelas após aplicar tab e busca.
   List<ManagedWindow> get filtered {
     final lowerQuery = query.trim().toLowerCase();
-    return windows.where((window) {
-      if (selectedMonitorId != null &&
-          window.monitorId != selectedMonitorId) {
-        return false;
-      }
-      if (lowerQuery.isEmpty) return true;
-      return window.displayTitle.toLowerCase().contains(lowerQuery) ||
-          window.appName.toLowerCase().contains(lowerQuery);
-    }).toList(growable: false);
+    return windows
+        .where((window) {
+          if (selectedMonitorId != null &&
+              window.monitorId != selectedMonitorId) {
+            return false;
+          }
+          if (lowerQuery.isEmpty) return true;
+          return window.displayTitle.toLowerCase().contains(lowerQuery) ||
+              window.appName.toLowerCase().contains(lowerQuery);
+        })
+        .toList(growable: false);
   }
 
   /// Contagem de janelas por monitor (sem filtro de busca), para as tabs.

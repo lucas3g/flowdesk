@@ -16,6 +16,13 @@ abstract interface class LayoutsLocalDatasource {
   Future<void> deleteLayout(int layoutId);
 
   Future<void> setFavorite(int layoutId, bool isFavorite);
+
+  /// Layout aplicado em cada monitor (chave estável → id do layout).
+  Future<Map<String, int>> getAppliedLayouts();
+
+  Future<void> setAppliedLayout(String monitorKey, int layoutId);
+
+  Future<void> removeAppliedLayout(String monitorKey);
 }
 
 @LazySingleton(as: LayoutsLocalDatasource)
@@ -59,11 +66,8 @@ class LayoutsLocalDatasourceImpl implements LayoutsLocalDatasource {
               .insert(LayoutMapper.toLayoutCompanion(layout));
         } else {
           layoutId = layout.id;
-          await (_db.update(
-            _db.layouts,
-          )..where((t) => t.id.equals(layoutId))).write(
-            LayoutMapper.toLayoutCompanion(layout),
-          );
+          await (_db.update(_db.layouts)..where((t) => t.id.equals(layoutId)))
+              .write(LayoutMapper.toLayoutCompanion(layout));
           // Regravar as regiões é mais simples e seguro do que reconciliar.
           await (_db.delete(
             _db.layoutRegions,
@@ -101,6 +105,43 @@ class LayoutsLocalDatasourceImpl implements LayoutsLocalDatasource {
           .write(LayoutsCompanion(isFavorite: Value(isFavorite)));
     } catch (e) {
       throw DatabaseException('Falha ao favoritar layout: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, int>> getAppliedLayouts() async {
+    try {
+      final rows = await _db.select(_db.appliedLayouts).get();
+      return {for (final row in rows) row.monitorKey: row.layoutId};
+    } catch (e) {
+      throw DatabaseException('Falha ao carregar layouts aplicados: $e');
+    }
+  }
+
+  @override
+  Future<void> setAppliedLayout(String monitorKey, int layoutId) async {
+    try {
+      await _db
+          .into(_db.appliedLayouts)
+          .insertOnConflictUpdate(
+            AppliedLayoutsCompanion.insert(
+              monitorKey: monitorKey,
+              layoutId: layoutId,
+            ),
+          );
+    } catch (e) {
+      throw DatabaseException('Falha ao salvar layout aplicado: $e');
+    }
+  }
+
+  @override
+  Future<void> removeAppliedLayout(String monitorKey) async {
+    try {
+      await (_db.delete(
+        _db.appliedLayouts,
+      )..where((t) => t.monitorKey.equals(monitorKey))).go();
+    } catch (e) {
+      throw DatabaseException('Falha ao remover layout aplicado: $e');
     }
   }
 

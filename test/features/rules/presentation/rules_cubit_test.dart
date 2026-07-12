@@ -148,10 +148,8 @@ void main() {
   blocTest<RulesCubit, RulesState>(
     'engine aplica a regra quando o app com regra ativa abre',
     build: buildCubit,
-    seed: () => const RulesState(
-      status: RulesStatus.ready,
-      rules: [_slackRule],
-    ),
+    seed: () =>
+        const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
     act: (cubit) =>
         cubit.onAppLaunched((bundleId: 'com.slack', appName: 'Slack')),
     verify: (_) {

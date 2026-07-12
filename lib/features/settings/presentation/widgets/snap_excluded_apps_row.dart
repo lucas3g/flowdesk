@@ -159,10 +159,7 @@ class SnapExcludedAppsRow extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _AppIcon(
-                            icon: running[app.bundleId]?.icon,
-                            size: 15,
-                          ),
+                          _AppIcon(icon: running[app.bundleId]?.icon, size: 15),
                           const SizedBox(width: 6),
                           Text(
                             app.windowId == null
@@ -171,10 +168,7 @@ class SnapExcludedAppsRow extends StatelessWidget {
                                       : app.appName)
                                 : '${app.appName} — '
                                       '${app.windowTitle ?? 'janela'}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colors.text2,
-                            ),
+                            style: TextStyle(fontSize: 12, color: colors.text2),
                           ),
                           const SizedBox(width: 4),
                           InkWell(
@@ -254,9 +248,9 @@ class _SnapExcludedAppPickerDialogState
         if (app.windowId != null) app.windowId,
     };
     final candidates =
-        _runningAppsById(windows).values
-            .where((app) => !excludedApps.contains(app.bundleId))
-            .toList()
+        _runningAppsById(
+            windows,
+          ).values.where((app) => !excludedApps.contains(app.bundleId)).toList()
           ..sort(
             (a, b) =>
                 a.appName.toLowerCase().compareTo(b.appName.toLowerCase()),
@@ -376,12 +370,7 @@ class _SnapExcludedAppPickerDialogState
                             ),
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                34,
-                                4,
-                                10,
-                                4,
-                              ),
+                              padding: const EdgeInsets.fromLTRB(34, 4, 10, 4),
                               child: Row(
                                 children: [
                                   MsIcon(

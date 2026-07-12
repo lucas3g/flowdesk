@@ -22,7 +22,9 @@ class SaveLayout implements UseCase<Layout, Layout> {
     }
     if (params.regions.isEmpty) {
       return Future.value(
-        left(const ValidationFailure('O layout precisa de ao menos uma região.')),
+        left(
+          const ValidationFailure('O layout precisa de ao menos uma região.'),
+        ),
       );
     }
     return _repository.saveLayout(params);

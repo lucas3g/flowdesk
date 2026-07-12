@@ -45,9 +45,9 @@ void main() {
 
   blocTest<MonitorsCubit, MonitorsState>(
     'start carrega a lista e assina o stream de mudanças',
-    setUp: () => when(() => getMonitors(any())).thenAnswer(
-      (_) async => right([_monitor(1, primary: true), _monitor(2)]),
-    ),
+    setUp: () => when(
+      () => getMonitors(any()),
+    ).thenAnswer((_) async => right([_monitor(1, primary: true), _monitor(2)])),
     build: buildCubit,
     act: (cubit) => cubit.start(),
     expect: () => [
@@ -62,13 +62,11 @@ void main() {
   blocTest<MonitorsCubit, MonitorsState>(
     'eventos do stream atualizam a lista (monitor conectado)',
     setUp: () {
-      when(() => getMonitors(any())).thenAnswer(
-        (_) async => right([_monitor(1, primary: true)]),
-      );
+      when(
+        () => getMonitors(any()),
+      ).thenAnswer((_) async => right([_monitor(1, primary: true)]));
       when(() => watchMonitors(any())).thenAnswer(
-        (_) => Stream.value(
-          right([_monitor(1, primary: true), _monitor(2)]),
-        ),
+        (_) => Stream.value(right([_monitor(1, primary: true), _monitor(2)])),
       );
     },
     build: buildCubit,
@@ -97,9 +95,9 @@ void main() {
 
   blocTest<MonitorsCubit, MonitorsState>(
     'limpa a seleção quando o monitor selecionado é desconectado',
-    setUp: () => when(() => getMonitors(any())).thenAnswer(
-      (_) async => right([_monitor(1, primary: true)]),
-    ),
+    setUp: () => when(
+      () => getMonitors(any()),
+    ).thenAnswer((_) async => right([_monitor(1, primary: true)])),
     build: buildCubit,
     seed: () => MonitorsState(
       status: MonitorsStatus.ready,

@@ -20,9 +20,7 @@ class SettingsLocalDatasourceImpl implements SettingsLocalDatasource {
   @override
   Future<SettingsRow> getSettings() async {
     try {
-      final existing = await _db
-          .select(_db.settingsTable)
-          .getSingleOrNull();
+      final existing = await _db.select(_db.settingsTable).getSingleOrNull();
       if (existing != null) return existing;
 
       // Primeira execução: materializa a linha com os valores padrão.

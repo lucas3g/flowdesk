@@ -94,7 +94,9 @@ void main() {
     usecase = ApplyWorkspace(layouts, windows, launcher, workspaces);
 
     when(() => layouts.getLayouts()).thenAnswer((_) async => right([_layout]));
-    when(() => workspaces.setActive(any())).thenAnswer((_) async => right(unit));
+    when(
+      () => workspaces.setActive(any()),
+    ).thenAnswer((_) async => right(unit));
     when(
       () => windows.setWindowFrame(
         any(),
@@ -119,12 +121,12 @@ void main() {
     when(() => windows.getWindows()).thenAnswer((_) async {
       calls++;
       return right(
-        calls >= 3
-            ? [_window('com.a'), _window('com.b')]
-            : [_window('com.a')],
+        calls >= 3 ? [_window('com.a'), _window('com.b')] : [_window('com.a')],
       );
     });
-    when(() => launcher.launchApp('com.b')).thenAnswer((_) async => right(true));
+    when(
+      () => launcher.launchApp('com.b'),
+    ).thenAnswer((_) async => right(true));
 
     final result = await usecase(params());
 
@@ -137,10 +139,12 @@ void main() {
   });
 
   test('app que não abre entra em missingApps após o timeout', () async {
-    when(() => windows.getWindows()).thenAnswer(
-      (_) async => right([_window('com.a')]),
-    );
-    when(() => launcher.launchApp('com.b')).thenAnswer((_) async => right(false));
+    when(
+      () => windows.getWindows(),
+    ).thenAnswer((_) async => right([_window('com.a')]));
+    when(
+      () => launcher.launchApp('com.b'),
+    ).thenAnswer((_) async => right(false));
 
     final result = await usecase(params());
 

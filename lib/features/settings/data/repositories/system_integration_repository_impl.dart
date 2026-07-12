@@ -36,14 +36,11 @@ class SystemIntegrationRepositoryImpl implements SystemIntegrationRepository {
   @override
   Future<Either<Failure, Unit>> setLayoutSnapRegions({
     required bool enabled,
-    required List<({double x, double y, double width, double height})>
-        regions,
+    required List<({double x, double y, double width, double height})> regions,
   }) {
     return _invoke(
-      () => _datasource.setLayoutSnapRegions(
-        enabled: enabled,
-        regions: regions,
-      ),
+      () =>
+          _datasource.setLayoutSnapRegions(enabled: enabled, regions: regions),
     );
   }
 

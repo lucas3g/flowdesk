@@ -124,7 +124,10 @@ class MonitorProfilesCubit extends Cubit<MonitorProfilesState> {
     if (state.feedback != null) emit(state.copyWith());
   }
 
-  void _onMonitorsChanged(MonitorsState monitorsState, {bool autoApply = true}) {
+  void _onMonitorsChanged(
+    MonitorsState monitorsState, {
+    bool autoApply = true,
+  }) {
     if (monitorsState.monitors.isEmpty) return;
     final fingerprint = monitorsFingerprint(monitorsState.monitors);
     if (fingerprint == state.currentFingerprint) return;

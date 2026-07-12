@@ -26,7 +26,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     final result = await _getSettings(const NoParams());
     result.fold(
       (failure) => emit(
-        state.copyWith(status: SettingsStatus.error, errorMessage: failure.message),
+        state.copyWith(
+          status: SettingsStatus.error,
+          errorMessage: failure.message,
+        ),
       ),
       (settings) => emit(
         state.copyWith(status: SettingsStatus.ready, settings: settings),
@@ -45,7 +48,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     final result = await _saveSettings(updated);
     result.fold(
       (failure) => emit(
-        state.copyWith(status: SettingsStatus.error, errorMessage: failure.message),
+        state.copyWith(
+          status: SettingsStatus.error,
+          errorMessage: failure.message,
+        ),
       ),
       (_) {},
     );
@@ -93,14 +99,13 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> setSnapExcludedApps(List<SnapExcludedApp> apps) =>
       _update((s) => s.copyWith(snapExcludedApps: apps));
 
-  /// Registra o último layout aplicado e em qual monitor (fonte das zonas
-  /// de encaixe — elas só aparecem nesse monitor).
-  Future<void> setLastAppliedLayout(int layoutId, int monitorId) => _update(
-    (s) => s.copyWith(
-      lastAppliedLayoutId: () => layoutId,
-      lastAppliedMonitorId: () => monitorId,
-    ),
-  );
+  /// Marca o tour guiado de primeiro uso como exibido (ou o rearma).
+  Future<void> setFeatureTourDone(bool value) =>
+      _update((s) => s.copyWith(featureTourDone: value));
+
+  /// Define o monitor padrão para aplicar layouts (null = automático).
+  Future<void> setPreferredMonitor(int? monitorId) =>
+      _update((s) => s.copyWith(preferredMonitorId: () => monitorId));
 
   Future<void> setAnimateTransitions(bool value) =>
       _update((s) => s.copyWith(animateTransitions: value));

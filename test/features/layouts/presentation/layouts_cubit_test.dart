@@ -5,6 +5,7 @@ import 'package:flowdesk/features/layouts/domain/usecases/apply_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/delete_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/get_layouts.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/toggle_favorite_layout.dart';
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_state.dart';
 import 'package:flowdesk/features/monitors/domain/entities/monitor.dart';
@@ -38,6 +39,9 @@ class _MockGetWindows extends Mock implements GetWindows {}
 class _MockMonitorsCubit extends MockCubit<MonitorsState>
     implements MonitorsCubit {}
 
+class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
+    implements AppliedLayoutsCubit {}
+
 class _MockGetSettings extends Mock implements GetSettings {}
 
 class _MockSaveSettings extends Mock implements SaveSettings {}
@@ -56,6 +60,24 @@ const _monitor = Monitor(
   scale: 1,
   refreshRate: 60,
   isPrimary: true,
+  isBuiltIn: false,
+);
+
+const _secondMonitor = Monitor(
+  id: 2,
+  name: 'Externo',
+  x: 1920,
+  y: 0,
+  width: 2560,
+  height: 1440,
+  visibleX: 1920,
+  visibleWidth: 2560,
+  visibleHeight: 1440,
+  pixelWidth: 2560,
+  pixelHeight: 1440,
+  scale: 1,
+  refreshRate: 60,
+  isPrimary: false,
   isBuiltIn: false,
 );
 
@@ -94,6 +116,7 @@ void main() {
   late _MockApplyLayout applyLayout;
   late _MockGetWindows getWindows;
   late _MockMonitorsCubit monitorsCubit;
+  late _MockAppliedLayoutsCubit appliedLayoutsCubit;
   late SettingsCubit settingsCubit;
 
   setUpAll(() {
@@ -119,7 +142,11 @@ void main() {
       const MonitorsState(status: MonitorsStatus.ready, monitors: [_monitor]),
     );
     when(() => monitorsCubit.refresh()).thenAnswer((_) async {});
-    // O apply registra o último layout aplicado nas preferências.
+    // O apply registra o layout aplicado no monitor de destino.
+    appliedLayoutsCubit = _MockAppliedLayoutsCubit();
+    when(
+      () => appliedLayoutsCubit.set(any(), any()),
+    ).thenAnswer((_) async {});
     final saveSettings = _MockSaveSettings();
     when(() => saveSettings(any())).thenAnswer((_) async => right(unit));
     settingsCubit = SettingsCubit(
@@ -144,6 +171,7 @@ void main() {
     settingsCubit,
     MockUndoRedoCubit(),
     FakeAddHistoryEntry(),
+    appliedLayoutsCubit,
   );
 
   blocTest<LayoutsCubit, LayoutsState>(
@@ -260,18 +288,74 @@ void main() {
               as ApplyLayoutParams;
       // Ambas entram: Safari (monitor alvo) e VS Code (monitor 2, associado).
       expect(params.windows.length, 2);
-      expect(
-        params.windows.any((w) => w.bundleId == 'com.vscode'),
-        isTrue,
+      expect(params.windows.any((w) => w.bundleId == 'com.vscode'), isTrue);
+    },
+  );
+
+  blocTest<LayoutsCubit, LayoutsState>(
+    'setTargetMonitor persiste o monitor padrão nas preferências',
+    build: buildCubit,
+    act: (cubit) => cubit.setTargetMonitor(2),
+    verify: (cubit) {
+      expect(cubit.state.targetMonitorId, 2);
+      expect(settingsCubit.state.settings.preferredMonitorId, 2);
+    },
+  );
+
+  blocTest<LayoutsCubit, LayoutsState>(
+    'apply usa o monitor padrão salvo mesmo com foco em outro monitor',
+    setUp: () {
+      when(() => monitorsCubit.state).thenReturn(
+        const MonitorsState(
+          status: MonitorsStatus.ready,
+          monitors: [_monitor, _secondMonitor],
+        ),
       );
+      when(() => getWindows(any())).thenAnswer(
+        (_) async =>
+            right([_window(1, focused: true), _window(2, monitorId: 2)]),
+      );
+      when(() => applyLayout(any())).thenAnswer((_) async => right(1));
+    },
+    build: buildCubit,
+    act: (cubit) async {
+      await settingsCubit.setPreferredMonitor(2);
+      await cubit.apply(_layout);
+    },
+    verify: (_) {
+      final params =
+          verify(() => applyLayout(captureAny())).captured.single
+              as ApplyLayoutParams;
+      expect(params.monitor.id, 2);
+    },
+  );
+
+  blocTest<LayoutsCubit, LayoutsState>(
+    'apply com monitor padrão desconectado avisa e não aplica',
+    setUp: () {
+      when(
+        () => getWindows(any()),
+      ).thenAnswer((_) async => right([_window(1, focused: true)]));
+    },
+    build: buildCubit,
+    act: (cubit) async {
+      await settingsCubit.setPreferredMonitor(99);
+      await cubit.apply(_layout);
+    },
+    verify: (cubit) {
+      expect(
+        cubit.state.feedback,
+        contains('monitor salvo como padrão não foi encontrado'),
+      );
+      verifyNever(() => applyLayout(any()));
     },
   );
 
   blocTest<LayoutsCubit, LayoutsState>(
     'apply sem janelas no monitor ativo gera feedback',
-    setUp: () => when(() => getWindows(any())).thenAnswer(
-      (_) async => right([_window(3, monitorId: 99)]),
-    ),
+    setUp: () => when(
+      () => getWindows(any()),
+    ).thenAnswer((_) async => right([_window(3, monitorId: 99)])),
     build: buildCubit,
     act: (cubit) => cubit.apply(_layout),
     expect: () => [
@@ -285,9 +369,8 @@ void main() {
 
   blocTest<LayoutsCubit, LayoutsState>(
     'toggleFavorite inverte o estado e recarrega',
-    setUp: () => when(
-      () => toggleFavorite(any()),
-    ).thenAnswer((_) async => right(unit)),
+    setUp: () =>
+        when(() => toggleFavorite(any())).thenAnswer((_) async => right(unit)),
     build: buildCubit,
     act: (cubit) => cubit.toggleFavorite(_layout),
     verify: (_) {

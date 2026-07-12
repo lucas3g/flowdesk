@@ -95,9 +95,7 @@ class ApplyWorkspace
     // 1. Layout vinculado.
     final layoutsResult = await _layoutsRepository.getLayouts();
     final layouts = layoutsResult.getOrElse((_) => []);
-    final layout = layouts
-        .where((l) => l.id == workspace.layoutId)
-        .firstOrNull;
+    final layout = layouts.where((l) => l.id == workspace.layoutId).firstOrNull;
     if (layout == null) {
       return left(
         const ValidationFailure('O layout do workspace não existe mais.'),
@@ -124,9 +122,7 @@ class ApplyWorkspace
     while (pending.isNotEmpty && attempts < params.maxPollAttempts) {
       await Future<void>.delayed(params.pollInterval);
       windows = await _currentWindows();
-      pending.removeWhere(
-        (bundleId) => _windowOf(windows, bundleId) != null,
-      );
+      pending.removeWhere((bundleId) => _windowOf(windows, bundleId) != null);
       attempts++;
     }
 

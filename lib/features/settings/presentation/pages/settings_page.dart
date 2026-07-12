@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
+import '../../../../core/tour/feature_tour.dart';
 import '../../../../core/widgets/ms_icon.dart';
 import '../../../licensing/presentation/widgets/license_section.dart';
 import '../../domain/entities/app_settings.dart';
@@ -48,7 +49,11 @@ class SettingsPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         alignment: Alignment.center,
-                        child: MsIcon('settings', size: 21, color: colors.text2),
+                        child: MsIcon(
+                          'settings',
+                          size: 21,
+                          color: colors.text2,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Column(
@@ -197,6 +202,20 @@ class SettingsPage extends StatelessWidget {
                         label: 'Transparência da barra',
                         value: settings.barTransparency,
                         onChanged: _cubit.setBarTransparency,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  SettingsGroup(
+                    title: 'AJUDA',
+                    children: [
+                      SettingsActionRow(
+                        icon: 'tips_and_updates',
+                        label: 'Tour guiado',
+                        subtitle:
+                            'Reveja onde fica cada função essencial do app',
+                        buttonLabel: 'Rever tour',
+                        onPressed: () => showFeatureTour(context),
                       ),
                     ],
                   ),

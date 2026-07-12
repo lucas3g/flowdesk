@@ -243,7 +243,12 @@ class RecentLayoutRow extends StatelessWidget {
                   ),
                   if (layout.isFavorite) ...[
                     const SizedBox(width: 4),
-                    MsIcon('star', size: 12, filled: true, color: colors.orange),
+                    MsIcon(
+                      'star',
+                      size: 12,
+                      filled: true,
+                      color: colors.orange,
+                    ),
                   ],
                 ],
               ),
@@ -358,8 +363,10 @@ class MiniMonitors extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: (44 * (monitors[i].width / monitors[i].height))
-                    .clamp(24.0, 110.0),
+                width: (44 * (monitors[i].width / monitors[i].height)).clamp(
+                  24.0,
+                  110.0,
+                ),
                 height: 44,
                 decoration: BoxDecoration(
                   color: monitorAccent(colors, i).withValues(alpha: 0.2),

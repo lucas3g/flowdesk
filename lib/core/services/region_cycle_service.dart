@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../features/layouts/domain/usecases/apply_layout.dart';
 import '../../features/layouts/domain/usecases/get_layouts.dart';
+import '../../features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import '../../features/monitors/presentation/cubits/monitors_cubit.dart';
 import '../../features/settings/presentation/cubits/settings_cubit.dart';
 import '../../features/windows/domain/entities/managed_window.dart';
@@ -70,19 +71,22 @@ int cycleTargetIndex(
   return nearest;
 }
 
-/// Move a janela em foco entre as regiões do último layout aplicado,
-/// acionado pelos atalhos globais ⌘⌥←/→ (Ctrl+Win+←/→ no Windows).
+/// Move a janela em foco entre as regiões do layout aplicado no monitor
+/// em que ela está, acionado pelos atalhos globais ⌘⌥←/→
+/// (Ctrl+Win+←/→ no Windows).
 @lazySingleton
 class RegionCycleService {
   RegionCycleService(
     this._settingsCubit,
     this._monitorsCubit,
+    this._appliedLayoutsCubit,
     this._getLayouts,
     this._windowsRepository,
   );
 
   final SettingsCubit _settingsCubit;
   final MonitorsCubit _monitorsCubit;
+  final AppliedLayoutsCubit _appliedLayoutsCubit;
   final GetLayouts _getLayouts;
   final WindowsRepository _windowsRepository;
 
@@ -109,8 +113,21 @@ class RegionCycleService {
   }
 
   Future<void> _cycle(CycleDirection direction) async {
-    final settings = _settingsCubit.state.settings;
-    final layoutId = settings.lastAppliedLayoutId;
+    final windowsResult = await _windowsRepository.getWindows();
+    final focused = windowsResult
+        .getOrElse((_) => const [])
+        .where((window) => window.isFocused && !window.isMinimized)
+        .firstOrNull;
+    if (focused == null) return;
+
+    // O ciclo usa o layout aplicado no monitor em que a janela em foco
+    // está — cada monitor pode ter um layout diferente.
+    final monitor = _monitorsCubit.state.monitors
+        .where((monitor) => monitor.id == focused.monitorId)
+        .firstOrNull;
+    if (monitor == null) return;
+
+    final layoutId = _appliedLayoutsCubit.layoutIdFor(monitor);
     if (layoutId == null) return;
 
     final layoutsResult = await _getLayouts(const NoParams());
@@ -118,15 +135,11 @@ class RegionCycleService {
         .getOrElse((_) => const [])
         .where((layout) => layout.id == layoutId)
         .firstOrNull;
-
-    final monitor = _monitorsCubit.state.monitors
-        .where((monitor) => monitor.id == settings.lastAppliedMonitorId)
-        .firstOrNull;
-
-    if (layout == null || layout.regions.isEmpty || monitor == null) return;
+    if (layout == null || layout.regions.isEmpty) return;
 
     // Ordem de leitura: linha por linha (de cima para baixo), da esquerda
     // para a direita dentro da linha.
+    final settings = _settingsCubit.state.settings;
     final frames = <RegionFrame>[
       for (final region in layout.regions)
         regionFrameOnMonitor(
@@ -144,13 +157,6 @@ class RegionCycleService {
       _framesKey = key;
       _lastIndexByWindow.clear();
     }
-
-    final windowsResult = await _windowsRepository.getWindows();
-    final focused = windowsResult
-        .getOrElse((_) => const [])
-        .where((window) => window.isFocused && !window.isMinimized)
-        .firstOrNull;
-    if (focused == null) return;
 
     // A memória só vale enquanto o centro da janela continua na região
     // lembrada — se o usuário a arrastou para outro lugar, recomeça.

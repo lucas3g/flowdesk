@@ -72,8 +72,8 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                           child: EditorCanvas(
                             state: state,
                             onSelect: _cubit.select,
-                            onSetFrame: (index, x, y, width, height) => _cubit
-                                .setFrame(
+                            onSetFrame: (index, x, y, width, height) =>
+                                _cubit.setFrame(
                                   index,
                                   x: x,
                                   y: y,
@@ -161,9 +161,7 @@ class _LayoutNameFieldState extends State<_LayoutNameField> {
     if (widget.currentName != _controller.text) {
       _controller.value = TextEditingValue(
         text: widget.currentName,
-        selection: TextSelection.collapsed(
-          offset: widget.currentName.length,
-        ),
+        selection: TextSelection.collapsed(offset: widget.currentName.length),
       );
     }
   }
@@ -188,10 +186,7 @@ class _LayoutNameFieldState extends State<_LayoutNameField> {
         isDense: true,
         filled: true,
         fillColor: widget.colors.hover,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 8,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusIconButton),
           borderSide: BorderSide.none,

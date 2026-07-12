@@ -4,6 +4,7 @@ import 'package:flowdesk/core/usecases/usecase.dart';
 import 'package:flowdesk/features/layouts/domain/entities/layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/apply_layout.dart';
 import 'package:flowdesk/features/layouts/domain/usecases/get_layouts.dart';
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/monitors/domain/entities/monitor.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_state.dart';
@@ -21,6 +22,9 @@ class _MockSettingsCubit extends MockCubit<SettingsState>
 
 class _MockMonitorsCubit extends MockCubit<MonitorsState>
     implements MonitorsCubit {}
+
+class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
+    implements AppliedLayoutsCubit {}
 
 class _MockGetLayouts extends Mock implements GetLayouts {}
 
@@ -78,6 +82,7 @@ ManagedWindow _window({
 void main() {
   late _MockSettingsCubit settingsCubit;
   late _MockMonitorsCubit monitorsCubit;
+  late _MockAppliedLayoutsCubit appliedLayoutsCubit;
   late _MockGetLayouts getLayouts;
   late _MockWindowsRepository windowsRepository;
 
@@ -89,22 +94,19 @@ void main() {
   setUp(() {
     settingsCubit = _MockSettingsCubit();
     monitorsCubit = _MockMonitorsCubit();
+    appliedLayoutsCubit = _MockAppliedLayoutsCubit();
     getLayouts = _MockGetLayouts();
     windowsRepository = _MockWindowsRepository();
 
     when(() => monitorsCubit.state).thenReturn(
       const MonitorsState(status: MonitorsStatus.ready, monitors: [_monitor]),
     );
+    when(() => appliedLayoutsCubit.layoutIdFor(_monitor)).thenReturn(7);
     when(() => getLayouts(any())).thenAnswer((_) async => right([_layout]));
     when(() => settingsCubit.state).thenReturn(
       const SettingsState(
         status: SettingsStatus.ready,
-        settings: AppSettings(
-          windowGap: 0,
-          screenMargin: 0,
-          lastAppliedLayoutId: 7,
-          lastAppliedMonitorId: 1,
-        ),
+        settings: AppSettings(windowGap: 0, screenMargin: 0),
       ),
     );
     when(
@@ -121,6 +123,7 @@ void main() {
   RegionCycleService buildService() => RegionCycleService(
     settingsCubit,
     monitorsCubit,
+    appliedLayoutsCubit,
     getLayouts,
     windowsRepository,
   );
@@ -235,13 +238,8 @@ void main() {
       expectMovedTo(frameOf(2));
     });
 
-    test('sem layout aplicado não move nada', () async {
-      when(() => settingsCubit.state).thenReturn(
-        const SettingsState(
-          status: SettingsStatus.ready,
-          settings: AppSettings(),
-        ),
-      );
+    test('sem layout aplicado no monitor da janela não move nada', () async {
+      when(() => appliedLayoutsCubit.layoutIdFor(_monitor)).thenReturn(null);
       stubFocused(_window(x: 0, y: 0, width: 400, height: 400));
 
       await buildService().cycle(CycleDirection.next);

@@ -98,7 +98,8 @@ class MonitorProfilesSection extends StatelessWidget {
                         _ProfileRow(
                           cubit: _cubit,
                           index: i,
-                          isCurrent: state.profiles[i].fingerprint ==
+                          isCurrent:
+                              state.profiles[i].fingerprint ==
                               state.currentFingerprint,
                         ),
                       ],

@@ -16,6 +16,7 @@ import '../../domain/usecases/delete_layout.dart';
 import '../../domain/usecases/get_layouts.dart';
 import '../../domain/usecases/save_layout.dart';
 import '../../domain/usecases/toggle_favorite_layout.dart';
+import 'applied_layouts_cubit.dart';
 import 'layouts_state.dart';
 
 /// Galeria de layouts: carregamento, filtros, favoritos e aplicação real
@@ -33,6 +34,7 @@ class LayoutsCubit extends Cubit<LayoutsState> {
     this._settingsCubit,
     this._undoRedoCubit,
     this._addHistoryEntry,
+    this._appliedLayoutsCubit,
   ) : super(const LayoutsState());
 
   final GetLayouts _getLayouts;
@@ -45,6 +47,7 @@ class LayoutsCubit extends Cubit<LayoutsState> {
   final SettingsCubit _settingsCubit;
   final UndoRedoCubit _undoRedoCubit;
   final AddHistoryEntry _addHistoryEntry;
+  final AppliedLayoutsCubit _appliedLayoutsCubit;
 
   Future<void> load() async {
     final result = await _getLayouts(const NoParams());
@@ -56,7 +59,13 @@ class LayoutsCubit extends Cubit<LayoutsState> {
         ),
       ),
       (layouts) => emit(
-        state.copyWith(status: LayoutsStatus.ready, layouts: layouts),
+        state.copyWith(
+          status: LayoutsStatus.ready,
+          layouts: layouts,
+          // O seletor reflete o monitor padrão persistido.
+          targetMonitorId: () =>
+              _settingsCubit.state.settings.preferredMonitorId,
+        ),
       ),
     );
   }
@@ -65,16 +74,16 @@ class LayoutsCubit extends Cubit<LayoutsState> {
 
   void search(String query) => emit(state.copyWith(query: query));
 
-  /// Define o monitor de destino do seletor (null = automático).
-  void setTargetMonitor(int? monitorId) =>
-      emit(state.copyWith(targetMonitorId: () => monitorId));
+  /// Define o monitor de destino do seletor (null = automático) e o
+  /// persiste como padrão para as próximas aplicações.
+  Future<void> setTargetMonitor(int? monitorId) async {
+    emit(state.copyWith(targetMonitorId: () => monitorId));
+    await _settingsCubit.setPreferredMonitor(monitorId);
+  }
 
   Future<void> toggleFavorite(Layout layout) async {
     await _toggleFavorite(
-      ToggleFavoriteParams(
-        layoutId: layout.id,
-        isFavorite: !layout.isFavorite,
-      ),
+      ToggleFavoriteParams(layoutId: layout.id, isFavorite: !layout.isFavorite),
     );
     await load();
   }
@@ -102,7 +111,25 @@ class LayoutsCubit extends Cubit<LayoutsState> {
     await windowsResult.fold(
       (failure) async => emit(state.copyWith(feedback: failure.message)),
       (windows) async {
-        final monitor = _targetMonitor(windows);
+        // Monitor padrão persistido: quando definido e ausente (desconectado),
+        // nada é aplicado e o usuário é avisado.
+        final preferredId =
+            state.targetMonitorId ??
+            _settingsCubit.state.settings.preferredMonitorId;
+        final monitors = _monitorsCubit.state.monitors;
+        if (preferredId != null &&
+            !monitors.any((monitor) => monitor.id == preferredId)) {
+          emit(
+            state.copyWith(
+              feedback:
+                  'O monitor salvo como padrão não foi encontrado. '
+                  'Escolha outro em "Aplicar em".',
+            ),
+          );
+          return;
+        }
+
+        final monitor = _targetMonitor(windows, preferredId);
         if (monitor == null) {
           emit(state.copyWith(feedback: 'Nenhum monitor detectado.'));
           return;
@@ -122,9 +149,7 @@ class LayoutsCubit extends Cubit<LayoutsState> {
             )
             .toList(growable: false);
         if (targets.isEmpty) {
-          emit(
-            state.copyWith(feedback: 'Nenhuma janela para posicionar.'),
-          );
+          emit(state.copyWith(feedback: 'Nenhuma janela para posicionar.'));
           return;
         }
 
@@ -145,9 +170,10 @@ class LayoutsCubit extends Cubit<LayoutsState> {
         await result.fold(
           (failure) async => emit(state.copyWith(feedback: failure.message)),
           (applied) async {
-            // Registra como último layout aplicado — o SnapRegionsService
-            // reage à mudança e atualiza as zonas de encaixe no nativo.
-            await _settingsCubit.setLastAppliedLayout(layout.id, monitor.id);
+            // Registra o layout aplicado neste monitor (sem apagar o dos
+            // demais) — o SnapRegionsService reage à mudança e atualiza as
+            // zonas de encaixe no nativo.
+            await _appliedLayoutsCubit.set(monitorKey(monitor), layout.id);
             await _addHistoryEntry(
               AddHistoryParams(
                 type: HistoryEntryType.layout,
@@ -175,14 +201,14 @@ class LayoutsCubit extends Cubit<LayoutsState> {
     if (state.feedback != null) emit(state.copyWith());
   }
 
-  Monitor? _targetMonitor(List<ManagedWindow> windows) {
+  Monitor? _targetMonitor(List<ManagedWindow> windows, int? preferredId) {
     final monitors = _monitorsCubit.state.monitors;
     if (monitors.isEmpty) return null;
 
-    // Monitor escolhido explicitamente no seletor da galeria.
-    if (state.targetMonitorId != null) {
+    // Monitor padrão escolhido no seletor da galeria (persistido).
+    if (preferredId != null) {
       for (final monitor in monitors) {
-        if (monitor.id == state.targetMonitorId) return monitor;
+        if (monitor.id == preferredId) return monitor;
       }
     }
 

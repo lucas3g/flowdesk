@@ -71,13 +71,10 @@ void main() {
       height: 100,
     );
 
-    result.fold(
-      (failure) {
-        expect(failure, isA<PermissionFailure>());
-        expect((failure as PermissionFailure).permission, 'accessibility');
-      },
-      (_) => fail('deveria falhar'),
-    );
+    result.fold((failure) {
+      expect(failure, isA<PermissionFailure>());
+      expect((failure as PermissionFailure).permission, 'accessibility');
+    }, (_) => fail('deveria falhar'));
   });
 
   test('focusWindow repassa id e pid ao canal', () async {

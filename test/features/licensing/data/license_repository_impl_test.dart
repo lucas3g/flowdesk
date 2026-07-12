@@ -91,9 +91,7 @@ void main() {
   setUpAll(() async {
     keyPair = await Ed25519().newKeyPair();
     final publicKey = await keyPair.extractPublicKey();
-    verifier = EntitlementVerifier.withPublicKey(
-      base64Encode(publicKey.bytes),
-    );
+    verifier = EntitlementVerifier.withPublicKey(base64Encode(publicKey.bytes));
   });
 
   setUp(() {
@@ -218,7 +216,9 @@ void main() {
     test('erro de rede vira NetworkFailure', () async {
       when(
         () => remote.activate(key: 'FD-TESTE-1234', deviceId: 'device-1'),
-      ).thenThrow(const NetworkException('Chave não encontrada', statusCode: 404));
+      ).thenThrow(
+        const NetworkException('Chave não encontrada', statusCode: 404),
+      );
 
       final result = await repository.activate('FD-TESTE-1234');
 
@@ -242,7 +242,9 @@ void main() {
     test('licença revogada pelo servidor limpa o cache local', () async {
       when(
         () => remote.validate(key: 'FD-TESTE-1234', deviceId: 'device-1'),
-      ).thenThrow(const NetworkException('Assinatura cancelada', statusCode: 410));
+      ).thenThrow(
+        const NetworkException('Assinatura cancelada', statusCode: 410),
+      );
 
       final result = await repository.refresh();
 

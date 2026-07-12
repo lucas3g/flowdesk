@@ -94,10 +94,9 @@ class ImportBackup implements UseCase<ImportSummary, String> {
 
     var settingsApplied = false;
     if (decoded.data.settings != null) {
-      settingsApplied =
-          (await _settingsRepository.saveSettings(
-            decoded.data.settings!,
-          )).isRight();
+      settingsApplied = (await _settingsRepository.saveSettings(
+        decoded.data.settings!,
+      )).isRight();
     }
 
     return right(

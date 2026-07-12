@@ -75,9 +75,7 @@ class _RulesPageState extends State<RulesPage> {
                             children: [
                               Text(
                                 'Regras',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleMedium,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               const SizedBox(height: 2),
                               Text(

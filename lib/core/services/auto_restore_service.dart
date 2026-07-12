@@ -54,8 +54,7 @@ class AutoRestoreService {
     );
   }
 
-  String get _fingerprint =>
-      monitorsFingerprint(_monitorsCubit.state.monitors);
+  String get _fingerprint => monitorsFingerprint(_monitorsCubit.state.monitors);
 
   Future<void> _recordPositions(List<ManagedWindow> windows) async {
     final monitors = _monitorsCubit.state.monitors;
@@ -85,9 +84,7 @@ class AutoRestoreService {
     }
   }
 
-  Future<void> _onAppLaunched(
-    ({String bundleId, String appName}) event,
-  ) async {
+  Future<void> _onAppLaunched(({String bundleId, String appName}) event) async {
     // Apps com regra ativa são posicionados pelo rules engine.
     final hasRule = _rulesCubit.state.rules.any(
       (rule) => rule.isActive && rule.bundleId == event.bundleId,
@@ -116,14 +113,13 @@ class AutoRestoreService {
 
   Future<ManagedWindow?> _waitForWindow(String bundleId) async {
     for (var attempt = 0; attempt < maxPollAttempts; attempt++) {
-      final windows = (await _getWindows(const NoParams())).getOrElse(
-        (_) => const [],
-      );
+      final windows = (await _getWindows(
+        const NoParams(),
+      )).getOrElse((_) => const []);
       final candidates =
-          windows.where((window) => window.bundleId == bundleId).toList()
-            ..sort(
-              (a, b) => (b.width * b.height).compareTo(a.width * a.height),
-            );
+          windows.where((window) => window.bundleId == bundleId).toList()..sort(
+            (a, b) => (b.width * b.height).compareTo(a.width * a.height),
+          );
       if (candidates.isNotEmpty) return candidates.first;
       await Future<void>.delayed(pollInterval);
     }

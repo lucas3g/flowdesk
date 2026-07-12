@@ -44,9 +44,9 @@ void main() {
 
     when(() => moveResize(any())).thenAnswer((_) async => right(true));
     // Posição atual da janela após a movimentação.
-    when(() => getWindows(any())).thenAnswer(
-      (_) async => right([_window(x: 500, y: 300)]),
-    );
+    when(
+      () => getWindows(any()),
+    ).thenAnswer((_) async => right([_window(x: 500, y: 300)]));
   });
 
   tearDown(() => cubit.close());

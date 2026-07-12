@@ -129,9 +129,7 @@ class _CommandPaletteState extends State<_CommandPalette> {
                   fillColor: colors.hover,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimens.radiusButton,
-                    ),
+                    borderRadius: BorderRadius.circular(AppDimens.radiusButton),
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -152,10 +150,7 @@ class _CommandPaletteState extends State<_CommandPalette> {
                           const SizedBox(height: 4),
                           Text(
                             'Tente outro termo',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colors.text3,
-                            ),
+                            style: TextStyle(fontSize: 12, color: colors.text3),
                           ),
                         ],
                       ),
@@ -182,9 +177,7 @@ class _CommandPaletteState extends State<_CommandPalette> {
                                 ),
                                 child: Text(
                                   entry.group.toUpperCase(),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.labelSmall,
+                                  style: Theme.of(context).textTheme.labelSmall,
                                 ),
                               ),
                             _PaletteRow(
@@ -253,10 +246,7 @@ class _PaletteRow extends StatelessWidget {
             ),
             if (entry.shortcut != null)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   border: Border.all(color: colors.cardBorder),
                   borderRadius: BorderRadius.circular(5),

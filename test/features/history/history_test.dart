@@ -64,11 +64,8 @@ void main() {
   });
 
   group('UsageStats', () {
-    HistoryEntry entry(HistoryEntryType type, String title) => HistoryEntry(
-      type: type,
-      title: title,
-      createdAt: DateTime(2026, 7, 8),
-    );
+    HistoryEntry entry(HistoryEntryType type, String title) =>
+        HistoryEntry(type: type, title: title, createdAt: DateTime(2026, 7, 8));
 
     test('ranqueia layouts e workspaces mais usados', () {
       final stats = UsageStats.fromEntries([

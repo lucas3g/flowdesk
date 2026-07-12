@@ -28,10 +28,7 @@ abstract final class MonitorModel {
     if (payload is! List) return const [];
     return payload
         .whereType<Map<Object?, Object?>>()
-        .map(
-          (raw) =>
-              fromMap(raw.map((key, value) => MapEntry('$key', value))),
-        )
+        .map((raw) => fromMap(raw.map((key, value) => MapEntry('$key', value))))
         .toList(growable: false);
   }
 }

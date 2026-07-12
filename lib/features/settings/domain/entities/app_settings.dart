@@ -48,9 +48,11 @@ class AppSettings extends Equatable {
     this.onboardingDone = true,
     this.userName = '',
     this.snapToLayoutRegions = false,
-    this.lastAppliedLayoutId,
-    this.lastAppliedMonitorId,
     this.snapExcludedApps = const [],
+    this.preferredMonitorId,
+    // Default true pelo mesmo motivo do onboarding: evita reexibir o tour
+    // antes da linha persistida carregar; o valor real vem do banco.
+    this.featureTourDone = true,
   });
 
   final ThemePreference themePreference;
@@ -73,18 +75,19 @@ class AppSettings extends Equatable {
   /// Nome exibido na sidebar e na saudação do dashboard.
   final String userName;
 
-  /// Usar as regiões do último layout aplicado como zonas de encaixe
-  /// ao arrastar janelas.
+  /// Usar as regiões dos layouts aplicados como zonas de encaixe
+  /// ao arrastar janelas (o layout aplicado em cada monitor fica no
+  /// AppliedLayoutsCubit, não aqui).
   final bool snapToLayoutRegions;
-
-  /// Id do último layout aplicado (fonte das zonas de encaixe).
-  final int? lastAppliedLayoutId;
-
-  /// Monitor do último apply — as zonas de encaixe só aparecem nele.
-  final int? lastAppliedMonitorId;
 
   /// Apps que não participam do encaixe ao arrastar (regiões e bordas).
   final List<SnapExcludedApp> snapExcludedApps;
+
+  /// Monitor padrão para aplicar layouts; null = automático (janela em foco).
+  final int? preferredMonitorId;
+
+  /// Tour guiado de primeiro uso já exibido (concluído ou pulado).
+  final bool featureTourDone;
 
   AppSettings copyWith({
     ThemePreference? themePreference,
@@ -101,9 +104,9 @@ class AppSettings extends Equatable {
     bool? onboardingDone,
     String? userName,
     bool? snapToLayoutRegions,
-    int? Function()? lastAppliedLayoutId,
-    int? Function()? lastAppliedMonitorId,
     List<SnapExcludedApp>? snapExcludedApps,
+    int? Function()? preferredMonitorId,
+    bool? featureTourDone,
   }) {
     return AppSettings(
       themePreference: themePreference ?? this.themePreference,
@@ -120,13 +123,11 @@ class AppSettings extends Equatable {
       onboardingDone: onboardingDone ?? this.onboardingDone,
       userName: userName ?? this.userName,
       snapToLayoutRegions: snapToLayoutRegions ?? this.snapToLayoutRegions,
-      lastAppliedLayoutId: lastAppliedLayoutId != null
-          ? lastAppliedLayoutId()
-          : this.lastAppliedLayoutId,
-      lastAppliedMonitorId: lastAppliedMonitorId != null
-          ? lastAppliedMonitorId()
-          : this.lastAppliedMonitorId,
       snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
+      preferredMonitorId: preferredMonitorId != null
+          ? preferredMonitorId()
+          : this.preferredMonitorId,
+      featureTourDone: featureTourDone ?? this.featureTourDone,
     );
   }
 
@@ -146,8 +147,8 @@ class AppSettings extends Equatable {
     onboardingDone,
     userName,
     snapToLayoutRegions,
-    lastAppliedLayoutId,
-    lastAppliedMonitorId,
     snapExcludedApps,
+    preferredMonitorId,
+    featureTourDone,
   ];
 }

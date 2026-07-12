@@ -10,6 +10,7 @@ part 'app_database.g.dart';
   tables: [
     Layouts,
     LayoutRegions,
+    AppliedLayouts,
     Workspaces,
     WorkspaceApps,
     MonitorProfiles,
@@ -28,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.withExecutor(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +59,19 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 9) {
         await m.addColumn(settingsTable, settingsTable.snapExcludedApps);
+      }
+      if (from < 10) {
+        await m.addColumn(settingsTable, settingsTable.preferredMonitorId);
+      }
+      if (from < 11) {
+        await m.addColumn(settingsTable, settingsTable.featureTourDone);
+      }
+      if (from < 12) {
+        // Layout aplicado por monitor; substitui o par global
+        // lastAppliedLayoutId/lastAppliedMonitorId das settings (as colunas
+        // antigas permanecem, sem uso — o id volátil não é mapeável para a
+        // nova chave estável).
+        await m.createTable(appliedLayouts);
       }
     },
     beforeOpen: (details) async {

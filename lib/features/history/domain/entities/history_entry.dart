@@ -6,11 +6,8 @@ enum HistoryEntryType {
   workspace,
   rule;
 
-  static HistoryEntryType fromName(String name) =>
-      HistoryEntryType.values.firstWhere(
-        (t) => t.name == name,
-        orElse: () => HistoryEntryType.layout,
-      );
+  static HistoryEntryType fromName(String name) => HistoryEntryType.values
+      .firstWhere((t) => t.name == name, orElse: () => HistoryEntryType.layout);
 }
 
 /// Evento do histórico de atividades.

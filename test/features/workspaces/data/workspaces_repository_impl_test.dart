@@ -50,9 +50,9 @@ void main() {
       ],
     );
 
-    final saved = (await repository.saveWorkspace(workspace)).getOrElse(
-      (f) => fail(f.message),
-    );
+    final saved = (await repository.saveWorkspace(
+      workspace,
+    )).getOrElse((f) => fail(f.message));
     expect(saved.id, greaterThan(0));
     expect(saved.apps.length, 2);
 

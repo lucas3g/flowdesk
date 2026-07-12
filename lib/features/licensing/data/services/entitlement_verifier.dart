@@ -28,7 +28,8 @@ class Entitlement {
 /// servidor — qualquer alteração local invalida a assinatura.
 @lazySingleton
 class EntitlementVerifier {
-  EntitlementVerifier() : _publicKeyBase64 = AppConstants.licensePublicKeyBase64;
+  EntitlementVerifier()
+    : _publicKeyBase64 = AppConstants.licensePublicKeyBase64;
 
   /// Permite injetar outra chave pública em testes.
   EntitlementVerifier.withPublicKey(this._publicKeyBase64);
@@ -55,7 +56,8 @@ class EntitlementVerifier {
       final valid = await _algorithm.verify(payloadBytes, signature: signature);
       if (!valid) return null;
 
-      final json = jsonDecode(utf8.decode(payloadBytes)) as Map<String, dynamic>;
+      final json =
+          jsonDecode(utf8.decode(payloadBytes)) as Map<String, dynamic>;
       return Entitlement(
         key: json['key'] as String,
         plan: json['plan'] as String,

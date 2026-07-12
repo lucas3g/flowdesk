@@ -49,7 +49,6 @@ void main() {
       windowGap: 16,
       magneticSnap: false,
       snapToLayoutRegions: true,
-      lastAppliedLayoutId: 7,
       snapExcludedApps: [
         SnapExcludedApp(bundleId: 'com.apple.mail', appName: 'Mail'),
         SnapExcludedApp(

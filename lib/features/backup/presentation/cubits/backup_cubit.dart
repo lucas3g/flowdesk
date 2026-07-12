@@ -62,8 +62,7 @@ class BackupCubit extends Cubit<BackupState> {
     emit(state.copyWith(isBusy: true));
     final result = await _exportBackup(const NoParams());
     await result.fold(
-      (failure) async =>
-          emit(BackupState(feedback: failure.message)),
+      (failure) async => emit(BackupState(feedback: failure.message)),
       (json) async {
         await File(location.path).writeAsString(json);
         emit(BackupState(feedback: 'Backup exportado com sucesso.'));

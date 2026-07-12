@@ -59,11 +59,9 @@ class WorkspacesLocalDatasourceImpl implements WorkspacesLocalDatasource {
               .insert(WorkspaceMapper.toCompanion(workspace));
         } else {
           workspaceId = workspace.id;
-          await (_db.update(
-            _db.workspaces,
-          )..where((t) => t.id.equals(workspaceId))).write(
-            WorkspaceMapper.toCompanion(workspace),
-          );
+          await (_db.update(_db.workspaces)
+                ..where((t) => t.id.equals(workspaceId)))
+              .write(WorkspaceMapper.toCompanion(workspace));
           await (_db.delete(
             _db.workspaceApps,
           )..where((t) => t.workspaceId.equals(workspaceId))).go();
@@ -112,11 +110,9 @@ class WorkspacesLocalDatasourceImpl implements WorkspacesLocalDatasource {
         await _db
             .update(_db.workspaces)
             .write(const WorkspacesCompanion(isActive: Value(false)));
-        await (_db.update(
-          _db.workspaces,
-        )..where((t) => t.id.equals(workspaceId))).write(
-          const WorkspacesCompanion(isActive: Value(true)),
-        );
+        await (_db.update(_db.workspaces)
+              ..where((t) => t.id.equals(workspaceId)))
+            .write(const WorkspacesCompanion(isActive: Value(true)));
       });
     } catch (e) {
       throw DatabaseException('Falha ao ativar workspace: $e');

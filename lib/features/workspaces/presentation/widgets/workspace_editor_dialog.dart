@@ -104,8 +104,10 @@ class _WorkspaceEditorDialogState extends State<WorkspaceEditorDialog> {
                       textAlign: TextAlign.center,
                       maxLength: 2,
                       style: const TextStyle(fontSize: 20),
-                      decoration: _decoration(colors, 'Emoji')
-                          .copyWith(counterText: ''),
+                      decoration: _decoration(
+                        colors,
+                        'Emoji',
+                      ).copyWith(counterText: ''),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -208,10 +210,13 @@ class _WorkspaceEditorDialogState extends State<WorkspaceEditorDialog> {
                       ),
                       backgroundColor: colors.hover,
                       side: BorderSide.none,
-                      deleteIcon: MsIcon('close', size: 13, color: colors.text3),
-                      onDeleted: () => setState(
-                        () => _apps = [..._apps]..removeAt(i),
+                      deleteIcon: MsIcon(
+                        'close',
+                        size: 13,
+                        color: colors.text3,
                       ),
+                      onDeleted: () =>
+                          setState(() => _apps = [..._apps]..removeAt(i)),
                     ),
                 ],
               ),
@@ -224,10 +229,7 @@ class _WorkspaceEditorDialogState extends State<WorkspaceEditorDialog> {
                     child: const Text('Cancelar'),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _submit,
-                    child: const Text('Salvar'),
-                  ),
+                  FilledButton(onPressed: _submit, child: const Text('Salvar')),
                 ],
               ),
             ],
@@ -290,7 +292,8 @@ class _AddRunningAppButton extends StatelessWidget {
 
     final runningApps = <String, String>{};
     for (final window in windows) {
-      if (window.bundleId.isNotEmpty && !alreadyAdded.contains(window.bundleId)) {
+      if (window.bundleId.isNotEmpty &&
+          !alreadyAdded.contains(window.bundleId)) {
         runningApps[window.bundleId] = window.appName;
       }
     }

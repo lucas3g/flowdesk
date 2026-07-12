@@ -77,7 +77,8 @@ class RulesCubit extends Cubit<RulesState> {
     );
   }
 
-  Future<void> toggle(Rule rule) => save(rule.copyWith(isActive: !rule.isActive));
+  Future<void> toggle(Rule rule) =>
+      save(rule.copyWith(isActive: !rule.isActive));
 
   Future<void> delete(Rule rule) async {
     await _deleteRule(rule.id);
@@ -126,14 +127,13 @@ class RulesCubit extends Cubit<RulesState> {
   /// Aguarda a janela principal do app aparecer.
   Future<ManagedWindow?> _waitForWindow(String bundleId) async {
     for (var attempt = 0; attempt < maxPollAttempts; attempt++) {
-      final windows = (await _getWindows(const NoParams())).getOrElse(
-        (_) => const [],
-      );
+      final windows = (await _getWindows(
+        const NoParams(),
+      )).getOrElse((_) => const []);
       final candidates =
-          windows.where((window) => window.bundleId == bundleId).toList()
-            ..sort(
-              (a, b) => (b.width * b.height).compareTo(a.width * a.height),
-            );
+          windows.where((window) => window.bundleId == bundleId).toList()..sort(
+            (a, b) => (b.width * b.height).compareTo(a.width * a.height),
+          );
       if (candidates.isNotEmpty) return candidates.first;
       await Future<void>.delayed(pollInterval);
     }

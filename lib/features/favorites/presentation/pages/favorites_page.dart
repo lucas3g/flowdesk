@@ -154,8 +154,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                       ),
                                     ),
                                   FilledButton.icon(
-                                    onPressed: () =>
-                                        _cubit.apply(favorites[i]),
+                                    onPressed: () => _cubit.apply(favorites[i]),
                                     style: FilledButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,

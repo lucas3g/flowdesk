@@ -43,6 +43,8 @@ import 'package:flowdesk/features/layouts/data/repositories/layouts_repository_i
     as _i822;
 import 'package:flowdesk/features/layouts/domain/repositories/layouts_repository.dart'
     as _i417;
+import 'package:flowdesk/features/layouts/domain/usecases/applied_layouts_usecases.dart'
+    as _i731;
 import 'package:flowdesk/features/layouts/domain/usecases/apply_layout.dart'
     as _i244;
 import 'package:flowdesk/features/layouts/domain/usecases/delete_layout.dart'
@@ -53,6 +55,8 @@ import 'package:flowdesk/features/layouts/domain/usecases/save_layout.dart'
     as _i854;
 import 'package:flowdesk/features/layouts/domain/usecases/toggle_favorite_layout.dart'
     as _i734;
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart'
+    as _i569;
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart'
     as _i539;
 import 'package:flowdesk/features/licensing/data/datasources/license_local_datasource.dart'
@@ -288,6 +292,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i619.HistoryLocalDatasource>(
       () => _i619.HistoryLocalDatasourceImpl(gh<_i110.AppDatabase>()),
     );
+    gh.factory<_i731.GetAppliedLayouts>(
+      () => _i731.GetAppliedLayouts(gh<_i417.LayoutsRepository>()),
+    );
+    gh.factory<_i731.SetAppliedLayout>(
+      () => _i731.SetAppliedLayout(gh<_i417.LayoutsRepository>()),
+    );
+    gh.factory<_i731.RemoveAppliedLayout>(
+      () => _i731.RemoveAppliedLayout(gh<_i417.LayoutsRepository>()),
+    );
     gh.factory<_i998.DeleteLayout>(
       () => _i998.DeleteLayout(gh<_i417.LayoutsRepository>()),
     );
@@ -318,6 +331,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i836.WorkspacePlatformDatasource>(
       () => _i836.WorkspacePlatformDatasourceImpl(
         gh<_i29.PlatformChannel>(instanceName: 'workspaceChannel'),
+      ),
+    );
+    gh.lazySingleton<_i569.AppliedLayoutsCubit>(
+      () => _i569.AppliedLayoutsCubit(
+        gh<_i731.GetAppliedLayouts>(),
+        gh<_i731.SetAppliedLayout>(),
+        gh<_i731.RemoveAppliedLayout>(),
       ),
     );
     gh.lazySingleton<_i831.MonitorProfilesRepository>(
@@ -593,14 +613,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i607.UndoRedoCubit>(),
       ),
     );
-    gh.lazySingleton<_i408.RegionCycleService>(
-      () => _i408.RegionCycleService(
-        gh<_i731.SettingsCubit>(),
-        gh<_i935.MonitorsCubit>(),
-        gh<_i238.GetLayouts>(),
-        gh<_i271.WindowsRepository>(),
-      ),
-    );
     gh.lazySingleton<_i422.WorkspacesCubit>(
       () => _i422.WorkspacesCubit(
         gh<_i237.GetWorkspaces>(),
@@ -612,10 +624,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i618.AddHistoryEntry>(),
       ),
     );
+    gh.lazySingleton<_i408.RegionCycleService>(
+      () => _i408.RegionCycleService(
+        gh<_i731.SettingsCubit>(),
+        gh<_i935.MonitorsCubit>(),
+        gh<_i569.AppliedLayoutsCubit>(),
+        gh<_i238.GetLayouts>(),
+        gh<_i271.WindowsRepository>(),
+      ),
+    );
     gh.lazySingleton<_i108.SnapRegionsService>(
       () => _i108.SnapRegionsService(
         gh<_i731.SettingsCubit>(),
         gh<_i935.MonitorsCubit>(),
+        gh<_i569.AppliedLayoutsCubit>(),
         gh<_i238.GetLayouts>(),
         gh<_i549.SystemIntegrationRepository>(),
       ),
@@ -632,16 +654,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i731.SettingsCubit>(),
         gh<_i607.UndoRedoCubit>(),
         gh<_i618.AddHistoryEntry>(),
+        gh<_i569.AppliedLayoutsCubit>(),
       ),
     );
-    gh.lazySingleton<_i420.ShortcutsCubit>(
-      () => _i420.ShortcutsCubit(
-        gh<_i69.RegisterShortcuts>(),
-        gh<_i651.WatchShortcutPresses>(),
+    gh.lazySingleton<_i1058.LayoutEditorCubit>(
+      () => _i1058.LayoutEditorCubit(
+        gh<_i854.SaveLayout>(),
+        gh<_i539.LayoutsCubit>(),
+      ),
+    );
+    gh.lazySingleton<_i41.BackupCubit>(
+      () => _i41.BackupCubit(
+        gh<_i472.ExportBackup>(),
+        gh<_i744.ImportBackup>(),
         gh<_i539.LayoutsCubit>(),
         gh<_i422.WorkspacesCubit>(),
+        gh<_i971.RulesCubit>(),
         gh<_i731.SettingsCubit>(),
-        gh<_i408.RegionCycleService>(),
       ),
     );
     gh.lazySingleton<_i752.AutoRestoreService>(
@@ -664,6 +693,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i351.NavigationCubit>(),
       ),
     );
+    gh.lazySingleton<_i420.ShortcutsCubit>(
+      () => _i420.ShortcutsCubit(
+        gh<_i69.RegisterShortcuts>(),
+        gh<_i651.WatchShortcutPresses>(),
+        gh<_i539.LayoutsCubit>(),
+        gh<_i422.WorkspacesCubit>(),
+        gh<_i731.SettingsCubit>(),
+        gh<_i569.AppliedLayoutsCubit>(),
+        gh<_i408.RegionCycleService>(),
+      ),
+    );
     gh.lazySingleton<_i588.MonitorProfilesCubit>(
       () => _i588.MonitorProfilesCubit(
         gh<_i493.GetMonitorProfiles>(),
@@ -672,22 +712,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i935.MonitorsCubit>(),
         gh<_i422.WorkspacesCubit>(),
         gh<_i539.LayoutsCubit>(),
-      ),
-    );
-    gh.lazySingleton<_i1058.LayoutEditorCubit>(
-      () => _i1058.LayoutEditorCubit(
-        gh<_i854.SaveLayout>(),
-        gh<_i539.LayoutsCubit>(),
-      ),
-    );
-    gh.lazySingleton<_i41.BackupCubit>(
-      () => _i41.BackupCubit(
-        gh<_i472.ExportBackup>(),
-        gh<_i744.ImportBackup>(),
-        gh<_i539.LayoutsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
-        gh<_i971.RulesCubit>(),
-        gh<_i731.SettingsCubit>(),
       ),
     );
     return this;
