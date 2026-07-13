@@ -197,12 +197,6 @@ class SettingsPage extends StatelessWidget {
                         },
                         onChanged: _cubit.setThemePreference,
                       ),
-                      SettingsToggleRow(
-                        icon: 'blur_on',
-                        label: 'Transparência da barra',
-                        value: settings.barTransparency,
-                        onChanged: _cubit.setBarTransparency,
-                      ),
                     ],
                   ),
                   const SizedBox(height: 18),

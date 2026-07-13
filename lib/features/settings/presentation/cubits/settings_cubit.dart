@@ -119,9 +119,6 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> setScreenMargin(double value) =>
       _update((s) => s.copyWith(screenMargin: value));
 
-  Future<void> setBarTransparency(bool value) =>
-      _update((s) => s.copyWith(barTransparency: value));
-
   Future<void> setUserName(String name) =>
       _update((s) => s.copyWith(userName: name.trim()));
 
