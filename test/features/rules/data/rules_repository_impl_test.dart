@@ -83,7 +83,7 @@ void main() {
       actionType: RuleActionType.applyRegion,
       targetValue: '12:2',
     );
-    expect(rule.regionTarget, (12, 2));
+    expect(rule.regionTarget, (12, 2, null));
 
     const invalid = Rule(
       bundleId: 'x',

@@ -20,13 +20,19 @@ class _MockCenterWindow extends Mock implements CenterWindow {}
 
 class _MockMaximizeWindow extends Mock implements MaximizeWindow {}
 
-Monitor _monitor(int id, String name, {bool primary = false}) => Monitor(
+Monitor _monitor(
+  int id,
+  String name, {
+  bool primary = false,
+  double visibleX = 0,
+}) => Monitor(
   id: id,
   name: name,
-  x: 0,
+  x: visibleX,
   y: 0,
   width: 1000,
   height: 800,
+  visibleX: visibleX,
   visibleWidth: 1000,
   visibleHeight: 800,
   pixelWidth: 2000,
@@ -76,7 +82,7 @@ void main() {
 
   final monitors = [
     _monitor(1, 'MacBook', primary: true),
-    _monitor(2, 'Dell 4K'),
+    _monitor(2, 'Dell 4K', visibleX: 1000),
   ];
 
   setUpAll(() {
@@ -98,13 +104,29 @@ void main() {
     when(() => maximize(any())).thenAnswer((_) async => right(true));
   });
 
-  ApplyRuleParams params(Rule rule) => ApplyRuleParams(
+  ApplyRuleParams params(
+    Rule rule, {
+    Map<String, int> appliedLayouts = const {},
+  }) => ApplyRuleParams(
     rule: rule,
     window: _window,
     monitors: monitors,
+    appliedLayouts: appliedLayouts,
     gap: 0,
     margin: 8,
   );
+
+  void stubSetWindowFrame() {
+    when(
+      () => windows.setWindowFrame(
+        any(),
+        x: any(named: 'x'),
+        y: any(named: 'y'),
+        width: any(named: 'width'),
+        height: any(named: 'height'),
+      ),
+    ).thenAnswer((_) async => right(true));
+  }
 
   test('moveToMonitor centraliza no monitor de destino pelo nome', () async {
     await usecase(
@@ -160,15 +182,7 @@ void main() {
 
   test('applyRegion encaixa no frame da região do layout', () async {
     when(() => layouts.getLayouts()).thenAnswer((_) async => right([_layout]));
-    when(
-      () => windows.setWindowFrame(
-        any(),
-        x: any(named: 'x'),
-        y: any(named: 'y'),
-        width: any(named: 'width'),
-        height: any(named: 'height'),
-      ),
-    ).thenAnswer((_) async => right(true));
+    stubSetWindowFrame();
 
     await usecase(
       params(
@@ -192,6 +206,83 @@ void main() {
         height: 784,
       ),
     ).called(1);
+  });
+
+  test('applyRegion aplica no monitor gravado no monitorKey da regra', () async {
+    when(() => layouts.getLayouts()).thenAnswer((_) async => right([_layout]));
+    stubSetWindowFrame();
+
+    await usecase(
+      params(
+        const Rule(
+          bundleId: 'com.slack',
+          appName: 'Slack',
+          actionType: RuleActionType.applyRegion,
+          targetValue: '9:1:Dell 4K:2000x1600',
+        ),
+      ),
+    );
+
+    // Mesmo com a janela no monitor 1, a região é calculada no Dell 4K
+    // (visibleX = 1000): x = 1000 + 8 + 0.5*984 = 1500.
+    verify(
+      () => windows.setWindowFrame(
+        _window,
+        x: 1500,
+        y: 8,
+        width: 492,
+        height: 784,
+      ),
+    ).called(1);
+  });
+
+  test(
+    'applyRegion sem monitorKey usa o monitor onde o layout está aplicado',
+    () async {
+      when(
+        () => layouts.getLayouts(),
+      ).thenAnswer((_) async => right([_layout]));
+      stubSetWindowFrame();
+
+      await usecase(
+        params(
+          const Rule(
+            bundleId: 'com.slack',
+            appName: 'Slack',
+            actionType: RuleActionType.applyRegion,
+            targetValue: '9:1',
+          ),
+          appliedLayouts: const {'Dell 4K:2000x1600': 9},
+        ),
+      );
+
+      verify(
+        () => windows.setWindowFrame(
+          _window,
+          x: 1500,
+          y: 8,
+          width: 492,
+          height: 784,
+        ),
+      ).called(1);
+    },
+  );
+
+  test('targetFrame expõe o frame pretendido da região', () async {
+    when(() => layouts.getLayouts()).thenAnswer((_) async => right([_layout]));
+
+    final frame = await usecase.targetFrame(
+      params(
+        const Rule(
+          bundleId: 'com.slack',
+          appName: 'Slack',
+          actionType: RuleActionType.applyRegion,
+          targetValue: '9:1:Dell 4K:2000x1600',
+        ),
+      ),
+    );
+
+    expect(frame, (x: 1500.0, y: 8.0, width: 492.0, height: 784.0));
   });
 
   test('applyRegion com região removida falha', () async {

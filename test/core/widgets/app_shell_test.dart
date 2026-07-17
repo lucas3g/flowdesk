@@ -226,6 +226,7 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
       getWindows,
       getIt<MonitorsCubit>(),
       getIt<SettingsCubit>(),
+      getIt<AppliedLayoutsCubit>(),
       FakeAddHistoryEntry(),
     ),
   );

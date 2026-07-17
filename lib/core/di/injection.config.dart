@@ -587,9 +587,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i288.WatchMonitors>(),
       ),
     );
-    gh.lazySingleton<_i466.WindowCloseService>(
-      () => _i466.WindowCloseService(gh<_i731.SettingsCubit>()),
-    );
     gh.lazySingleton<_i971.RulesCubit>(
       () => _i971.RulesCubit(
         gh<_i670.GetRules>(),
@@ -600,8 +597,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i862.GetWindows>(),
         gh<_i935.MonitorsCubit>(),
         gh<_i731.SettingsCubit>(),
+        gh<_i569.AppliedLayoutsCubit>(),
         gh<_i618.AddHistoryEntry>(),
       ),
+    );
+    gh.lazySingleton<_i466.WindowCloseService>(
+      () => _i466.WindowCloseService(gh<_i731.SettingsCubit>()),
     );
     gh.lazySingleton<_i31.WindowsCubit>(
       () => _i31.WindowsCubit(

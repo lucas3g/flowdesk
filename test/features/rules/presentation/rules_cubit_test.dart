@@ -1,4 +1,5 @@
 import 'package:flowdesk/core/usecases/usecase.dart';
+import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/monitors/domain/entities/monitor.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_cubit.dart';
 import 'package:flowdesk/features/monitors/presentation/cubits/monitors_state.dart';
@@ -40,6 +41,9 @@ class _MockSaveSettings extends Mock implements SaveSettings {}
 
 class _MockMonitorsCubit extends MockCubit<MonitorsState>
     implements MonitorsCubit {}
+
+class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
+    implements AppliedLayoutsCubit {}
 
 const _monitor = Monitor(
   id: 1,
@@ -102,6 +106,7 @@ void main() {
   late _MockRulesRepository repository;
   late _MockGetWindows getWindows;
   late _MockMonitorsCubit monitorsCubit;
+  late _MockAppliedLayoutsCubit appliedLayoutsCubit;
   late SettingsCubit settingsCubit;
 
   setUpAll(() {
@@ -120,6 +125,7 @@ void main() {
     repository = _MockRulesRepository();
     getWindows = _MockGetWindows();
     monitorsCubit = _MockMonitorsCubit();
+    appliedLayoutsCubit = _MockAppliedLayoutsCubit();
     settingsCubit = SettingsCubit(
       _MockGetSettings(),
       _MockSaveSettings(),
@@ -129,6 +135,8 @@ void main() {
     when(() => getRules(any())).thenAnswer((_) async => right([_slackRule]));
     when(() => getWindows(any())).thenAnswer((_) async => right([_window]));
     when(() => applyRule(any())).thenAnswer((_) async => right(true));
+    when(() => applyRule.targetFrame(any())).thenAnswer((_) async => null);
+    when(() => appliedLayoutsCubit.state).thenReturn(const {});
     when(() => repository.setRuleApps(any())).thenAnswer((_) async {});
     when(() => monitorsCubit.state).thenReturn(
       const MonitorsState(status: MonitorsStatus.ready, monitors: [_monitor]),
@@ -147,6 +155,7 @@ void main() {
     getWindows,
     monitorsCubit,
     settingsCubit,
+    appliedLayoutsCubit,
     FakeAddHistoryEntry(),
   );
 
@@ -221,6 +230,40 @@ void main() {
       // Deve mover a janela do evento (id 8), não a maior (id 7).
       expect(captured.window, _secondWindow);
     },
+  );
+
+  blocTest<RulesCubit, RulesState>(
+    'engine reaplica a regra quando o app desfaz o frame após o delay',
+    build: buildCubit,
+    seed: () =>
+        const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
+    setUp: () {
+      // Alvo diferente do frame atual da janela (900x700 em 0,0) — simula o
+      // app restaurando o próprio frame depois do posicionamento.
+      when(() => applyRule.targetFrame(any())).thenAnswer(
+        (_) async => (x: 0.0, y: 0.0, width: 500.0, height: 400.0),
+      );
+    },
+    act: (cubit) => cubit.onAppLaunched(
+      (bundleId: 'com.slack', appName: 'Slack', windowId: 7, pid: 70),
+    ),
+    verify: (_) => verify(() => applyRule(any())).called(2),
+  );
+
+  blocTest<RulesCubit, RulesState>(
+    'engine não reaplica quando a janela permaneceu no frame da regra',
+    build: buildCubit,
+    seed: () =>
+        const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
+    setUp: () {
+      when(() => applyRule.targetFrame(any())).thenAnswer(
+        (_) async => (x: 0.0, y: 0.0, width: 900.0, height: 700.0),
+      );
+    },
+    act: (cubit) => cubit.onAppLaunched(
+      (bundleId: 'com.slack', appName: 'Slack', windowId: 7, pid: 70),
+    ),
+    verify: (_) => verify(() => applyRule(any())).called(1),
   );
 
   blocTest<RulesCubit, RulesState>(

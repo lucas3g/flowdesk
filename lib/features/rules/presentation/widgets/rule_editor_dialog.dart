@@ -6,7 +6,9 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_dimens.dart';
 import '../../../../core/widgets/ms_icon.dart';
+import '../../../layouts/presentation/cubits/applied_layouts_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_cubit.dart';
+import '../../../monitors/domain/entities/monitor.dart';
 import '../../../monitors/presentation/cubits/monitors_cubit.dart';
 import '../../../windows/presentation/cubits/windows_cubit.dart';
 import '../../domain/entities/rule.dart';
@@ -30,6 +32,7 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
   final WindowsCubit _windowsCubit = getIt<WindowsCubit>();
   final MonitorsCubit _monitorsCubit = getIt<MonitorsCubit>();
   final LayoutsCubit _layoutsCubit = getIt<LayoutsCubit>();
+  final AppliedLayoutsCubit _appliedLayoutsCubit = getIt<AppliedLayoutsCubit>();
 
   String? _bundleId;
   String? _appName;
@@ -37,6 +40,26 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
   String? _monitorName;
   int? _layoutId;
   int _regionIndex = 0;
+
+  /// Monitor de destino da região (chave estável, ver [monitorKey]).
+  String? _regionMonitorKey;
+
+  /// Monitor sugerido para o layout: onde ele está aplicado, senão o
+  /// primário.
+  String? _suggestedMonitorKey(int? layoutId) {
+    final monitors = _monitorsCubit.state.monitors;
+    if (monitors.isEmpty) return null;
+    for (final monitor in monitors) {
+      if (_appliedLayoutsCubit.state[monitorKey(monitor)] == layoutId) {
+        return monitorKey(monitor);
+      }
+    }
+    final primary = monitors.firstWhere(
+      (monitor) => monitor.isPrimary,
+      orElse: () => monitors.first,
+    );
+    return monitorKey(primary);
+  }
 
   Map<String, ({String name, Uint8List? icon})> get _runningApps {
     final apps = <String, ({String name, Uint8List? icon})>{};
@@ -171,6 +194,7 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
                   onChanged: (value) => setState(() {
                     _layoutId = value;
                     _regionIndex = 0;
+                    _regionMonitorKey = _suggestedMonitorKey(value);
                   }),
                   decoration: _decoration(colors, 'Layout'),
                   dropdownColor: colors.panel2,
@@ -193,6 +217,25 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
                     onChanged: (value) =>
                         setState(() => _regionIndex = value ?? 0),
                     decoration: _decoration(colors, 'Região'),
+                    dropdownColor: colors.panel2,
+                    style: TextStyle(fontSize: 13, color: colors.text),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _regionMonitorKey,
+                    items: [
+                      for (final monitor in monitors)
+                        DropdownMenuItem(
+                          value: monitorKey(monitor),
+                          child: Text(
+                            monitor.name,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                    ],
+                    onChanged: (value) =>
+                        setState(() => _regionMonitorKey = value),
+                    decoration: _decoration(colors, 'Monitor de destino'),
                     dropdownColor: colors.panel2,
                     style: TextStyle(fontSize: 13, color: colors.text),
                   ),
@@ -224,7 +267,8 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
     if (_bundleId == null) return false;
     return switch (_actionType) {
       RuleActionType.moveToMonitor => _monitorName != null,
-      RuleActionType.applyRegion => _layoutId != null,
+      RuleActionType.applyRegion =>
+        _layoutId != null && _regionMonitorKey != null,
       _ => true,
     };
   }
@@ -232,7 +276,8 @@ class _RuleEditorDialogState extends State<RuleEditorDialog> {
   void _submit() {
     final targetValue = switch (_actionType) {
       RuleActionType.moveToMonitor => _monitorName!,
-      RuleActionType.applyRegion => '$_layoutId:$_regionIndex',
+      RuleActionType.applyRegion =>
+        '$_layoutId:$_regionIndex:$_regionMonitorKey',
       _ => '',
     };
     Navigator.of(context).pop(

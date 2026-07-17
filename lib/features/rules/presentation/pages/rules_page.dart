@@ -174,10 +174,17 @@ class _RuleRow extends StatelessWidget {
       case RuleActionType.applyRegion:
         final target = rule.regionTarget;
         if (target == null) return 'Encaixar em região';
+        // O monitorKey é `nome:LARGURAxALTURA` (o nome pode conter `:`) —
+        // exibe só o nome, descartando o último segmento.
+        final key = target.$3;
+        final cut = key?.lastIndexOf(':') ?? -1;
+        final suffix = key != null && cut > 0
+            ? ' em ${key.substring(0, cut)}'
+            : '';
         for (final layout in layouts) {
           if (layout.id == target.$1 && target.$2 < layout.regions.length) {
             return "Região '${layout.regions[target.$2].name}' "
-                'de ${layout.name}';
+                'de ${layout.name}$suffix';
           }
         }
         return 'Encaixar em região (removida)';

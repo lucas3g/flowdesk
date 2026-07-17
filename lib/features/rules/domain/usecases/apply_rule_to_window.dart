@@ -18,6 +18,7 @@ class ApplyRuleParams extends Equatable {
     required this.rule,
     required this.window,
     required this.monitors,
+    this.appliedLayouts = const {},
     this.gap = 0,
     this.margin = 0,
   });
@@ -25,11 +26,22 @@ class ApplyRuleParams extends Equatable {
   final Rule rule;
   final ManagedWindow window;
   final List<Monitor> monitors;
+
+  /// Layout aplicado por monitor (monitorKey → layoutId) — fallback para
+  /// regras de região antigas que não gravaram o monitor de destino.
+  final Map<String, int> appliedLayouts;
   final double gap;
   final double margin;
 
   @override
-  List<Object?> get props => [rule, window, monitors, gap, margin];
+  List<Object?> get props => [
+    rule,
+    window,
+    monitors,
+    appliedLayouts,
+    gap,
+    margin,
+  ];
 }
 
 /// Executa a ação de uma regra sobre a janela recém-aberta.
@@ -88,9 +100,57 @@ class ApplyRuleToWindow implements UseCase<bool, ApplyRuleParams> {
     }
   }
 
+  /// Frame que a regra pretende dar à janela, ou null quando a ação não tem
+  /// alvo fixo (centralizar depende do tamanho atual da janela) ou o alvo é
+  /// inválido. Usado pelo engine para verificar/reaplicar após o app assentar.
+  Future<RegionFrame?> targetFrame(ApplyRuleParams params) async {
+    if (params.monitors.isEmpty) return null;
+    final currentMonitor = _monitorOfWindow(params);
+
+    switch (params.rule.actionType) {
+      case RuleActionType.maximize:
+        final monitor = currentMonitor;
+        final margin = params.margin;
+        return (
+          x: monitor.visibleX + margin,
+          y: monitor.visibleY + margin,
+          width: monitor.visibleWidth - margin * 2,
+          height: monitor.visibleHeight - margin * 2,
+        );
+
+      case RuleActionType.center:
+      case RuleActionType.moveToMonitor:
+        return null;
+
+      case RuleActionType.applyRegion:
+        return (await _regionFrame(params, currentMonitor)).toOption()
+            .toNullable();
+    }
+  }
+
   Future<Either<Failure, bool>> _applyRegion(
     ApplyRuleParams params,
-    Monitor monitor,
+    Monitor windowMonitor,
+  ) async {
+    final frameResult = await _regionFrame(params, windowMonitor);
+    return frameResult.fold(
+      (failure) async => left(failure),
+      (frame) => _windowsRepository.setWindowFrame(
+        params.window,
+        x: frame.x,
+        y: frame.y,
+        width: frame.width,
+        height: frame.height,
+      ),
+    );
+  }
+
+  /// Calcula o frame da região da regra, resolvendo o monitor de destino:
+  /// o monitorKey gravado na regra; senão, o monitor onde o layout da regra
+  /// está aplicado; por fim, o monitor atual da janela (regras antigas).
+  Future<Either<Failure, RegionFrame>> _regionFrame(
+    ApplyRuleParams params,
+    Monitor windowMonitor,
   ) async {
     final target = params.rule.regionTarget;
     if (target == null) {
@@ -107,21 +167,39 @@ class ApplyRuleToWindow implements UseCase<bool, ApplyRuleParams> {
       );
     }
 
+    final monitor =
+        _monitorByKey(params.monitors, target.$3) ??
+        _monitorOfAppliedLayout(params, target.$1) ??
+        windowMonitor;
+
     final regions = [...layout.regions]
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    final frame = regionFrameOnMonitor(
-      regions[target.$2],
-      monitor,
-      gap: params.gap,
-      margin: params.margin,
+    return right(
+      regionFrameOnMonitor(
+        regions[target.$2],
+        monitor,
+        gap: params.gap,
+        margin: params.margin,
+      ),
     );
-    return _windowsRepository.setWindowFrame(
-      params.window,
-      x: frame.x,
-      y: frame.y,
-      width: frame.width,
-      height: frame.height,
-    );
+  }
+
+  Monitor? _monitorByKey(List<Monitor> monitors, String? key) {
+    if (key == null || key.isEmpty) return null;
+    for (final monitor in monitors) {
+      if (monitorKey(monitor) == key) return monitor;
+    }
+    return null;
+  }
+
+  /// Monitor em que o layout da regra está aplicado, se houver.
+  Monitor? _monitorOfAppliedLayout(ApplyRuleParams params, int layoutId) {
+    for (final monitor in params.monitors) {
+      if (params.appliedLayouts[monitorKey(monitor)] == layoutId) {
+        return monitor;
+      }
+    }
+    return null;
   }
 
   Monitor _monitorOfWindow(ApplyRuleParams params) {

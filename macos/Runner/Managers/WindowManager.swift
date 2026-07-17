@@ -396,7 +396,9 @@ final class WindowManager {
         window, kAXPositionAttribute as CFString, positionValue)
     }
     reapplyIfNeeded()
-    for delay in [0.25, 0.6] {
+    // O último delay cobre apps que restauram o próprio frame após terminar
+    // de carregar (comum em janelas recém-criadas via regras).
+    for delay in [0.25, 0.6, 1.2] {
       DispatchQueue.main.asyncAfter(
         deadline: .now() + delay, execute: reapplyIfNeeded)
     }

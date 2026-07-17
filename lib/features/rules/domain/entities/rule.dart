@@ -33,19 +33,23 @@ class Rule extends Equatable {
 
   /// Alvo da ação:
   /// - [RuleActionType.moveToMonitor]: nome do monitor;
-  /// - [RuleActionType.applyRegion]: `layoutId:índiceDaRegião`;
+  /// - [RuleActionType.applyRegion]: `layoutId:índiceDaRegião[:monitorKey]`
+  ///   (o monitorKey é opcional em regras antigas);
   /// - demais: vazio.
   final String targetValue;
   final bool isActive;
 
-  /// Para [RuleActionType.applyRegion]: (layoutId, índice) ou null.
-  (int, int)? get regionTarget {
+  /// Para [RuleActionType.applyRegion]: (layoutId, índice, monitorKey) ou
+  /// null. O monitorKey pode conter `:` (vem de `nome:LARGURAxALTURA`), por
+  /// isso só as duas primeiras partes são numéricas e o resto é rejuntado.
+  (int, int, String?)? get regionTarget {
     final parts = targetValue.split(':');
-    if (parts.length != 2) return null;
+    if (parts.length < 2) return null;
     final layoutId = int.tryParse(parts[0]);
     final regionIndex = int.tryParse(parts[1]);
     if (layoutId == null || regionIndex == null) return null;
-    return (layoutId, regionIndex);
+    final monitorKey = parts.length > 2 ? parts.sublist(2).join(':') : null;
+    return (layoutId, regionIndex, monitorKey);
   }
 
   Rule copyWith({

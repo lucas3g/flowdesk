@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../history/domain/entities/history_entry.dart';
 import '../../../history/domain/usecases/history_usecases.dart';
+import '../../../layouts/presentation/cubits/applied_layouts_cubit.dart';
 import '../../../monitors/presentation/cubits/monitors_cubit.dart';
 import '../../../settings/presentation/cubits/settings_cubit.dart';
 import '../../../windows/domain/entities/managed_window.dart';
@@ -31,6 +32,7 @@ class RulesCubit extends Cubit<RulesState> {
     this._getWindows,
     this._monitorsCubit,
     this._settingsCubit,
+    this._appliedLayoutsCubit,
     this._addHistoryEntry,
   ) : super(const RulesState());
 
@@ -42,6 +44,7 @@ class RulesCubit extends Cubit<RulesState> {
   final GetWindows _getWindows;
   final MonitorsCubit _monitorsCubit;
   final SettingsCubit _settingsCubit;
+  final AppliedLayoutsCubit _appliedLayoutsCubit;
   final AddHistoryEntry _addHistoryEntry;
 
   StreamSubscription<AppLaunchEvent>? _subscription;
@@ -63,6 +66,13 @@ class RulesCubit extends Cubit<RulesState> {
   /// atrasar a entrada dela na listagem em alguns segundos.
   static const Duration pollByIdInterval = Duration(milliseconds: 400);
   static const int maxPollByIdAttempts = 10;
+
+  /// Espera antes de conferir se a janela ficou no frame da regra — apps que
+  /// restauram o próprio frame após carregar podem desfazer o posicionamento.
+  static const Duration verifyDelay = Duration(milliseconds: 1500);
+
+  /// Tolerância (px) na comparação do frame aplicado com o alvo da regra.
+  static const double frameTolerance = 8;
 
   /// Carrega as regras e liga o engine.
   Future<void> start() async {
@@ -139,15 +149,15 @@ class RulesCubit extends Cubit<RulesState> {
     await _monitorsCubit.refresh();
     final settings = _settingsCubit.state.settings;
     for (final rule in matching) {
-      final result = await _applyRule(
-        ApplyRuleParams(
-          rule: rule,
-          window: window,
-          monitors: _monitorsCubit.state.monitors,
-          gap: settings.windowGap,
-          margin: settings.screenMargin,
-        ),
+      final params = ApplyRuleParams(
+        rule: rule,
+        window: window,
+        monitors: _monitorsCubit.state.monitors,
+        appliedLayouts: _appliedLayoutsCubit.state,
+        gap: settings.windowGap,
+        margin: settings.screenMargin,
       );
+      final result = await _applyRule(params);
       if (result.getOrElse((_) => false)) {
         await _addHistoryEntry(
           AddHistoryParams(
@@ -156,8 +166,43 @@ class RulesCubit extends Cubit<RulesState> {
             subtitle: rule.actionType.label,
           ),
         );
+        await _verifyAndReapply(params);
       }
     }
+  }
+
+  /// Confere, após o app assentar, se a janela permaneceu no frame da regra;
+  /// reaplica uma única vez se o app a moveu/redimensionou de volta.
+  Future<void> _verifyAndReapply(ApplyRuleParams params) async {
+    final target = await _applyRule.targetFrame(params);
+    if (target == null) return;
+
+    await Future<void>.delayed(verifyDelay);
+    final windows = (await _getWindows(
+      const NoParams(),
+    )).getOrElse((_) => const []);
+    final window = windows
+        .where((candidate) => candidate.id == params.window.id)
+        .firstOrNull;
+    if (window == null) return;
+
+    final converged =
+        (window.x - target.x).abs() <= frameTolerance &&
+        (window.y - target.y).abs() <= frameTolerance &&
+        (window.width - target.width).abs() <= frameTolerance &&
+        (window.height - target.height).abs() <= frameTolerance;
+    if (converged) return;
+
+    await _applyRule(
+      ApplyRuleParams(
+        rule: params.rule,
+        window: window,
+        monitors: params.monitors,
+        appliedLayouts: params.appliedLayouts,
+        gap: params.gap,
+        margin: params.margin,
+      ),
+    );
   }
 
   /// Registra uma janela tratada, descartando os ids mais antigos ao passar
