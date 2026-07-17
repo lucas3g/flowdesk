@@ -25,9 +25,11 @@ class WorkspaceManager {
   std::unique_ptr<flutter::StreamHandler<flutter::EncodableValue>>
   CreateStreamHandler();
 
-  // Chamado pelo hook global quando uma janela de app aparece.
+  // Chamado pelo hook global quando uma janela de app aparece. window_id é o
+  // HWND da janela (mesmo id usado por getWindows) e pid o processo dono.
   void EmitAppLaunched(const std::string& bundle_id,
-                       const std::string& app_name);
+                       const std::string& app_name, int64_t window_id,
+                       int64_t pid);
 
  private:
   bool LaunchApp(const std::string& bundle_id);

@@ -1,4 +1,5 @@
 import 'package:drift/native.dart';
+import 'package:flowdesk/core/platform/platform_channel.dart';
 import 'package:flowdesk/core/services/database/app_database.dart';
 import 'package:flowdesk/core/usecases/usecase.dart';
 import 'package:flowdesk/features/backup/domain/usecases/export_backup.dart';
@@ -37,6 +38,7 @@ _buildStack() {
     rules: RulesRepositoryImpl(
       RulesLocalDatasourceImpl(db),
       FakeEventChannel(const Stream.empty()),
+      PlatformChannel('test/workspace'),
     ),
     settings: SettingsRepositoryImpl(SettingsLocalDatasourceImpl(db)),
   );

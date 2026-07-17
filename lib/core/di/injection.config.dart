@@ -345,10 +345,26 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i320.MonitorProfilesLocalDatasource>(),
       ),
     );
+    gh.lazySingleton<_i199.RulesRepository>(
+      () => _i330.RulesRepositoryImpl(
+        gh<_i538.RulesLocalDatasource>(),
+        gh<_i649.PlatformEventChannel>(instanceName: 'workspaceEventsChannel'),
+        gh<_i29.PlatformChannel>(instanceName: 'workspaceChannel'),
+      ),
+    );
     gh.lazySingleton<_i574.SystemPlatformDatasource>(
       () => _i574.SystemPlatformDatasourceImpl(
         gh<_i29.PlatformChannel>(instanceName: 'appChannel'),
       ),
+    );
+    gh.factory<_i750.DeleteRule>(
+      () => _i750.DeleteRule(gh<_i199.RulesRepository>()),
+    );
+    gh.factory<_i670.GetRules>(
+      () => _i670.GetRules(gh<_i199.RulesRepository>()),
+    );
+    gh.factory<_i443.SaveRule>(
+      () => _i443.SaveRule(gh<_i199.RulesRepository>()),
     );
     gh.lazySingleton<_i141.WindowPositionsRepository>(
       () => _i1033.WindowPositionsRepositoryImpl(
@@ -412,12 +428,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i335.SettingsRepository>(
       () => _i84.SettingsRepositoryImpl(gh<_i1071.SettingsLocalDatasource>()),
     );
-    gh.lazySingleton<_i199.RulesRepository>(
-      () => _i330.RulesRepositoryImpl(
-        gh<_i538.RulesLocalDatasource>(),
-        gh<_i649.PlatformEventChannel>(instanceName: 'workspaceEventsChannel'),
-      ),
-    );
     gh.lazySingleton<_i424.AppsLauncherRepository>(
       () => _i226.AppsLauncherRepositoryImpl(
         gh<_i836.WorkspacePlatformDatasource>(),
@@ -436,15 +446,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1046.RequestAccessibility>(
       () => _i1046.RequestAccessibility(gh<_i329.PermissionsRepository>()),
-    );
-    gh.factory<_i750.DeleteRule>(
-      () => _i750.DeleteRule(gh<_i199.RulesRepository>()),
-    );
-    gh.factory<_i670.GetRules>(
-      () => _i670.GetRules(gh<_i199.RulesRepository>()),
-    );
-    gh.factory<_i443.SaveRule>(
-      () => _i443.SaveRule(gh<_i199.RulesRepository>()),
     );
     gh.factory<_i563.ApplySystemIntegration>(
       () =>

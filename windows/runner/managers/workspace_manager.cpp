@@ -99,7 +99,8 @@ void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd,
 
   const std::string exe = ProcessExeName(pid);
   if (exe.empty()) return;
-  g_instance->EmitAppLaunched(exe, exe);
+  g_instance->EmitAppLaunched(exe, exe, reinterpret_cast<int64_t>(hwnd),
+                              static_cast<int64_t>(pid));
 }
 
 }  // namespace
@@ -173,6 +174,9 @@ void WorkspaceManager::HandleMethodCall(
     result->Success(EncodableValue(LaunchApp(bundle_id)));
   } else if (method == "isAppRunning") {
     result->Success(EncodableValue(IsAppRunning(bundle_id)));
+  } else if (method == "setRuleApps") {
+    // No-op: o WinEventHook já observa todas as janelas novas do sistema.
+    result->Success();
   } else {
     result->NotImplemented();
   }
@@ -191,10 +195,13 @@ WorkspaceManager::CreateStreamHandler() {
 }
 
 void WorkspaceManager::EmitAppLaunched(const std::string& bundle_id,
-                                       const std::string& app_name) {
+                                       const std::string& app_name,
+                                       int64_t window_id, int64_t pid) {
   if (!sink_) return;
   sink_->Success(EncodableValue(EncodableMap{
       {EncodableValue("bundleId"), EncodableValue(bundle_id)},
       {EncodableValue("appName"), EncodableValue(app_name)},
+      {EncodableValue("windowId"), EncodableValue(window_id)},
+      {EncodableValue("pid"), EncodableValue(pid)},
   }));
 }

@@ -38,7 +38,7 @@ class AutoRestoreService {
   final RulesCubit _rulesCubit;
 
   StreamSubscription<Object?>? _windowsSubscription;
-  StreamSubscription<({String bundleId, String appName})>? _launchSubscription;
+  StreamSubscription<AppLaunchEvent>? _launchSubscription;
 
   static const Duration pollInterval = Duration(milliseconds: 600);
   static const int maxPollAttempts = 8;
@@ -84,7 +84,7 @@ class AutoRestoreService {
     }
   }
 
-  Future<void> _onAppLaunched(({String bundleId, String appName}) event) async {
+  Future<void> _onAppLaunched(AppLaunchEvent event) async {
     // Apps com regra ativa são posicionados pelo rules engine.
     final hasRule = _rulesCubit.state.rules.any(
       (rule) => rule.isActive && rule.bundleId == event.bundleId,

@@ -292,9 +292,27 @@ final class WindowManager {
 
   // MARK: - Manipulação (AXUIElement)
 
-  private func setFrame(pid: pid_t, windowId: Int, frame: CGRect) -> Bool {
+  private func setFrame(
+    pid: pid_t,
+    windowId: Int,
+    frame: CGRect,
+    exitingFullScreen: Bool = false
+  ) -> Bool {
     guard let window = axWindow(pid: pid, windowId: windowId) else {
       return false
+    }
+
+    // 0. Janela em fullscreen não aceita posição/tamanho — sai do fullscreen
+    // e reaplica o frame após a animação do macOS. `exitingFullScreen`
+    // impede recursão infinita caso o app recuse sair.
+    if isFullScreen(window) {
+      guard !exitingFullScreen else { return false }
+      exitFullScreen(window)
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { [weak self] in
+        _ = self?.setFrame(
+          pid: pid, windowId: windowId, frame: frame, exitingFullScreen: true)
+      }
+      return true
     }
 
     // 1. Restaura a janela se estiver minimizada — janelas minimizadas
@@ -357,7 +375,15 @@ final class WindowManager {
     // a chance de recolher o drawer. Reaplica também após a acomodação
     // interna, que pode reverter o tamanho instantes depois.
     let reapplyIfNeeded = { [weak self] in
-      guard let self, let current = self.axFrame(of: window),
+      guard let self else { return }
+      // O app pode ter entrado em fullscreen logo após o posicionamento
+      // (ex.: sessão RDP que abre maximizada) — refaz o fluxo completo,
+      // que sai do fullscreen antes de aplicar o frame.
+      if self.isFullScreen(window) {
+        _ = self.setFrame(pid: pid, windowId: windowId, frame: frame)
+        return
+      }
+      guard let current = self.axFrame(of: window),
         abs(current.origin.x - frame.origin.x) > 2
           || abs(current.origin.y - frame.origin.y) > 2
           || abs(current.width - frame.width) > 2
@@ -375,6 +401,21 @@ final class WindowManager {
         deadline: .now() + delay, execute: reapplyIfNeeded)
     }
     return status == .success
+  }
+
+  /// Lê o estado de fullscreen da janela (atributo AXFullScreen).
+  private func isFullScreen(_ window: AXUIElement) -> Bool {
+    var ref: CFTypeRef?
+    guard
+      AXUIElementCopyAttributeValue(
+        window, "AXFullScreen" as CFString, &ref) == .success
+    else { return false }
+    return (ref as? Bool) == true
+  }
+
+  private func exitFullScreen(_ window: AXUIElement) {
+    AXUIElementSetAttributeValue(
+      window, "AXFullScreen" as CFString, kCFBooleanFalse)
   }
 
   /// Redimensiona em passos de ~120px até o tamanho alvo. Apps com sidebar

@@ -214,13 +214,15 @@ Future<void> _registerCubits({bool accessibilityGranted = true}) async {
   );
   final getRules = _MockGetRules();
   when(() => getRules(any())).thenAnswer((_) async => right(const []));
+  final rulesRepository = _MockRulesRepository();
+  when(() => rulesRepository.setRuleApps(any())).thenAnswer((_) async {});
   getIt.registerLazySingleton<RulesCubit>(
     () => RulesCubit(
       getRules,
       _MockSaveRule(),
       _MockDeleteRule(),
       _MockApplyRuleToWindow(),
-      _MockRulesRepository(),
+      rulesRepository,
       getWindows,
       getIt<MonitorsCubit>(),
       getIt<SettingsCubit>(),

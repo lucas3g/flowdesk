@@ -79,6 +79,21 @@ const _window = ManagedWindow(
   isFocused: true,
 );
 
+/// Segunda janela (menor) do mesmo app — simula uma nova instância aberta.
+const _secondWindow = ManagedWindow(
+  id: 8,
+  pid: 70,
+  appName: 'Slack',
+  bundleId: 'com.slack',
+  title: 'Nova janela',
+  x: 100,
+  y: 100,
+  width: 400,
+  height: 300,
+  monitorId: 1,
+  isFocused: false,
+);
+
 void main() {
   late _MockGetRules getRules;
   late _MockSaveRule saveRule;
@@ -114,6 +129,7 @@ void main() {
     when(() => getRules(any())).thenAnswer((_) async => right([_slackRule]));
     when(() => getWindows(any())).thenAnswer((_) async => right([_window]));
     when(() => applyRule(any())).thenAnswer((_) async => right(true));
+    when(() => repository.setRuleApps(any())).thenAnswer((_) async {});
     when(() => monitorsCubit.state).thenReturn(
       const MonitorsState(status: MonitorsStatus.ready, monitors: [_monitor]),
     );
@@ -135,7 +151,7 @@ void main() {
   );
 
   blocTest<RulesCubit, RulesState>(
-    'load carrega as regras',
+    'load carrega as regras e sincroniza os apps observados',
     build: buildCubit,
     act: (cubit) => cubit.load(),
     expect: () => [
@@ -143,6 +159,8 @@ void main() {
           .having((s) => s.status, 'status', RulesStatus.ready)
           .having((s) => s.rules.length, 'rules', 1),
     ],
+    verify: (_) =>
+        verify(() => repository.setRuleApps(['com.slack'])).called(1),
   );
 
   blocTest<RulesCubit, RulesState>(
@@ -150,8 +168,9 @@ void main() {
     build: buildCubit,
     seed: () =>
         const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
-    act: (cubit) =>
-        cubit.onAppLaunched((bundleId: 'com.slack', appName: 'Slack')),
+    act: (cubit) => cubit.onAppLaunched(
+      (bundleId: 'com.slack', appName: 'Slack', windowId: null, pid: null),
+    ),
     verify: (_) {
       final captured =
           verify(() => applyRule(captureAny())).captured.single
@@ -172,9 +191,55 @@ void main() {
       rules: [_slackRule.copyWith(isActive: false)],
     ),
     act: (cubit) async {
-      await cubit.onAppLaunched((bundleId: 'com.figma', appName: 'Figma'));
-      await cubit.onAppLaunched((bundleId: 'com.slack', appName: 'Slack'));
+      await cubit.onAppLaunched(
+        (bundleId: 'com.figma', appName: 'Figma', windowId: null, pid: null),
+      );
+      await cubit.onAppLaunched(
+        (bundleId: 'com.slack', appName: 'Slack', windowId: null, pid: null),
+      );
     },
     verify: (_) => verifyNever(() => applyRule(any())),
+  );
+
+  blocTest<RulesCubit, RulesState>(
+    'engine aplica a regra à janela específica do evento (nova instância)',
+    build: buildCubit,
+    seed: () =>
+        const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
+    setUp: () {
+      when(() => getWindows(any())).thenAnswer(
+        (_) async => right([_window, _secondWindow]),
+      );
+    },
+    act: (cubit) => cubit.onAppLaunched(
+      (bundleId: 'com.slack', appName: 'Slack', windowId: 8, pid: 70),
+    ),
+    verify: (_) {
+      final captured =
+          verify(() => applyRule(captureAny())).captured.single
+              as ApplyRuleParams;
+      // Deve mover a janela do evento (id 8), não a maior (id 7).
+      expect(captured.window, _secondWindow);
+    },
+  );
+
+  blocTest<RulesCubit, RulesState>(
+    'engine não reaplica a regra na mesma janela (dedupe por windowId)',
+    build: buildCubit,
+    seed: () =>
+        const RulesState(status: RulesStatus.ready, rules: [_slackRule]),
+    act: (cubit) async {
+      await cubit.onAppLaunched(
+        (bundleId: 'com.slack', appName: 'Slack', windowId: 7, pid: 70),
+      );
+      await cubit.onAppLaunched(
+        (bundleId: 'com.slack', appName: 'Slack', windowId: 7, pid: 70),
+      );
+      // Evento de launch (sem windowId) resolve para a mesma janela já tratada.
+      await cubit.onAppLaunched(
+        (bundleId: 'com.slack', appName: 'Slack', windowId: null, pid: null),
+      );
+    },
+    verify: (_) => verify(() => applyRule(any())).called(1),
   );
 }

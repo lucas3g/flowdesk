@@ -44,11 +44,25 @@ class RulesCubit extends Cubit<RulesState> {
   final SettingsCubit _settingsCubit;
   final AddHistoryEntry _addHistoryEntry;
 
-  StreamSubscription<({String bundleId, String appName})>? _subscription;
+  StreamSubscription<AppLaunchEvent>? _subscription;
+
+  /// Janelas já posicionadas pelo engine — evita reaplicar a regra quando o
+  /// mesmo windowId chega de novo (launch + window-created, restore etc.).
+  final _handledWindowIds = <int>{};
+
+  /// Limite do histórico de janelas tratadas (HWND pode ser reusado no
+  /// Windows em sessões longas).
+  static const int maxHandledWindowIds = 512;
 
   /// Intervalo/limite do polling que aguarda a janela do app recém-aberto.
   static const Duration pollInterval = Duration(milliseconds: 600);
   static const int maxPollAttempts = 10;
+
+  /// Polling quando já sabemos o windowId — a janela acabou de ser criada,
+  /// mas transições (ex.: animação de fullscreen de uma sessão RDP) podem
+  /// atrasar a entrada dela na listagem em alguns segundos.
+  static const Duration pollByIdInterval = Duration(milliseconds: 400);
+  static const int maxPollByIdAttempts = 10;
 
   /// Carrega as regras e liga o engine.
   Future<void> start() async {
@@ -67,6 +81,18 @@ class RulesCubit extends Cubit<RulesState> {
       ),
       (rules) => emit(state.copyWith(status: RulesStatus.ready, rules: rules)),
     );
+    await _syncWatchedApps();
+  }
+
+  /// Informa ao nativo quais apps têm regra ativa, para que novas janelas
+  /// deles sejam observadas mesmo com o app já em execução.
+  Future<void> _syncWatchedApps() async {
+    final bundleIds = state.rules
+        .where((rule) => rule.isActive)
+        .map((rule) => rule.bundleId)
+        .toSet()
+        .toList(growable: false);
+    await _repository.setRuleApps(bundleIds);
   }
 
   Future<void> save(Rule rule) async {
@@ -89,15 +115,25 @@ class RulesCubit extends Cubit<RulesState> {
     if (state.feedback != null) emit(state.copyWith());
   }
 
-  /// Engine: reage à abertura de um app.
-  Future<void> onAppLaunched(({String bundleId, String appName}) event) async {
+  /// Engine: reage à abertura de um app ou à criação de uma nova janela.
+  Future<void> onAppLaunched(AppLaunchEvent event) async {
     final matching = state.rules
         .where((rule) => rule.isActive && rule.bundleId == event.bundleId)
         .toList(growable: false);
     if (matching.isEmpty) return;
 
-    final window = await _waitForWindow(event.bundleId);
+    final windowId = event.windowId;
+    if (windowId != null && _handledWindowIds.contains(windowId)) return;
+
+    final window = windowId != null
+        ? await _waitForWindowById(windowId)
+        : await _waitForWindow(event.bundleId);
     if (window == null) return;
+
+    // O evento de launch (sem windowId) pode chegar depois do evento por
+    // janela do mesmo app — não reaplicar na janela já tratada.
+    if (_handledWindowIds.contains(window.id)) return;
+    _markWindowHandled(window.id);
 
     // Geometria fresca dos monitores (Dock/menu bar podem ter migrado de tela).
     await _monitorsCubit.refresh();
@@ -122,6 +158,29 @@ class RulesCubit extends Cubit<RulesState> {
         );
       }
     }
+  }
+
+  /// Registra uma janela tratada, descartando os ids mais antigos ao passar
+  /// do limite.
+  void _markWindowHandled(int windowId) {
+    _handledWindowIds.add(windowId);
+    if (_handledWindowIds.length > maxHandledWindowIds) {
+      _handledWindowIds.remove(_handledWindowIds.first);
+    }
+  }
+
+  /// Aguarda uma janela específica (recém-criada) aparecer na listagem.
+  Future<ManagedWindow?> _waitForWindowById(int windowId) async {
+    for (var attempt = 0; attempt < maxPollByIdAttempts; attempt++) {
+      final windows = (await _getWindows(
+        const NoParams(),
+      )).getOrElse((_) => const []);
+      for (final window in windows) {
+        if (window.id == windowId) return window;
+      }
+      await Future<void>.delayed(pollByIdInterval);
+    }
+    return null;
   }
 
   /// Aguarda a janela principal do app aparecer.
