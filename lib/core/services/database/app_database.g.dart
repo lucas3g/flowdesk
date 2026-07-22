@@ -4638,6 +4638,21 @@ class $SettingsTableTable extends SettingsTable
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _keyboardSnapMeta = const VerificationMeta(
+    'keyboardSnap',
+  );
+  @override
+  late final GeneratedColumn<bool> keyboardSnap = GeneratedColumn<bool>(
+    'keyboard_snap',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("keyboard_snap" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4660,6 +4675,7 @@ class $SettingsTableTable extends SettingsTable
     snapExcludedApps,
     preferredMonitorId,
     featureTourDone,
+    keyboardSnap,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4838,6 +4854,15 @@ class $SettingsTableTable extends SettingsTable
         ),
       );
     }
+    if (data.containsKey('keyboard_snap')) {
+      context.handle(
+        _keyboardSnapMeta,
+        keyboardSnap.isAcceptableOrUnknown(
+          data['keyboard_snap']!,
+          _keyboardSnapMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4927,6 +4952,10 @@ class $SettingsTableTable extends SettingsTable
         DriftSqlType.bool,
         data['${effectivePrefix}feature_tour_done'],
       )!,
+      keyboardSnap: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}keyboard_snap'],
+      )!,
     );
   }
 
@@ -4979,6 +5008,10 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
 
   /// Tour guiado de primeiro uso já exibido (adicionada no schema v11).
   final bool featureTourDone;
+
+  /// Encaixe rápido de janelas pelo teclado (⌃⌥ + setas) quando o monitor
+  /// não tem layout aplicado (adicionada no schema v13).
+  final bool keyboardSnap;
   const SettingsRow({
     required this.id,
     required this.themePreference,
@@ -5000,6 +5033,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     required this.snapExcludedApps,
     this.preferredMonitorId,
     required this.featureTourDone,
+    required this.keyboardSnap,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5030,6 +5064,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       map['preferred_monitor_id'] = Variable<int>(preferredMonitorId);
     }
     map['feature_tour_done'] = Variable<bool>(featureTourDone);
+    map['keyboard_snap'] = Variable<bool>(keyboardSnap);
     return map;
   }
 
@@ -5061,6 +5096,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ? const Value.absent()
           : Value(preferredMonitorId),
       featureTourDone: Value(featureTourDone),
+      keyboardSnap: Value(keyboardSnap),
     );
   }
 
@@ -5098,6 +5134,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       snapExcludedApps: serializer.fromJson<String>(json['snapExcludedApps']),
       preferredMonitorId: serializer.fromJson<int?>(json['preferredMonitorId']),
       featureTourDone: serializer.fromJson<bool>(json['featureTourDone']),
+      keyboardSnap: serializer.fromJson<bool>(json['keyboardSnap']),
     );
   }
   @override
@@ -5124,6 +5161,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       'snapExcludedApps': serializer.toJson<String>(snapExcludedApps),
       'preferredMonitorId': serializer.toJson<int?>(preferredMonitorId),
       'featureTourDone': serializer.toJson<bool>(featureTourDone),
+      'keyboardSnap': serializer.toJson<bool>(keyboardSnap),
     };
   }
 
@@ -5148,6 +5186,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     String? snapExcludedApps,
     Value<int?> preferredMonitorId = const Value.absent(),
     bool? featureTourDone,
+    bool? keyboardSnap,
   }) => SettingsRow(
     id: id ?? this.id,
     themePreference: themePreference ?? this.themePreference,
@@ -5175,6 +5214,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
         ? preferredMonitorId.value
         : this.preferredMonitorId,
     featureTourDone: featureTourDone ?? this.featureTourDone,
+    keyboardSnap: keyboardSnap ?? this.keyboardSnap,
   );
   SettingsRow copyWithCompanion(SettingsTableCompanion data) {
     return SettingsRow(
@@ -5230,6 +5270,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       featureTourDone: data.featureTourDone.present
           ? data.featureTourDone.value
           : this.featureTourDone,
+      keyboardSnap: data.keyboardSnap.present
+          ? data.keyboardSnap.value
+          : this.keyboardSnap,
     );
   }
 
@@ -5255,13 +5298,14 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
           ..write('snapExcludedApps: $snapExcludedApps, ')
           ..write('preferredMonitorId: $preferredMonitorId, ')
-          ..write('featureTourDone: $featureTourDone')
+          ..write('featureTourDone: $featureTourDone, ')
+          ..write('keyboardSnap: $keyboardSnap')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     themePreference,
     language,
@@ -5282,7 +5326,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     snapExcludedApps,
     preferredMonitorId,
     featureTourDone,
-  );
+    keyboardSnap,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5306,7 +5351,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           other.lastAppliedMonitorId == this.lastAppliedMonitorId &&
           other.snapExcludedApps == this.snapExcludedApps &&
           other.preferredMonitorId == this.preferredMonitorId &&
-          other.featureTourDone == this.featureTourDone);
+          other.featureTourDone == this.featureTourDone &&
+          other.keyboardSnap == this.keyboardSnap);
 }
 
 class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
@@ -5330,6 +5376,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
   final Value<String> snapExcludedApps;
   final Value<int?> preferredMonitorId;
   final Value<bool> featureTourDone;
+  final Value<bool> keyboardSnap;
   const SettingsTableCompanion({
     this.id = const Value.absent(),
     this.themePreference = const Value.absent(),
@@ -5351,6 +5398,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.snapExcludedApps = const Value.absent(),
     this.preferredMonitorId = const Value.absent(),
     this.featureTourDone = const Value.absent(),
+    this.keyboardSnap = const Value.absent(),
   });
   SettingsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -5373,6 +5421,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     this.snapExcludedApps = const Value.absent(),
     this.preferredMonitorId = const Value.absent(),
     this.featureTourDone = const Value.absent(),
+    this.keyboardSnap = const Value.absent(),
   });
   static Insertable<SettingsRow> custom({
     Expression<int>? id,
@@ -5395,6 +5444,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Expression<String>? snapExcludedApps,
     Expression<int>? preferredMonitorId,
     Expression<bool>? featureTourDone,
+    Expression<bool>? keyboardSnap,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5422,6 +5472,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       if (preferredMonitorId != null)
         'preferred_monitor_id': preferredMonitorId,
       if (featureTourDone != null) 'feature_tour_done': featureTourDone,
+      if (keyboardSnap != null) 'keyboard_snap': keyboardSnap,
     });
   }
 
@@ -5446,6 +5497,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     Value<String>? snapExcludedApps,
     Value<int?>? preferredMonitorId,
     Value<bool>? featureTourDone,
+    Value<bool>? keyboardSnap,
   }) {
     return SettingsTableCompanion(
       id: id ?? this.id,
@@ -5468,6 +5520,7 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
       snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
       preferredMonitorId: preferredMonitorId ?? this.preferredMonitorId,
       featureTourDone: featureTourDone ?? this.featureTourDone,
+      keyboardSnap: keyboardSnap ?? this.keyboardSnap,
     );
   }
 
@@ -5536,6 +5589,9 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
     if (featureTourDone.present) {
       map['feature_tour_done'] = Variable<bool>(featureTourDone.value);
     }
+    if (keyboardSnap.present) {
+      map['keyboard_snap'] = Variable<bool>(keyboardSnap.value);
+    }
     return map;
   }
 
@@ -5561,7 +5617,8 @@ class SettingsTableCompanion extends UpdateCompanion<SettingsRow> {
           ..write('lastAppliedMonitorId: $lastAppliedMonitorId, ')
           ..write('snapExcludedApps: $snapExcludedApps, ')
           ..write('preferredMonitorId: $preferredMonitorId, ')
-          ..write('featureTourDone: $featureTourDone')
+          ..write('featureTourDone: $featureTourDone, ')
+          ..write('keyboardSnap: $keyboardSnap')
           ..write(')'))
         .toString();
   }
@@ -9859,6 +9916,7 @@ typedef $$SettingsTableTableCreateCompanionBuilder =
       Value<String> snapExcludedApps,
       Value<int?> preferredMonitorId,
       Value<bool> featureTourDone,
+      Value<bool> keyboardSnap,
     });
 typedef $$SettingsTableTableUpdateCompanionBuilder =
     SettingsTableCompanion Function({
@@ -9882,6 +9940,7 @@ typedef $$SettingsTableTableUpdateCompanionBuilder =
       Value<String> snapExcludedApps,
       Value<int?> preferredMonitorId,
       Value<bool> featureTourDone,
+      Value<bool> keyboardSnap,
     });
 
 class $$SettingsTableTableFilterComposer
@@ -9990,6 +10049,11 @@ class $$SettingsTableTableFilterComposer
 
   ColumnFilters<bool> get featureTourDone => $composableBuilder(
     column: $table.featureTourDone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get keyboardSnap => $composableBuilder(
+    column: $table.keyboardSnap,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -10102,6 +10166,11 @@ class $$SettingsTableTableOrderingComposer
     column: $table.featureTourDone,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get keyboardSnap => $composableBuilder(
+    column: $table.keyboardSnap,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableTableAnnotationComposer
@@ -10204,6 +10273,11 @@ class $$SettingsTableTableAnnotationComposer
     column: $table.featureTourDone,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get keyboardSnap => $composableBuilder(
+    column: $table.keyboardSnap,
+    builder: (column) => column,
+  );
 }
 
 class $$SettingsTableTableTableManager
@@ -10257,6 +10331,7 @@ class $$SettingsTableTableTableManager
                 Value<String> snapExcludedApps = const Value.absent(),
                 Value<int?> preferredMonitorId = const Value.absent(),
                 Value<bool> featureTourDone = const Value.absent(),
+                Value<bool> keyboardSnap = const Value.absent(),
               }) => SettingsTableCompanion(
                 id: id,
                 themePreference: themePreference,
@@ -10278,6 +10353,7 @@ class $$SettingsTableTableTableManager
                 snapExcludedApps: snapExcludedApps,
                 preferredMonitorId: preferredMonitorId,
                 featureTourDone: featureTourDone,
+                keyboardSnap: keyboardSnap,
               ),
           createCompanionCallback:
               ({
@@ -10301,6 +10377,7 @@ class $$SettingsTableTableTableManager
                 Value<String> snapExcludedApps = const Value.absent(),
                 Value<int?> preferredMonitorId = const Value.absent(),
                 Value<bool> featureTourDone = const Value.absent(),
+                Value<bool> keyboardSnap = const Value.absent(),
               }) => SettingsTableCompanion.insert(
                 id: id,
                 themePreference: themePreference,
@@ -10322,6 +10399,7 @@ class $$SettingsTableTableTableManager
                 snapExcludedApps: snapExcludedApps,
                 preferredMonitorId: preferredMonitorId,
                 featureTourDone: featureTourDone,
+                keyboardSnap: keyboardSnap,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

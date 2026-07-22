@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/services/region_cycle_service.dart';
+import '../../../../core/services/window_snap_service.dart';
 import '../../../layouts/presentation/cubits/applied_layouts_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_cubit.dart';
 import '../../../layouts/presentation/cubits/layouts_state.dart';
@@ -30,6 +31,7 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
     this._settingsCubit,
     this._appliedLayoutsCubit,
     this._regionCycleService,
+    this._windowSnapService,
   ) : super(const ShortcutsState());
 
   final RegisterShortcuts _registerShortcuts;
@@ -39,6 +41,7 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
   final SettingsCubit _settingsCubit;
   final AppliedLayoutsCubit _appliedLayoutsCubit;
   final RegionCycleService _regionCycleService;
+  final WindowSnapService _windowSnapService;
 
   StreamSubscription<int>? _pressesSubscription;
   StreamSubscription<LayoutsState>? _layoutsSubscription;
@@ -121,6 +124,49 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
         );
     }
 
+    // Encaixe rápido pelo teclado (⌃⌥←/→/↑/↓): registrado sempre que a
+    // preferência está ligada. O guard "só sem layout aplicado" é decidido em
+    // tempo de execução pelo WindowSnapService — não colide com ⌘⌥←/→.
+    if (_settingsCubit.state.settings.keyboardSnap) {
+      bindings
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.snapLeft,
+            type: ShortcutActionType.snapLeft,
+            targetId: 0,
+            description: 'Encaixar janela à esquerda',
+          ),
+        )
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.snapRight,
+            type: ShortcutActionType.snapRight,
+            targetId: 0,
+            description: 'Encaixar janela à direita',
+          ),
+        )
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.snapUp,
+            type: ShortcutActionType.snapUp,
+            targetId: 0,
+            description: 'Maximizar janela',
+          ),
+        )
+        ..add(
+          ShortcutBinding(
+            id: id++,
+            combo: HotkeyCombo.snapDown,
+            type: ShortcutActionType.snapDown,
+            targetId: 0,
+            description: 'Centralizar janela',
+          ),
+        );
+    }
+
     if (_sameBindings(bindings, state.bindings)) return;
 
     final result = await _registerShortcuts(bindings);
@@ -166,6 +212,14 @@ class ShortcutsCubit extends Cubit<ShortcutsState> {
         _regionCycleService.cycle(CycleDirection.previous);
       case ShortcutActionType.cycleRegionNext:
         _regionCycleService.cycle(CycleDirection.next);
+      case ShortcutActionType.snapLeft:
+        _windowSnapService.snap(SnapDirection.left);
+      case ShortcutActionType.snapRight:
+        _windowSnapService.snap(SnapDirection.right);
+      case ShortcutActionType.snapUp:
+        _windowSnapService.snap(SnapDirection.up);
+      case ShortcutActionType.snapDown:
+        _windowSnapService.snap(SnapDirection.down);
     }
   }
 

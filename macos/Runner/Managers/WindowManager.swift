@@ -41,7 +41,14 @@ final class WindowManager {
         return
       }
       let frame = CGRect(x: x, y: y, width: width, height: height)
-      result(setFrame(pid: pid_t(pid), windowId: windowId, frame: frame))
+      // `settle` (padrão true) mantém a reaplicação tardia usada por
+      // regras/layouts em janelas recém-criadas. Movimentos interativos
+      // (snap/ciclo por teclado) enviam false para aplicar uma única vez,
+      // sem timers que "puxam" a janela de volta no encaixe seguinte.
+      let settle = (args["settle"] as? Bool) ?? true
+      result(
+        setFrame(
+          pid: pid_t(pid), windowId: windowId, frame: frame, settle: settle))
 
     case "focusWindow":
       guard accessibility.isTrusted() else {
@@ -296,7 +303,8 @@ final class WindowManager {
     pid: pid_t,
     windowId: Int,
     frame: CGRect,
-    exitingFullScreen: Bool = false
+    exitingFullScreen: Bool = false,
+    settle: Bool = true
   ) -> Bool {
     guard let window = axWindow(pid: pid, windowId: windowId) else {
       return false
@@ -310,7 +318,8 @@ final class WindowManager {
       exitFullScreen(window)
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { [weak self] in
         _ = self?.setFrame(
-          pid: pid, windowId: windowId, frame: frame, exitingFullScreen: true)
+          pid: pid, windowId: windowId, frame: frame,
+          exitingFullScreen: true, settle: settle)
       }
       return true
     }
@@ -380,7 +389,8 @@ final class WindowManager {
       // (ex.: sessão RDP que abre maximizada) — refaz o fluxo completo,
       // que sai do fullscreen antes de aplicar o frame.
       if self.isFullScreen(window) {
-        _ = self.setFrame(pid: pid, windowId: windowId, frame: frame)
+        _ = self.setFrame(
+          pid: pid, windowId: windowId, frame: frame, settle: settle)
         return
       }
       guard let current = self.axFrame(of: window),
@@ -396,11 +406,15 @@ final class WindowManager {
         window, kAXPositionAttribute as CFString, positionValue)
     }
     reapplyIfNeeded()
-    // O último delay cobre apps que restauram o próprio frame após terminar
-    // de carregar (comum em janelas recém-criadas via regras).
-    for delay in [0.25, 0.6, 1.2] {
-      DispatchQueue.main.asyncAfter(
-        deadline: .now() + delay, execute: reapplyIfNeeded)
+    // Os delays cobrem apps que restauram o próprio frame após terminar de
+    // carregar (comum em janelas recém-criadas via regras). No modo
+    // interativo (settle=false) são omitidos: eles disparariam depois do
+    // próximo encaixe e puxariam a janela de volta.
+    if settle {
+      for delay in [0.25, 0.6, 1.2] {
+        DispatchQueue.main.asyncAfter(
+          deadline: .now() + delay, execute: reapplyIfNeeded)
+      }
     }
     return status == .success
   }

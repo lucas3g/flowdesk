@@ -131,6 +131,15 @@ class SettingsPage extends StatelessWidget {
                         value: settings.snapToLayoutRegions,
                         onChanged: _cubit.setSnapToLayoutRegions,
                       ),
+                      SettingsToggleRow(
+                        icon: 'splitscreen',
+                        label: 'Encaixe rápido pelo teclado',
+                        subtitle:
+                            'Com um app em foco, ⌃⌥ + setas encaixa a janela: '
+                            '← → metades e quadrantes, ↑ maximiza, ↓ centraliza',
+                        value: settings.keyboardSnap,
+                        onChanged: _cubit.setKeyboardSnap,
+                      ),
                       SnapExcludedAppsRow(
                         apps: settings.snapExcludedApps,
                         onChanged: _cubit.setSnapExcludedApps,

@@ -179,6 +179,8 @@ class RegionCycleService {
       y: target.y,
       width: target.width,
       height: target.height,
+      // Movimento interativo: aplica uma vez, sem reaplicações tardias.
+      settle: false,
     );
     if (result.getOrElse((_) => false)) {
       _lastIndexByWindow[focused.id] = targetIndex;

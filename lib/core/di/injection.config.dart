@@ -19,6 +19,7 @@ import 'package:flowdesk/core/services/region_cycle_service.dart' as _i408;
 import 'package:flowdesk/core/services/snap_regions_service.dart' as _i108;
 import 'package:flowdesk/core/services/status_bar_service.dart' as _i900;
 import 'package:flowdesk/core/services/window_close_service.dart' as _i466;
+import 'package:flowdesk/core/services/window_snap_service.dart' as _i103;
 import 'package:flowdesk/features/backup/domain/usecases/export_backup.dart'
     as _i472;
 import 'package:flowdesk/features/backup/domain/usecases/import_backup.dart'
@@ -626,6 +627,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i618.AddHistoryEntry>(),
       ),
     );
+    gh.lazySingleton<_i103.WindowSnapService>(
+      () => _i103.WindowSnapService(
+        gh<_i731.SettingsCubit>(),
+        gh<_i935.MonitorsCubit>(),
+        gh<_i271.WindowsRepository>(),
+      ),
+    );
     gh.lazySingleton<_i408.RegionCycleService>(
       () => _i408.RegionCycleService(
         gh<_i731.SettingsCubit>(),
@@ -695,6 +703,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i351.NavigationCubit>(),
       ),
     );
+    gh.lazySingleton<_i588.MonitorProfilesCubit>(
+      () => _i588.MonitorProfilesCubit(
+        gh<_i493.GetMonitorProfiles>(),
+        gh<_i493.SaveMonitorProfile>(),
+        gh<_i493.DeleteMonitorProfile>(),
+        gh<_i935.MonitorsCubit>(),
+        gh<_i422.WorkspacesCubit>(),
+        gh<_i539.LayoutsCubit>(),
+      ),
+    );
     gh.lazySingleton<_i420.ShortcutsCubit>(
       () => _i420.ShortcutsCubit(
         gh<_i69.RegisterShortcuts>(),
@@ -704,16 +722,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i731.SettingsCubit>(),
         gh<_i569.AppliedLayoutsCubit>(),
         gh<_i408.RegionCycleService>(),
-      ),
-    );
-    gh.lazySingleton<_i588.MonitorProfilesCubit>(
-      () => _i588.MonitorProfilesCubit(
-        gh<_i493.GetMonitorProfiles>(),
-        gh<_i493.SaveMonitorProfile>(),
-        gh<_i493.DeleteMonitorProfile>(),
-        gh<_i935.MonitorsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
-        gh<_i539.LayoutsCubit>(),
+        gh<_i103.WindowSnapService>(),
       ),
     );
     return this;

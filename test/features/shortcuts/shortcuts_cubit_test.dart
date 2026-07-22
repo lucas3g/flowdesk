@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flowdesk/core/services/region_cycle_service.dart';
+import 'package:flowdesk/core/services/window_snap_service.dart';
 import 'package:flowdesk/features/layouts/domain/entities/layout.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/applied_layouts_cubit.dart';
 import 'package:flowdesk/features/layouts/presentation/cubits/layouts_cubit.dart';
@@ -39,6 +40,8 @@ class _MockAppliedLayoutsCubit extends MockCubit<Map<String, int>>
 
 class _MockRegionCycleService extends Mock implements RegionCycleService {}
 
+class _MockWindowSnapService extends Mock implements WindowSnapService {}
+
 const _layout = Layout(
   id: 1,
   name: 'Código & Terminal',
@@ -56,6 +59,7 @@ void main() {
   late _MockSettingsCubit settingsCubit;
   late _MockAppliedLayoutsCubit appliedLayoutsCubit;
   late _MockRegionCycleService regionCycleService;
+  late _MockWindowSnapService windowSnapService;
   late StreamController<int> presses;
 
   setUpAll(() {
@@ -63,6 +67,7 @@ void main() {
     registerFallbackValue(_workspace);
     registerFallbackValue(const <ShortcutBinding>[]);
     registerFallbackValue(CycleDirection.next);
+    registerFallbackValue(SnapDirection.left);
   });
 
   setUp(() {
@@ -73,6 +78,7 @@ void main() {
     settingsCubit = _MockSettingsCubit();
     appliedLayoutsCubit = _MockAppliedLayoutsCubit();
     regionCycleService = _MockRegionCycleService();
+    windowSnapService = _MockWindowSnapService();
     presses = StreamController<int>.broadcast();
 
     whenListen(
@@ -108,6 +114,7 @@ void main() {
     when(() => layoutsCubit.apply(any())).thenAnswer((_) async {});
     when(() => workspacesCubit.apply(any())).thenAnswer((_) async {});
     when(() => regionCycleService.cycle(any())).thenAnswer((_) async {});
+    when(() => windowSnapService.snap(any())).thenAnswer((_) async {});
   });
 
   tearDown(() => presses.close());
@@ -120,7 +127,18 @@ void main() {
     settingsCubit,
     appliedLayoutsCubit,
     regionCycleService,
+    windowSnapService,
   );
+
+  /// Simula a preferência de encaixe pelo teclado ligada.
+  void stubKeyboardSnap() {
+    when(() => settingsCubit.state).thenReturn(
+      const SettingsState(
+        status: SettingsStatus.ready,
+        settings: AppSettings(keyboardSnap: true),
+      ),
+    );
+  }
 
   /// Simula um layout com regiões aplicado em um monitor (ativa os
   /// atalhos de ciclo).
@@ -227,6 +245,71 @@ void main() {
     verify: (_) {
       verify(() => regionCycleService.cycle(CycleDirection.previous)).called(1);
       verify(() => regionCycleService.cycle(CycleDirection.next)).called(1);
+    },
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'encaixe pelo teclado ligado registra os 4 atalhos de snap (⌃⌥ setas)',
+    build: buildCubit,
+    setUp: stubKeyboardSnap,
+    act: (cubit) => cubit.start(),
+    verify: (_) {
+      final registered =
+          verify(() => registerShortcuts(captureAny())).captured.single
+              as List<ShortcutBinding>;
+      final snaps = registered
+          .where(
+            (b) => const {
+              ShortcutActionType.snapLeft,
+              ShortcutActionType.snapRight,
+              ShortcutActionType.snapUp,
+              ShortcutActionType.snapDown,
+            }.contains(b.type),
+          )
+          .toList();
+      expect(snaps.length, 4);
+      expect(snaps.map((b) => b.combo.key), ['left', 'right', 'up', 'down']);
+    },
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'encaixe pelo teclado desligado não registra atalhos de snap',
+    build: buildCubit,
+    act: (cubit) => cubit.start(),
+    verify: (_) {
+      final registered =
+          verify(() => registerShortcuts(captureAny())).captured.single
+              as List<ShortcutBinding>;
+      expect(
+        registered.any(
+          (b) => const {
+            ShortcutActionType.snapLeft,
+            ShortcutActionType.snapRight,
+            ShortcutActionType.snapUp,
+            ShortcutActionType.snapDown,
+          }.contains(b.type),
+        ),
+        isFalse,
+      );
+    },
+  );
+
+  blocTest<ShortcutsCubit, ShortcutsState>(
+    'acionamento das setas ⌃⌥ dispara o encaixe na direção correta',
+    build: buildCubit,
+    setUp: stubKeyboardSnap,
+    act: (cubit) async {
+      await cubit.start();
+      // Bindings: id1 layout (⌥1), id2 workspace (⌃1) e, sem layout aplicado,
+      // os snaps seguem: id3 esquerda, id4 direita, id5 cima, id6 baixo.
+      presses
+        ..add(3)
+        ..add(6);
+      await Future<void>.delayed(Duration.zero);
+    },
+    verify: (_) {
+      verify(() => windowSnapService.snap(SnapDirection.left)).called(1);
+      verify(() => windowSnapService.snap(SnapDirection.down)).called(1);
     },
   );
 

@@ -116,6 +116,7 @@ void main() {
         y: any(named: 'y'),
         width: any(named: 'width'),
         height: any(named: 'height'),
+        settle: any(named: 'settle'),
       ),
     ).thenAnswer((_) async => right(true));
   });
@@ -146,6 +147,7 @@ void main() {
         y: frame.y,
         width: frame.width,
         height: frame.height,
+        settle: any(named: 'settle'),
       ),
     ).called(1);
   }

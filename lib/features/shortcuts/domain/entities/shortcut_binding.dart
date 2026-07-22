@@ -10,6 +10,13 @@ enum ShortcutActionType {
   /// Move a janela focada para a região anterior/seguinte do layout aplicado.
   cycleRegionPrev,
   cycleRegionNext,
+
+  /// Encaixe rápido pelo teclado (⌃⌥ + setas) nos monitores sem layout:
+  /// esquerda/direita (metades e quadrantes), maximizar e centralizar.
+  snapLeft,
+  snapRight,
+  snapUp,
+  snapDown,
 }
 
 /// Vínculo entre um combo global e uma ação do FlowDesk.

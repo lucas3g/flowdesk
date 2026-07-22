@@ -95,6 +95,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> setSnapToLayoutRegions(bool value) =>
       _update((s) => s.copyWith(snapToLayoutRegions: value));
 
+  Future<void> setKeyboardSnap(bool value) =>
+      _update((s) => s.copyWith(keyboardSnap: value));
+
   /// Substitui a lista de apps excluídos do encaixe ao arrastar.
   Future<void> setSnapExcludedApps(List<SnapExcludedApp> apps) =>
       _update((s) => s.copyWith(snapExcludedApps: apps));

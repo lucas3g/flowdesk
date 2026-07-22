@@ -48,6 +48,7 @@ class AppSettings extends Equatable {
     this.onboardingDone = true,
     this.userName = '',
     this.snapToLayoutRegions = false,
+    this.keyboardSnap = false,
     this.snapExcludedApps = const [],
     this.preferredMonitorId,
     // Default true pelo mesmo motivo do onboarding: evita reexibir o tour
@@ -80,6 +81,9 @@ class AppSettings extends Equatable {
   /// AppliedLayoutsCubit, não aqui).
   final bool snapToLayoutRegions;
 
+  /// Encaixe rápido pelo teclado (⌃⌥ + setas) estilo Windows.
+  final bool keyboardSnap;
+
   /// Apps que não participam do encaixe ao arrastar (regiões e bordas).
   final List<SnapExcludedApp> snapExcludedApps;
 
@@ -104,6 +108,7 @@ class AppSettings extends Equatable {
     bool? onboardingDone,
     String? userName,
     bool? snapToLayoutRegions,
+    bool? keyboardSnap,
     List<SnapExcludedApp>? snapExcludedApps,
     int? Function()? preferredMonitorId,
     bool? featureTourDone,
@@ -123,6 +128,7 @@ class AppSettings extends Equatable {
       onboardingDone: onboardingDone ?? this.onboardingDone,
       userName: userName ?? this.userName,
       snapToLayoutRegions: snapToLayoutRegions ?? this.snapToLayoutRegions,
+      keyboardSnap: keyboardSnap ?? this.keyboardSnap,
       snapExcludedApps: snapExcludedApps ?? this.snapExcludedApps,
       preferredMonitorId: preferredMonitorId != null
           ? preferredMonitorId()
@@ -147,6 +153,7 @@ class AppSettings extends Equatable {
     onboardingDone,
     userName,
     snapToLayoutRegions,
+    keyboardSnap,
     snapExcludedApps,
     preferredMonitorId,
     featureTourDone,

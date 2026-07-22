@@ -13,6 +13,7 @@ abstract interface class WindowsPlatformDatasource {
     required double y,
     required double width,
     required double height,
+    bool settle = true,
   });
 
   Future<bool> focusWindow({required int windowId, required int pid});
@@ -35,6 +36,7 @@ class WindowsPlatformDatasourceImpl implements WindowsPlatformDatasource {
     required double y,
     required double width,
     required double height,
+    bool settle = true,
   }) async {
     final success = await _channel.invoke<bool>('setWindowFrame', {
       'id': windowId,
@@ -43,6 +45,7 @@ class WindowsPlatformDatasourceImpl implements WindowsPlatformDatasource {
       'y': y,
       'width': width,
       'height': height,
+      'settle': settle,
     });
     return success ?? false;
   }

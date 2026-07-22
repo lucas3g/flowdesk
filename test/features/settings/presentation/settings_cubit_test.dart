@@ -134,6 +134,23 @@ void main() {
     );
 
     blocTest<SettingsCubit, SettingsState>(
+      'setKeyboardSnap persiste sem reaplicar a integração de sistema',
+      build: buildCubit,
+      act: (cubit) => cubit.setKeyboardSnap(true),
+      expect: () => [
+        isA<SettingsState>().having(
+          (s) => s.settings.keyboardSnap,
+          'keyboardSnap',
+          isTrue,
+        ),
+      ],
+      verify: (_) {
+        verify(() => saveSettings(any())).called(1);
+        verifyNever(() => applyIntegration(any()));
+      },
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
       'setSnapExcludedApps persiste e reaplica a integração',
       build: buildCubit,
       act: (cubit) => cubit.setSnapExcludedApps(const [

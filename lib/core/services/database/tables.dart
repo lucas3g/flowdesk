@@ -236,6 +236,11 @@ class SettingsTable extends Table {
   BoolColumn get featureTourDone =>
       boolean().withDefault(const Constant(false))();
 
+  /// Encaixe rápido de janelas pelo teclado (⌃⌥ + setas) quando o monitor
+  /// não tem layout aplicado (adicionada no schema v13).
+  BoolColumn get keyboardSnap =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

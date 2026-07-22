@@ -94,9 +94,11 @@ class HotkeyCombo extends Equatable {
     );
   }
 
-  /// Key codes ANSI das setas horizontais.
+  /// Key codes ANSI das setas.
   static const int _leftArrowKeyCode = 123;
   static const int _rightArrowKeyCode = 124;
+  static const int _downArrowKeyCode = 125;
+  static const int _upArrowKeyCode = 126;
 
   /// ⌘⌥← — mover a janela focada para a região anterior do layout.
   /// No Windows o combo é Ctrl+Win+← (os flags lógicos descrevem o Windows;
@@ -125,6 +127,55 @@ class HotkeyCombo extends Equatable {
     false,
     true,
     hasWin: true,
+  );
+
+  /// ⌃⌥← — encaixar a janela focada à esquerda (metade/quadrantes) quando
+  /// o monitor não tem layout aplicado. No Windows vira Ctrl+Alt+←.
+  static const HotkeyCombo snapLeft = HotkeyCombo._(
+    '⌃⌥←',
+    _leftArrowKeyCode,
+    _control | _option,
+    'left',
+    false,
+    false,
+    true,
+    true,
+  );
+
+  /// ⌃⌥→ — encaixar a janela focada à direita (metade/quadrantes).
+  static const HotkeyCombo snapRight = HotkeyCombo._(
+    '⌃⌥→',
+    _rightArrowKeyCode,
+    _control | _option,
+    'right',
+    false,
+    false,
+    true,
+    true,
+  );
+
+  /// ⌃⌥↑ — maximizar a janela focada na área útil do monitor.
+  static const HotkeyCombo snapUp = HotkeyCombo._(
+    '⌃⌥↑',
+    _upArrowKeyCode,
+    _control | _option,
+    'up',
+    false,
+    false,
+    true,
+    true,
+  );
+
+  /// ⌃⌥↓ — centralizar/restaurar a janela focada.
+  static const HotkeyCombo snapDown = HotkeyCombo._(
+    '⌃⌥↓',
+    _downArrowKeyCode,
+    _control | _option,
+    'down',
+    false,
+    false,
+    true,
+    true,
   );
 
   /// Combos oferecidos para layouts (⌥n e ⌥⌘n).

@@ -37,6 +37,7 @@ class WindowsRepositoryImpl implements WindowsRepository {
     required double y,
     required double width,
     required double height,
+    bool settle = true,
   }) async {
     try {
       final success = await _datasource.setWindowFrame(
@@ -46,6 +47,7 @@ class WindowsRepositoryImpl implements WindowsRepository {
         y: y,
         width: width,
         height: height,
+        settle: settle,
       );
       return right(success);
     } on PlatformDatasourceException catch (e) {
