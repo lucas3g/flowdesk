@@ -22,6 +22,7 @@ using std::min;
 
 #include "app_identity.h"
 #include "string_utils.h"
+#include "window_geometry.h"
 
 using flutter::EncodableList;
 using flutter::EncodableMap;
@@ -103,7 +104,10 @@ std::vector<uint8_t> IconPng(HWND hwnd, DWORD pid) {
 }
 
 // Traz a janela para o primeiro plano contornando a restrição do Windows a
-// SetForegroundWindow: anexa temporariamente a fila de input da thread que
+// SetForegroundWindow. Usado apenas por focusWindow: posicionar uma janela
+// não deve roubar o foco (aplicar um layout faria isso em cascata).
+//
+// Detalhe do truque: anexa temporariamente a fila de input da thread que
 // está em foreground à thread-alvo, "herdando" o direito de focar.
 void ForceForeground(HWND hwnd) {
   HWND foreground = GetForegroundWindow();
@@ -201,10 +205,20 @@ BOOL CALLBACK EnumProc(HWND hwnd, LPARAM param) {
   }
 
   RECT rect = {};
-  if (!GetWindowRect(hwnd, &rect)) {
+  const bool minimized = IsIconic(hwnd) != 0;
+  if (minimized) {
+    // Minimizada, GetWindowRect devolve -32000: usa a posição restaurada.
+    // rcNormalPosition é uma aproximação (coordenadas de área de trabalho),
+    // suficiente para saber em que monitor/região a janela estava.
+    WINDOWPLACEMENT placement = {};
+    placement.length = sizeof(placement);
+    if (!GetWindowPlacement(hwnd, &placement)) {
+      return TRUE;
+    }
+    rect = placement.rcNormalPosition;
+  } else if (!window_geometry::VisualRect(hwnd, &rect)) {
     return TRUE;
   }
-  const bool minimized = IsIconic(hwnd) != 0;
 
   int length = GetWindowTextLengthW(hwnd);
   std::wstring title(length, L'\0');
@@ -252,6 +266,10 @@ WindowManager::WindowManager() {
 }
 
 WindowManager::~WindowManager() {
+  if (timer_active_ && runner_hwnd_) {
+    KillTimer(runner_hwnd_, kSettleTimerId);
+    timer_active_ = false;
+  }
   if (gdiplus_token_) {
     Gdiplus::GdiplusShutdown(gdiplus_token_);
   }
@@ -265,20 +283,108 @@ EncodableValue WindowManager::WindowsPayload() {
 }
 
 bool WindowManager::SetWindowFrame(HWND hwnd, int x, int y, int width,
-                                   int height) {
+                                   int height, bool settle) {
   if (!IsWindow(hwnd)) {
     return false;
   }
-  // Restaura a janela se estiver minimizada/maximizada — não é possível
-  // reposicionar uma janela minimizada.
-  if (IsIconic(hwnd) || IsZoomed(hwnd)) {
-    ShowWindow(hwnd, SW_RESTORE);
-  }
-  // Traz para frente (janelas atrás de outras precisam ser levantadas).
-  ForceForeground(hwnd);
+  const RECT visual{x, y, x + width, y + height};
 
-  return SetWindowPos(hwnd, HWND_TOP, x, y, width, height,
-                      SWP_NOACTIVATE | SWP_FRAMECHANGED) != 0;
+  // Um settle de um posicionamento anterior puxaria a janela de volta: os
+  // fluxos interativos (encaixe por teclado, ciclo entre regiões) mandam
+  // settle=false justamente contando com isso.
+  CancelPending(hwnd);
+
+  // Levanta na ordem Z sem ativar: aplicar um layout inteiro com
+  // ForceForeground roubava o foco janela a janela (e mexer na fila de input
+  // do app durante o relayout aumenta a chance de ele clampar o tamanho).
+  window_geometry::ApplyOptions options;
+  options.attempts = 3;
+  options.tolerance = 2;
+  options.raise = true;
+  options.restore = true;
+  const bool ok = window_geometry::ApplyVisualFrame(hwnd, visual, options);
+
+  if (settle) {
+    SchedulePending(hwnd, visual);
+  }
+  return ok;
+}
+
+// ---- Reaplicações (settle) --------------------------------------------------
+
+void WindowManager::SchedulePending(HWND hwnd, const RECT& visual) {
+  if (!runner_hwnd_) {
+    return;
+  }
+  const ULONGLONG now = GetTickCount64();
+  PendingFrame pending;
+  pending.hwnd = hwnd;
+  pending.visual = visual;
+  // Mesmos instantes do macOS (WindowManager.swift): 0,25s / 0,6s / 1,2s.
+  pending.deadlines[0] = now + 250;
+  pending.deadlines[1] = now + 600;
+  pending.deadlines[2] = now + 1200;
+  pending_.push_back(pending);
+  EnsureTimer();
+}
+
+void WindowManager::CancelPending(HWND hwnd) {
+  pending_.erase(std::remove_if(pending_.begin(), pending_.end(),
+                                [hwnd](const PendingFrame& pending) {
+                                  return pending.hwnd == hwnd;
+                                }),
+                 pending_.end());
+}
+
+void WindowManager::EnsureTimer() {
+  if (timer_active_ || pending_.empty() || !runner_hwnd_) {
+    return;
+  }
+  // Um único timer repetitivo enquanto houver pendências.
+  if (SetTimer(runner_hwnd_, kSettleTimerId, 50, nullptr) != 0) {
+    timer_active_ = true;
+  }
+}
+
+void WindowManager::OnSettleTick() {
+  const ULONGLONG now = GetTickCount64();
+
+  for (auto& pending : pending_) {
+    if (!IsWindow(pending.hwnd)) {
+      pending.next = 3;
+      continue;
+    }
+    while (pending.next < 3 && pending.deadlines[pending.next] <= now) {
+      ++pending.next;
+      RECT current = {};
+      if (!window_geometry::VisualRect(pending.hwnd, &current)) {
+        pending.next = 3;
+        break;
+      }
+      if (window_geometry::FrameMatches(current, pending.visual, 2)) {
+        continue;
+      }
+      // Correção tardia não levanta nem desminimiza: o usuário pode já ter
+      // seguido para outra janela.
+      window_geometry::ApplyOptions options;
+      options.attempts = 2;
+      options.tolerance = 2;
+      options.raise = false;
+      options.restore = false;
+      window_geometry::ApplyVisualFrame(pending.hwnd, pending.visual, options);
+    }
+  }
+
+  pending_.erase(std::remove_if(pending_.begin(), pending_.end(),
+                                [](const PendingFrame& pending) {
+                                  return pending.next >= 3;
+                                }),
+                 pending_.end());
+
+  if (pending_.empty() && timer_active_) {
+    KillTimer(runner_hwnd_, kSettleTimerId);
+    timer_active_ = false;
+  }
 }
 
 bool WindowManager::FocusWindow(HWND hwnd) {
@@ -316,12 +422,21 @@ void WindowManager::HandleMethodCall(
     return 0;
   };
 
+  auto bool_arg = [&](const char* key, bool fallback) -> bool {
+    if (!args) return fallback;
+    auto it = args->find(EncodableValue(key));
+    if (it == args->end()) return fallback;
+    if (const auto* v = std::get_if<bool>(&it->second)) return *v;
+    return fallback;
+  };
+
   if (method == "setWindowFrame") {
     HWND hwnd = reinterpret_cast<HWND>(int_arg("id"));
     bool ok = SetWindowFrame(hwnd, static_cast<int>(int_arg("x")),
                              static_cast<int>(int_arg("y")),
                              static_cast<int>(int_arg("width")),
-                             static_cast<int>(int_arg("height")));
+                             static_cast<int>(int_arg("height")),
+                             bool_arg("settle", true));
     result->Success(EncodableValue(ok));
   } else if (method == "focusWindow") {
     HWND hwnd = reinterpret_cast<HWND>(int_arg("id"));

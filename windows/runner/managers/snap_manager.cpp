@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include "app_identity.h"
+#include "window_geometry.h"
 
 using flutter::EncodableList;
 using flutter::EncodableMap;
@@ -34,6 +35,10 @@ SnapManager* SnapManager::instance_ = nullptr;
 
 SnapManager::~SnapManager() {
   Disable();
+  if (timer_active_ && runner_hwnd_) {
+    KillTimer(runner_hwnd_, kTrackTimerId);
+    timer_active_ = false;
+  }
   if (overlay_) {
     DestroyWindow(overlay_);
     overlay_ = nullptr;
@@ -128,36 +133,36 @@ void SnapManager::HandleMethodCall(
 
 void SnapManager::Enable() {
   instance_ = this;
-  if (hook_) return;
-  hook_ = SetWindowsHookExW(WH_MOUSE_LL, MouseHookProc,
-                            GetModuleHandleW(nullptr), 0);
+  if (move_hook_) return;
+  // OUTOFCONTEXT entrega o callback na thread que instalou o hook — a
+  // platform thread, que é quem roda o message loop do runner.
+  move_hook_ = SetWinEventHook(EVENT_SYSTEM_MOVESIZESTART,
+                               EVENT_SYSTEM_MOVESIZEEND, nullptr,
+                               &SnapManager::WinEventProc, 0, 0,
+                               WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
 }
 
 void SnapManager::Disable() {
-  if (hook_) {
-    UnhookWindowsHookEx(hook_);
-    hook_ = nullptr;
+  if (move_hook_) {
+    UnhookWinEvent(move_hook_);
+    move_hook_ = nullptr;
   }
   ResetDragState();
 }
 
-LRESULT CALLBACK SnapManager::MouseHookProc(int code, WPARAM wparam,
-                                            LPARAM lparam) {
-  if (code == HC_ACTION && instance_) {
-    const auto* info = reinterpret_cast<MSLLHOOKSTRUCT*>(lparam);
-    switch (wparam) {
-      case WM_LBUTTONDOWN:
-        instance_->OnMouseDown(info->pt);
-        break;
-      case WM_MOUSEMOVE:
-        instance_->OnMouseMove(info->pt);
-        break;
-      case WM_LBUTTONUP:
-        instance_->OnMouseUp();
-        break;
-    }
+void CALLBACK SnapManager::WinEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd,
+                                        LONG id_object, LONG id_child, DWORD,
+                                        DWORD) {
+  if (!instance_ || !instance_->enabled_) return;
+  // Só a janela em si interessa (não seus controles filhos).
+  if (id_object != OBJID_WINDOW || id_child != CHILDID_SELF) return;
+  if (!hwnd || GetAncestor(hwnd, GA_ROOT) != hwnd) return;
+
+  if (event == EVENT_SYSTEM_MOVESIZESTART) {
+    instance_->OnMoveSizeStart(hwnd);
+  } else if (event == EVENT_SYSTEM_MOVESIZEEND) {
+    instance_->OnMoveSizeEnd(hwnd);
   }
-  return CallNextHookEx(nullptr, code, wparam, lparam);
 }
 
 // ---- Exclusão por app/instância ---------------------------------------------
@@ -180,12 +185,16 @@ bool SnapManager::IsExcluded(HWND hwnd, DWORD pid) const {
 
 // ---- Ciclo do arrasto -------------------------------------------------------
 
-void SnapManager::OnMouseDown(POINT pt) {
-  ResetDragState();
-  if (!enabled_) return;
+int SnapManager::ZoneAt(POINT pt) const {
+  for (size_t i = 0; i < regions_.size(); ++i) {
+    if (PtInRect(&regions_[i], pt)) return int(i);
+  }
+  return -1;
+}
 
-  HWND hwnd = GetAncestor(WindowFromPoint(pt), GA_ROOT);
-  if (!hwnd) return;
+void SnapManager::OnMoveSizeStart(HWND hwnd) {
+  ResetDragState();
+  if (!enabled_ || !runner_hwnd_) return;
 
   // Ignora janelas do próprio FlowDesk (incluindo o overlay).
   DWORD pid = 0;
@@ -195,64 +204,81 @@ void SnapManager::OnMouseDown(POINT pt) {
   // Apps/instâncias excluídos arrastam livres: nenhum overlay ou encaixe.
   if (IsExcluded(hwnd, pid)) return;
 
-  if (!GetWindowRect(hwnd, &drag_start_rect_)) return;
+  if (!window_geometry::VisualRect(hwnd, &drag_start_rect_)) return;
   dragged_ = hwnd;
+
+  // O overlay só aparece quando o arrasto se confirma (ver OnTrackTick).
+  if (SetTimer(runner_hwnd_, kTrackTimerId, 25, nullptr) != 0) {
+    timer_active_ = true;
+  }
 }
 
-void SnapManager::OnMouseMove(POINT pt) {
-  if (!dragged_) return;
+void SnapManager::OnTrackTick() {
+  if (!dragged_ || !IsWindow(dragged_)) {
+    ResetDragState();
+    return;
+  }
 
-  // Confirma que a janela está de fato se movendo (e não é um arrasto de
-  // conteúdo/seleção dentro dela).
+  // Confirma que é um arrasto (move) e não um redimensionamento: o
+  // MOVESIZESTART cobre os dois casos, e mostrar as zonas durante um resize
+  // seria enganoso.
   if (!window_moving_) {
     RECT current{};
-    if (!GetWindowRect(dragged_, &current)) return;
-    if (abs(current.left - drag_start_rect_.left) <= 4 &&
-        abs(current.top - drag_start_rect_.top) <= 4) {
+    if (!window_geometry::VisualRect(dragged_, &current)) return;
+    const LONG moved_x = labs(current.left - drag_start_rect_.left);
+    const LONG moved_y = labs(current.top - drag_start_rect_.top);
+    const LONG resized_x =
+        labs((current.right - current.left) -
+             (drag_start_rect_.right - drag_start_rect_.left));
+    const LONG resized_y =
+        labs((current.bottom - current.top) -
+             (drag_start_rect_.bottom - drag_start_rect_.top));
+    if (resized_x > 2 || resized_y > 2) {
+      // É resize: não participa do encaixe.
+      ResetDragState();
       return;
     }
+    if (moved_x <= 4 && moved_y <= 4) return;
     window_moving_ = true;
     ShowZones();
   }
 
-  int hovered = -1;
-  for (size_t i = 0; i < regions_.size(); ++i) {
-    if (PtInRect(&regions_[i], pt)) {
-      hovered = int(i);
-      break;
-    }
-  }
+  POINT pt{};
+  if (!GetCursorPos(&pt)) return;
+  const int hovered = ZoneAt(pt);
   if (hovered != suggested_index_) {
     suggested_index_ = hovered;
     if (overlay_) InvalidateRect(overlay_, nullptr, TRUE);
   }
 }
 
-void SnapManager::OnMouseUp() {
-  if (dragged_ && window_moving_ && suggested_index_ >= 0 &&
-      suggested_index_ < int(regions_.size())) {
-    const RECT& region = regions_[size_t(suggested_index_)];
-    if (IsZoomed(dragged_)) ShowWindow(dragged_, SW_RESTORE);
-    // Apps que reprocessam o layout interno (sidebars/drawers) podem clampar
-    // o primeiro resize; reaplica até o frame convergir.
-    for (int attempt = 0; attempt < 3; ++attempt) {
-      SetWindowPos(dragged_, HWND_TOP, region.left, region.top,
-                   region.right - region.left, region.bottom - region.top,
-                   SWP_NOACTIVATE | SWP_FRAMECHANGED);
-      RECT current{};
-      if (!GetWindowRect(dragged_, &current)) break;
-      if (abs(current.left - region.left) <= 2 &&
-          abs(current.top - region.top) <= 2 &&
-          abs(current.right - region.right) <= 2 &&
-          abs(current.bottom - region.bottom) <= 2) {
-        break;
-      }
-    }
+void SnapManager::OnMoveSizeEnd(HWND hwnd) {
+  if (hwnd != dragged_ || !window_moving_) {
+    ResetDragState();
+    return;
+  }
+
+  // A posição do cursor agora é autoritativa (o último tick pode estar
+  // defasado em até 25ms).
+  POINT pt{};
+  const int index = GetCursorPos(&pt) ? ZoneAt(pt) : suggested_index_;
+
+  if (index >= 0 && index < int(regions_.size())) {
+    window_geometry::ApplyOptions options;
+    options.attempts = 3;
+    options.tolerance = 2;
+    options.raise = true;
+    options.restore = true;
+    window_geometry::ApplyVisualFrame(hwnd, regions_[size_t(index)], options);
   }
   ResetDragState();
 }
 
 void SnapManager::ResetDragState() {
+  if (timer_active_ && runner_hwnd_) {
+    KillTimer(runner_hwnd_, kTrackTimerId);
+    timer_active_ = false;
+  }
   dragged_ = nullptr;
   window_moving_ = false;
   suggested_index_ = -1;
@@ -302,6 +328,13 @@ void SnapManager::HideZones() {
 
 LRESULT CALLBACK SnapManager::OverlayWndProc(HWND hwnd, UINT message,
                                              WPARAM wparam, LPARAM lparam) {
+  if (message == WM_DPICHANGED) {
+    // O overlay cobre a área de trabalho virtual inteira; aceitar o retângulo
+    // sugerido pelo sistema ao cruzar monitores de DPIs diferentes o
+    // deformaria. Reafirma o tamanho correto.
+    if (instance_) instance_->ShowZones();
+    return 0;
+  }
   if (message == WM_PAINT && instance_) {
     PAINTSTRUCT ps{};
     HDC hdc = BeginPaint(hwnd, &ps);

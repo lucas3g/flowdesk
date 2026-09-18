@@ -242,6 +242,11 @@ void SystemManager::HandleMethodCall(
   } else if (method == "setDockVisible") {
     SetTaskbarVisible(!args || BoolArg(*args, "visible", true));
     result->Success();
+  } else if (method == "setMagneticSnap") {
+    // Encaixe magnético (bordas/cantos) ainda não existe no Windows. Responde
+    // sem erro para não gerar MissingPluginException a cada sincronização de
+    // preferências; o encaixe por regiões do layout fica com o SnapManager.
+    result->Success(EncodableValue(false));
   } else if (method == "setStatusBarMenu") {
     layouts_.clear();
     workspaces_.clear();

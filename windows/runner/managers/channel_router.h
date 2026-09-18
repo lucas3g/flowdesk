@@ -28,6 +28,7 @@ class ChannelRouter {
   void OnDisplayChange();
   void OnHotKey(int id);
   void OnTrayMessage(WPARAM wparam, LPARAM lparam);
+  void OnTimer(UINT_PTR id);
 
  private:
   WindowManager window_manager_;

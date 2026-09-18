@@ -81,6 +81,13 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
         channel_router_->OnHotKey(static_cast<int>(wparam));
       }
       break;
+    // break (e não return): o engine e os plugins também usam timers nesta
+    // janela, então a mensagem precisa seguir para o Win32Window.
+    case WM_TIMER:
+      if (channel_router_) {
+        channel_router_->OnTimer(static_cast<UINT_PTR>(wparam));
+      }
+      break;
     case SystemManager::kTrayCallbackMessage:
       if (channel_router_) {
         channel_router_->OnTrayMessage(wparam, lparam);

@@ -13,6 +13,7 @@ add_executable(${BINARY_NAME} WIN32
   "win32_window.cpp"
   "managers/channel_router.cpp"
   "managers/window_manager.cpp"
+  "managers/window_geometry.cpp"
   "managers/monitor_manager.cpp"
   "managers/permission_manager.cpp"
   "managers/shortcut_manager.cpp"

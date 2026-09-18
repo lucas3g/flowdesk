@@ -11,6 +11,9 @@ void ChannelRouter::Register(flutter::BinaryMessenger* messenger, HWND hwnd) {
 
   shortcut_manager_.SetWindow(hwnd);
   system_manager_.SetWindow(hwnd);
+  // Donos de timers (reaplicação de frames e tracking do arrasto).
+  window_manager_.SetRunnerWindow(hwnd);
+  snap_manager_.SetWindow(hwnd);
 
   permissions_channel_ = std::make_unique<MethodChannel>(
       messenger, "flowdesk/permissions", &codec);
@@ -83,4 +86,14 @@ void ChannelRouter::OnHotKey(int id) {
 
 void ChannelRouter::OnTrayMessage(WPARAM wparam, LPARAM lparam) {
   system_manager_.OnTrayMessage(wparam, lparam);
+}
+
+// Os timers dividem a janela do runner com o engine Flutter, então cada um é
+// despachado só pelo próprio id.
+void ChannelRouter::OnTimer(UINT_PTR id) {
+  if (id == WindowManager::kSettleTimerId) {
+    window_manager_.OnSettleTick();
+  } else if (id == SnapManager::kTrackTimerId) {
+    snap_manager_.OnTrackTick();
+  }
 }
