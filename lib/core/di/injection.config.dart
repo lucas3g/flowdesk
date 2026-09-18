@@ -9,6 +9,7 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'package:flowdesk/core/di/register_module.dart' as _i132;
 import 'package:flowdesk/core/platform/platform_channel.dart' as _i29;
 import 'package:flowdesk/core/platform/platform_event_channel.dart' as _i649;
@@ -77,7 +78,7 @@ import 'package:flowdesk/features/licensing/domain/usecases/deactivate_license.d
 import 'package:flowdesk/features/licensing/domain/usecases/get_license.dart'
     as _i726;
 import 'package:flowdesk/features/licensing/domain/usecases/refresh_license.dart'
-    as _i372;
+    as _i373;
 import 'package:flowdesk/features/licensing/presentation/cubits/license_cubit.dart'
     as _i485;
 import 'package:flowdesk/features/monitors/data/datasources/monitor_profiles_local_datasource.dart'
@@ -151,13 +152,13 @@ import 'package:flowdesk/features/settings/domain/usecases/get_settings.dart'
 import 'package:flowdesk/features/settings/domain/usecases/save_settings.dart'
     as _i1066;
 import 'package:flowdesk/features/settings/presentation/cubits/settings_cubit.dart'
-    as _i731;
+    as _i732;
 import 'package:flowdesk/features/shortcuts/data/datasources/shortcuts_platform_datasource.dart'
     as _i183;
 import 'package:flowdesk/features/shortcuts/data/repositories/shortcuts_repository_impl.dart'
     as _i611;
 import 'package:flowdesk/features/shortcuts/domain/repositories/shortcuts_repository.dart'
-    as _i831;
+    as _i832;
 import 'package:flowdesk/features/shortcuts/domain/usecases/register_shortcuts.dart'
     as _i69;
 import 'package:flowdesk/features/shortcuts/domain/usecases/watch_shortcut_presses.dart'
@@ -211,7 +212,7 @@ import 'package:flowdesk/features/workspaces/domain/usecases/get_workspaces.dart
 import 'package:flowdesk/features/workspaces/domain/usecases/save_workspace.dart'
     as _i9;
 import 'package:flowdesk/features/workspaces/presentation/cubits/workspaces_cubit.dart'
-    as _i422;
+    as _i423;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
@@ -434,7 +435,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i836.WorkspacePlatformDatasource>(),
       ),
     );
-    gh.lazySingleton<_i831.ShortcutsRepository>(
+    gh.lazySingleton<_i832.ShortcutsRepository>(
       () => _i611.ShortcutsRepositoryImpl(
         gh<_i183.ShortcutsPlatformDatasource>(),
       ),
@@ -534,8 +535,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i726.GetLicense>(
       () => _i726.GetLicense(gh<_i1063.LicenseRepository>()),
     );
-    gh.factory<_i372.RefreshLicense>(
-      () => _i372.RefreshLicense(gh<_i1063.LicenseRepository>()),
+    gh.factory<_i373.RefreshLicense>(
+      () => _i373.RefreshLicense(gh<_i1063.LicenseRepository>()),
     );
     gh.lazySingleton<_i431.HistoryCubit>(
       () =>
@@ -547,8 +548,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1066.SaveSettings>(
       () => _i1066.SaveSettings(gh<_i335.SettingsRepository>()),
     );
-    gh.lazySingleton<_i731.SettingsCubit>(
-      () => _i731.SettingsCubit(
+    gh.lazySingleton<_i732.SettingsCubit>(
+      () => _i732.SettingsCubit(
         gh<_i122.GetSettings>(),
         gh<_i1066.SaveSettings>(),
         gh<_i563.ApplySystemIntegration>(),
@@ -563,16 +564,16 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.factory<_i69.RegisterShortcuts>(
-      () => _i69.RegisterShortcuts(gh<_i831.ShortcutsRepository>()),
+      () => _i69.RegisterShortcuts(gh<_i832.ShortcutsRepository>()),
     );
     gh.factory<_i651.WatchShortcutPresses>(
-      () => _i651.WatchShortcutPresses(gh<_i831.ShortcutsRepository>()),
+      () => _i651.WatchShortcutPresses(gh<_i832.ShortcutsRepository>()),
     );
     gh.lazySingleton<_i485.LicenseCubit>(
       () => _i485.LicenseCubit(
         gh<_i726.GetLicense>(),
         gh<_i948.ActivateLicense>(),
-        gh<_i372.RefreshLicense>(),
+        gh<_i373.RefreshLicense>(),
         gh<_i1039.DeactivateLicense>(),
       ),
     );
@@ -597,13 +598,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i199.RulesRepository>(),
         gh<_i862.GetWindows>(),
         gh<_i935.MonitorsCubit>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i569.AppliedLayoutsCubit>(),
         gh<_i618.AddHistoryEntry>(),
       ),
     );
     gh.lazySingleton<_i466.WindowCloseService>(
-      () => _i466.WindowCloseService(gh<_i731.SettingsCubit>()),
+      () => _i466.WindowCloseService(gh<_i732.SettingsCubit>()),
     );
     gh.lazySingleton<_i31.WindowsCubit>(
       () => _i31.WindowsCubit(
@@ -612,31 +613,31 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i113.FocusWindow>(),
         gh<_i561.CenterWindow>(),
         gh<_i148.MaximizeWindow>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i607.UndoRedoCubit>(),
       ),
     );
-    gh.lazySingleton<_i422.WorkspacesCubit>(
-      () => _i422.WorkspacesCubit(
+    gh.lazySingleton<_i423.WorkspacesCubit>(
+      () => _i423.WorkspacesCubit(
         gh<_i237.GetWorkspaces>(),
         gh<_i9.SaveWorkspace>(),
         gh<_i290.DeleteWorkspace>(),
         gh<_i45.ApplyWorkspace>(),
         gh<_i935.MonitorsCubit>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i618.AddHistoryEntry>(),
       ),
     );
     gh.lazySingleton<_i103.WindowSnapService>(
       () => _i103.WindowSnapService(
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i935.MonitorsCubit>(),
         gh<_i271.WindowsRepository>(),
       ),
     );
     gh.lazySingleton<_i408.RegionCycleService>(
       () => _i408.RegionCycleService(
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i935.MonitorsCubit>(),
         gh<_i569.AppliedLayoutsCubit>(),
         gh<_i238.GetLayouts>(),
@@ -645,7 +646,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i108.SnapRegionsService>(
       () => _i108.SnapRegionsService(
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i935.MonitorsCubit>(),
         gh<_i569.AppliedLayoutsCubit>(),
         gh<_i238.GetLayouts>(),
@@ -661,7 +662,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i854.SaveLayout>(),
         gh<_i862.GetWindows>(),
         gh<_i935.MonitorsCubit>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i607.UndoRedoCubit>(),
         gh<_i618.AddHistoryEntry>(),
         gh<_i569.AppliedLayoutsCubit>(),
@@ -678,9 +679,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i472.ExportBackup>(),
         gh<_i744.ImportBackup>(),
         gh<_i539.LayoutsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
+        gh<_i423.WorkspacesCubit>(),
         gh<_i971.RulesCubit>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i732.SettingsCubit>(),
       ),
     );
     gh.lazySingleton<_i752.AutoRestoreService>(
@@ -699,7 +700,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i29.PlatformChannel>(instanceName: 'appChannel'),
         gh<_i649.PlatformEventChannel>(instanceName: 'appEventsChannel'),
         gh<_i539.LayoutsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
+        gh<_i423.WorkspacesCubit>(),
         gh<_i351.NavigationCubit>(),
       ),
     );
@@ -709,7 +710,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i493.SaveMonitorProfile>(),
         gh<_i493.DeleteMonitorProfile>(),
         gh<_i935.MonitorsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
+        gh<_i423.WorkspacesCubit>(),
         gh<_i539.LayoutsCubit>(),
       ),
     );
@@ -718,8 +719,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i69.RegisterShortcuts>(),
         gh<_i651.WatchShortcutPresses>(),
         gh<_i539.LayoutsCubit>(),
-        gh<_i422.WorkspacesCubit>(),
-        gh<_i731.SettingsCubit>(),
+        gh<_i423.WorkspacesCubit>(),
+        gh<_i732.SettingsCubit>(),
         gh<_i569.AppliedLayoutsCubit>(),
         gh<_i408.RegionCycleService>(),
         gh<_i103.WindowSnapService>(),

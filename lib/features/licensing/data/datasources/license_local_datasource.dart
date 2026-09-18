@@ -43,7 +43,7 @@ class LicenseLocalDatasourceImpl implements LicenseLocalDatasource {
               deviceId: _newDeviceId(),
             ),
           );
-      return _db.select(_db.licenseTable).getSingle();
+      return await _db.select(_db.licenseTable).getSingle();
     } catch (e) {
       throw DatabaseException('Falha ao carregar a licença: $e');
     }

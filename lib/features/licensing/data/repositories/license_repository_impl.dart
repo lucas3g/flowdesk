@@ -46,7 +46,7 @@ class LicenseRepositoryImpl implements LicenseRepository {
     try {
       final row = await _local.getLicenseRow();
       final dto = await _remote.activate(key: key, deviceId: row.deviceId);
-      return _storeAndBuild(key, row.deviceId, dto);
+      return await _storeAndBuild(key, row.deviceId, dto);
     } on NetworkException catch (e) {
       return left(NetworkFailure(e.message, statusCode: e.statusCode));
     } on DatabaseException catch (e) {
@@ -66,7 +66,7 @@ class LicenseRepositoryImpl implements LicenseRepository {
         key: row.licenseKey,
         deviceId: row.deviceId,
       );
-      return _storeAndBuild(row.licenseKey, row.deviceId, dto);
+      return await _storeAndBuild(row.licenseKey, row.deviceId, dto);
     } on NetworkException catch (e) {
       // Servidor negou a licença (revogada/cancelada): remove o cache.
       // Falha de conectividade mantém o cache e a tolerância offline.

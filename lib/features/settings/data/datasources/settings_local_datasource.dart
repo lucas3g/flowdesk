@@ -27,7 +27,7 @@ class SettingsLocalDatasourceImpl implements SettingsLocalDatasource {
       await _db
           .into(_db.settingsTable)
           .insert(const SettingsTableCompanion(id: Value(0)));
-      return _db.select(_db.settingsTable).getSingle();
+      return await _db.select(_db.settingsTable).getSingle();
     } catch (e) {
       throw DatabaseException('Falha ao carregar preferências: $e');
     }

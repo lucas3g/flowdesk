@@ -6656,7 +6656,7 @@ class $$LayoutsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$LayoutsTable, LayoutRow>(table),
                   $$LayoutsTableReferences(db, table, e),
                 ),
               )
@@ -7247,7 +7247,7 @@ class $$LayoutRegionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$LayoutRegionsTable, LayoutRegionRow>(table),
                   $$LayoutRegionsTableReferences(db, table, e),
                 ),
               )
@@ -7543,7 +7543,7 @@ class $$AppliedLayoutsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$AppliedLayoutsTable, AppliedLayoutRow>(table),
                   $$AppliedLayoutsTableReferences(db, table, e),
                 ),
               )
@@ -8077,7 +8077,7 @@ class $$WorkspacesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$WorkspacesTable, WorkspaceRow>(table),
                   $$WorkspacesTableReferences(db, table, e),
                 ),
               )
@@ -8563,7 +8563,7 @@ class $$WorkspaceAppsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$WorkspaceAppsTable, WorkspaceAppRow>(table),
                   $$WorkspaceAppsTableReferences(db, table, e),
                 ),
               )
@@ -8992,7 +8992,7 @@ class $$MonitorProfilesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$MonitorProfilesTable, MonitorProfileRow>(table),
                   $$MonitorProfilesTableReferences(db, table, e),
                 ),
               )
@@ -9262,7 +9262,16 @@ class $$RulesTableTableManager
                 isActive: isActive,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$RulesTable, RuleRow>(table),
+                  BaseReferences<_$AppDatabase, $RulesTable, RuleRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -9411,7 +9420,16 @@ class $$ShortcutsTableTableManager
                 combo: combo,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$ShortcutsTable, ShortcutRow>(table),
+                  BaseReferences<_$AppDatabase, $ShortcutsTable, ShortcutRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -9611,7 +9629,16 @@ class $$HistoryEntriesTableTableManager
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$HistoryEntriesTable, HistoryEntryRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $HistoryEntriesTable,
+                    HistoryEntryRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -9870,7 +9897,16 @@ class $$WindowPositionsTableTableManager
                 updatedAt: updatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$WindowPositionsTable, WindowPositionRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $WindowPositionsTable,
+                    WindowPositionRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -10402,7 +10438,16 @@ class $$SettingsTableTableTableManager
                 keyboardSnap: keyboardSnap,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$SettingsTableTable, SettingsRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SettingsTableTable,
+                    SettingsRow
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -10623,7 +10668,16 @@ class $$LicenseTableTableTableManager
                 lastValidatedAt: lastValidatedAt,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$LicenseTableTable, LicenseRow>(table),
+                  BaseReferences<_$AppDatabase, $LicenseTableTable, LicenseRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
