@@ -1,0 +1,126 @@
+name: Windows Release
+
+# Gera o executável do FlowDesk para Windows.
+# Dispara automaticamente ao publicar uma tag `v*` e também pode ser rodado manualmente.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.47.2'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Instalar dependências
+        run: flutter pub get
+
+      - name: Gerar código (injectable + drift)
+        run: dart run build_runner build
+
+      - name: Análise estática
+        run: flutter analyze
+
+      - name: Testes
+        run: flutter test
+
+      - name: Build Windows (release)
+        run: flutter build windows --release
+
+      - name: Definir versão
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compactar bundle portátil
+        shell: pwsh
+        run: |
+          $bundle = "build/windows/x64/runner/Release"
+          Compress-Archive -Path "$bundle/*" -DestinationPath "FlowDesk-${{ steps.version.outputs.version }}-windows-x64.zip" -Force
+
+      - name: Garantir Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
+      - name: Gerar instalador (Inno Setup)
+        shell: pwsh
+        run: |
+          $iss = @"
+          [Setup]
+          AppId={{6F3A1C48-2D7B-4E59-9A0C-1B8E5D2F7A34}
+          AppName=FlowDesk
+          AppVersion=${{ steps.version.outputs.version }}
+          AppPublisher=Lucas Silva
+          DefaultDirName={autopf}\FlowDesk
+          DefaultGroupName=FlowDesk
+          DisableProgramGroupPage=yes
+          OutputDir=.
+          OutputBaseFilename=FlowDesk-${{ steps.version.outputs.version }}-windows-setup
+          SetupIconFile=windows\runner\resources\app_icon.ico
+          Compression=lzma2
+          SolidCompression=yes
+          ArchitecturesInstallIn64BitMode=x64compatible
+          ArchitecturesAllowed=x64compatible
+          WizardStyle=modern
+
+          [Languages]
+          Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+
+          [Tasks]
+          Name: "desktopicon"; Description: "Criar atalho na área de trabalho"; GroupDescription: "Atalhos adicionais:"
+
+          [Files]
+          Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+          [Icons]
+          Name: "{group}\FlowDesk"; Filename: "{app}\flowdesk.exe"
+          Name: "{autodesktop}\FlowDesk"; Filename: "{app}\flowdesk.exe"; Tasks: desktopicon
+
+          [Run]
+          Filename: "{app}\flowdesk.exe"; Description: "Abrir o FlowDesk"; Flags: nowait postinstall skipifsilent
+          "@
+          $iss | Out-File -FilePath installer.iss -Encoding utf8
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Publicar artefatos do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: flowdesk-windows
+          path: |
+            FlowDesk-*-windows-x64.zip
+            FlowDesk-*-windows-setup.exe
+          if-no-files-found: error
+
+      - name: Anexar à Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            FlowDesk-*-windows-x64.zip
+            FlowDesk-*-windows-setup.exe
+          generate_release_notes: true

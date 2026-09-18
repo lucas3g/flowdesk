@@ -49,3 +49,6 @@ app.*.map.json
 
 # Instaladores gerados
 *.dmg
+
+# Instalador gerado pelo CI (Windows)
+installer.iss
